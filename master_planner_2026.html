@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 마스터 플래너</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F5F0E8;min-height:100vh;padding:1.5rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2C2C2A}
+.lv{display:none}.lv.on{display:block}
+.top-label{font-size:10px;font-weight:500;color:#B4B2A9;letter-spacing:.06em;margin-bottom:3px}
+.top-title{font-size:17px;font-weight:500;color:#2C2C2A;margin-bottom:3px}
+.top-desc{font-size:11px;color:#B4B2A9;margin-bottom:1.25rem;font-style:italic}
+.mf{background:#EDE8DE;border-radius:10px;padding:9px 13px;margin-bottom:1.25rem;font-size:12px;color:#5F5E5A;font-style:italic}
+.bc{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:1rem;font-size:11px}
+.bci{cursor:pointer;color:#888780}.bci:hover{color:#2C2C2A}.bci.on{color:#2C2C2A;font-weight:500;cursor:default}
+.bcs{color:#D3D1C7}
+.back-btn{font-size:11px;padding:5px 12px;border:0.5px solid #D3D1C7;border-radius:14px;background:#F5F0E8;color:#888780;cursor:pointer;margin-bottom:1rem;display:inline-flex;align-items:center;gap:4px}
+.back-btn:hover{border-color:#888780;color:#2C2C2A}
+.sec-label{font-size:10px;font-weight:500;color:#B4B2A9;letter-spacing:.04em;margin-bottom:8px;margin-top:1.25rem}
+.sec-label:first-child,.sec-label-first{margin-top:0}
+.card{border:0.5px solid #D3D1C7;border-radius:12px;padding:13px 15px;background:#FDFAF6;margin-bottom:8px}
+.card-title{font-size:13px;font-weight:500;color:#2C2C2A;margin-bottom:4px}
+.card-body{font-size:12px;color:#5F5E5A;line-height:1.6}
+.chip{font-size:10px;font-weight:500;padding:2px 7px;border-radius:8px}
+.tag{font-size:10px;font-weight:500;padding:2px 8px;border-radius:8px;display:inline-block}
+.now-badge{font-size:9px;font-weight:500;padding:1px 6px;border-radius:8px;background:#FAEEDA;color:#854F0B;margin-left:5px}
+.sc-card{border-radius:12px;padding:16px;background:#2C2C2A;margin-bottom:1rem}
+.sc-vision{font-size:13px;color:#F5F0E8;line-height:1.7;font-style:italic;margin-bottom:12px}
+.sc-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sc-stat{background:rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;text-align:center}
+.sc-stat-label{font-size:9px;color:#888780;margin-bottom:3px}
+.sc-stat-val{font-size:13px;font-weight:500;color:#F5F0E8}
+.sc-stat-goal{font-size:9px;color:#639922;margin-top:3px}
+.dw-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.dw{border-radius:12px;padding:13px 15px;border:0.5px solid transparent;cursor:pointer}
+.dw-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.dw-title{font-size:13px;font-weight:500;color:#2C2C2A;margin-bottom:3px}
+.dw-desc{font-size:11px;color:#888780;font-style:italic;margin-bottom:7px}
+.risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+.rc{border-radius:10px;padding:11px 13px}
+.rc-title{font-size:12px;font-weight:500;margin-bottom:3px}
+.rc-level{font-size:10px;font-weight:500;padding:1px 6px;border-radius:8px;display:inline-block;margin-bottom:5px}
+.rc-desc{font-size:11px;line-height:1.5}
+.yr-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.yc{border:0.5px solid #D3D1C7;border-radius:12px;padding:13px 15px;background:#FDFAF6}
+.yc.cur{border-color:#BA7517;background:#FDFBF5}
+.yc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.goal-item{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;margin-bottom:3px}
+.g-chk{width:14px;height:14px;border-radius:3px;border:1.5px solid rgba(0,0,0,.15);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center}
+.goal-item.done .g-chk{background:#639922;border-color:#639922}
+.goal-item.done .g-chk::after{content:'';display:block;width:6px;height:4px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.g-text{font-size:12px;color:#2C2C2A;line-height:1.4}
+.goal-item.done .g-text{text-decoration:line-through;color:#B4B2A9}
+.g-sub{font-size:10px;color:#B4B2A9;margin-top:2px}
+.sn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem}
+.sn{border-radius:12px;padding:13px 15px;cursor:pointer;border:0.5px solid transparent}
+.sn:hover{border-color:rgba(0,0,0,.12)}
+.sg-item{display:flex;align-items:flex-start;gap:7px;padding:8px 12px;border-radius:10px;background:#FDFAF6;border:0.5px solid #EDE8DE;margin-bottom:5px;cursor:pointer}
+.sg-chk{width:14px;height:14px;border-radius:3px;border:1.5px solid #D3D1C7;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:#FDFAF6}
+.sg-item.done .sg-chk{background:#639922;border-color:#639922}
+.sg-item.done .sg-chk::after{content:'';display:block;width:6px;height:4px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.sg-text{font-size:12px;color:#2C2C2A;flex:1;line-height:1.4}
+.sg-item.done .sg-text{text-decoration:line-through;color:#B4B2A9}
+.sg-badge{font-size:9px;font-weight:500;padding:1px 6px;border-radius:8px;flex-shrink:0;margin-top:2px}
+.mo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.mc{border:0.5px solid #D3D1C7;border-radius:12px;padding:11px 13px;background:#FDFAF6;cursor:pointer}
+.mc:hover{border-color:#888780}
+.pace-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:1rem}
+.pace{background:#EDE8DE;border-radius:8px;padding:8px 10px}
+.pace-label{font-size:9px;font-weight:500;color:#B4B2A9;margin-bottom:2px}
+.pace-val{font-size:13px;font-weight:500;color:#2C2C2A}
+.pace-sub{font-size:10px;color:#B4B2A9;margin-top:1px}
+.track{border:0.5px solid #D3D1C7;border-radius:12px;padding:12px 14px;background:#FDFAF6;margin-bottom:8px}
+.track-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:7px;border-bottom:0.5px solid #EDE8DE}
+.tl{display:flex;align-items:center;gap:6px}
+.td{width:7px;height:7px;border-radius:50%}
+.tn{font-size:12px;font-weight:500;color:#2C2C2A}
+.tt{font-size:9px;font-weight:500;padding:2px 7px;border-radius:8px}
+.task{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:0.5px solid #EDE8DE;cursor:pointer}
+.task:last-child{border-bottom:none}
+.chk{width:14px;height:14px;border-radius:3px;border:1.5px solid #D3D1C7;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;background:#FDFAF6}
+.chk.done{background:#639922;border-color:#639922}
+.chk.done::after{content:'';display:block;width:6px;height:4px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.task-text{font-size:11px;color:#5F5E5A;line-height:1.4;flex:1}
+.task-text.done{text-decoration:line-through;opacity:.45}
+.task-badge{font-size:9px;font-weight:500;padding:1px 5px;border-radius:6px;flex-shrink:0;margin-top:2px;background:#EDE8DE;color:#888780}
+.task-badge.now{background:#FAEEDA;color:#854F0B}
+.wk-list{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+.wkc{border:0.5px solid #D3D1C7;border-radius:12px;padding:11px 13px;background:#FDFAF6;cursor:pointer}
+.wkc:hover{border-color:#888780}
+.wkc.cur{border-color:#BA7517;background:#FDFBF5}
+.end-card{background:#EDE8DE;border-radius:12px;padding:12px 14px;margin-top:.5rem}
+.prog-wrap{margin-bottom:1rem}
+.prog-row{display:flex;justify-content:space-between;font-size:11px;color:#888780;margin-bottom:4px}
+.prog-track{height:4px;background:#EDE8DE;border-radius:2px;overflow:hidden}
+.prog-bar{height:100%;border-radius:2px;transition:width .3s}
+</style>
+</head>
+<body>
+<div class="top-label">을축일주 · 신해대운 · 마스터 플래너</div>
+<div class="top-title">2026 탑다운 플래너</div>
+<div class="top-desc">대운 & 시나리오 → 연도 → 계절 → 월 → 주간</div>
+<div class="mf">"기꺼이 머뭇거리고, 용기 있게 취약한" — 취약성 · 머뭇거림 · 삶다움</div>
+<div class="bc" id="bc"></div>
+
+<div id="lv-home" class="lv on"></div>
+<div id="lv-years" class="lv"></div>
+<div id="lv-year" class="lv"></div>
+<div id="lv-season" class="lv"></div>
+<div id="lv-month" class="lv"></div>
+<div id="lv-week" class="lv"></div>
+
+<script>
+var curLv='home', curYear=2026, curSeason='summer', curMonth='june', curWeek='setup';
+
+// ── 데이터 ──────────────────────────────────────────────────────
+var YG = {
+  2026: {keyword:'끊고 시작하는 해', phase:'1단계 · 구조 전환기', active:true, goals:[
+    {t:'결혼생활 마무리 완료', sub:'조정이혼 · D-day 가을 실행 · 겨울 법적 완료', c:'#9B3020', bg:'#FAE8E5'},
+    {t:'경장편 초고 완성 + 겨울 연재 시작', sub:'세노테 다이빙 매일 밤 · 가을 탈고 · 겨울 연재 원고료', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'〈삶을 위한 연구〉 연재 + 산문집 원고 마감', sub:'매주 금요일 · 24호 = 480매 · 연말 출판사 투고', c:'#3B6D11', bg:'#EAF3DE'},
+    {t:'재정 기반 정비', sub:'수입 2,000만원 · 재산분할 ~1.5억 · 전세+생활 기반', c:'#BA7517', bg:'#FAEEDA'},
+    {t:'브랜드 + 전 채널 정렬', sub:'"기꺼이 머뭇거리고 용기 있게 취약한" · 인스타+스티비', c:'#888780', bg:'#EDE8DE'}
+  ]},
+  2027: {keyword:'새로 짓는 해', phase:'1단계 · 구조 전환기', goals:[
+    {t:'이혼 마무리 + 새 주거 안착', sub:'법적 완료 · 독립 거주', c:'#9B3020', bg:'#FAE8E5'},
+    {t:'장편 퇴고·마감 + ARKO 출간 (계약분)', sub:'봄 초고 마무리 → 여름 마감', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'에세이집 출간 (계약분)', sub:'뉴스레터 연재분 → 수정 → 가을 출간', c:'#3B6D11', bg:'#EAF3DE'},
+    {t:'중편 집필 시작 + 서울문화재단 공모 신청 (계약분)', sub:'가을 구상·집필 · 소설집 발간 지원사업', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'〈삶을 위한 연구〉 유료 전환 (봄) + 유튜브 개설', sub:'2027년 봄 월 구독 유료 전환', c:'#3B6D11', bg:'#EAF3DE'},
+    {t:'혼자 살면 하고 싶은 것들 실행', sub:'고양이 입양 · 일본 어학연수 · 중고차 구입+운전 연수', c:'#888780', bg:'#EDE8DE'}
+  ]},
+  2028: {keyword:'이름값이 붙기 시작하는 해', phase:'1단계 완성', goals:[
+    {t:'중편 마감 + 소설집 원고 준비 (계약분)', sub:'봄 중편 마감 · 그간의 원고 수정', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'소설집 출간 (계약분) ★ 꼭 여름에', sub:'여름 출간 필수 · 계약분', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'중편 소설 출간 (계약분)', sub:'가을 출간', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'첫 유료 강의 운영', sub:'모집·운영 · 수강생 피드백', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'수입 구조 안정화', sub:'연 수입 1억 방향', c:'#BA7517', bg:'#FAEEDA'},
+    {t:'바닷가 거점 후보지 확정 + 겨울 휴양', sub:'겨울 바닷가 장기 체류', c:'#888780', bg:'#EDE8DE'}
+  ]},
+  2029: {keyword:'이름이 알려지기 시작하는 해', phase:'2단계 · 확장기', goals:[
+    {t:'유튜브 구독자 성장 + 콘텐츠 정착', sub:'월 2회 이상 발행 · 창작·글쓰기·취약성', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'유료 강의 또는 멤버십 본격화', sub:'2회 이상 운영 · 커리큘럼 정착', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'〈삶을 위한 연구〉 유료 구독 안정화', sub:'월 구독자 수 목표 설정 · 연재 지속', c:'#3B6D11', bg:'#EAF3DE'},
+    {t:'수입 연 1.5억 방향', sub:'인세+원고료+강의+유료뉴스레터', c:'#BA7517', bg:'#FAEEDA'},
+    {t:'바닷가 or 남쪽 나라 1~2개월 체류', sub:'거점 후보 확정', c:'#888780', bg:'#EDE8DE'}
+  ]},
+  2030: {keyword:'자산이 쌓이기 시작하는 해', phase:'2단계 · 확장기', goals:[
+    {t:'IP 자산화 — 온라인 클래스 출시', sub:'강의 영상화 · 플랫폼 입점', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'소형 부동산 매수 검토', sub:'생활+사업 겸용 · 전세 → 매수 타이밍', c:'#BA7517', bg:'#FAEEDA'},
+    {t:'레지던시 구상 구체화', sub:'장소·형식·대상·운영 방식 초안', c:'#888780', bg:'#EDE8DE'},
+    {t:'수입 연 2억 방향', sub:'파이프라인 4개 이상 안정화', c:'#BA7517', bg:'#FAEEDA'}
+  ]},
+  2031: {keyword:'작은 제국의 윤곽이 보이는 해', phase:'2단계 완성', goals:[
+    {t:'온라인 클래스 전성기', sub:'수강생 누적 · 후속 클래스 개설', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'레지던시 프로토타입 운영', sub:'소규모 파일럿 · 참가자 피드백', c:'#888780', bg:'#EDE8DE'},
+    {t:'에세이집 또는 산문집 2권째 출간', sub:'연재 → 편집 → 출간', c:'#3B6D11', bg:'#EAF3DE'},
+    {t:'바닷가 거점 확보 또는 계약', sub:'이동하며 사는 삶의 물리적 기반', c:'#888780', bg:'#EDE8DE'}
+  ]},
+  2032: {keyword:'레지던시가 열리는 해', phase:'3단계 · 수확 준비기', goals:[
+    {t:'레지던시 정식 오픈', sub:'젊은 작가 대상 · 참가비+후원 구조', c:'#888780', bg:'#EDE8DE'},
+    {t:'바닷가 거점 완전 안착', sub:'고양이와 · 계절 이동 라이프 시작', c:'#888780', bg:'#EDE8DE'},
+    {t:'장편 대작 집필 시작', sub:'지금까지의 삶을 담는 소설', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'순자산 10억 달성', sub:'부동산+IP+금융 복합 구조', c:'#BA7517', bg:'#FAEEDA'}
+  ]},
+  2033: {keyword:'레거시를 쌓는 해', phase:'3단계 · 수확 준비기', goals:[
+    {t:'레지던시 2회차 운영 + 커뮤니티 형성', sub:'참가자 네트워크 · 느슨한 연결', c:'#888780', bg:'#EDE8DE'},
+    {t:'장편 대작 완성 + 출간', sub:'대표작 · 문학적 레거시', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'온라인 클래스 시스템화', sub:'조력자 연결 · 권한 일부 위임', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'수입 연 3억 방향', sub:'패시브 인컴 비중 높이기', c:'#BA7517', bg:'#FAEEDA'}
+  ]},
+  2034: {keyword:'작은 우주의 주인이 된 해', phase:'3단계 완성', goals:[
+    {t:'레지던시 황금기', sub:'공간+커뮤니티+콘텐츠 통합', c:'#888780', bg:'#EDE8DE'},
+    {t:'회고록 또는 창작론 집필 시작', sub:'취약성의 글쓰기', c:'#534AB7', bg:'#EEEDFE'},
+    {t:'순자산 20~30억 방향', sub:'IP+부동산+금융자산 복합', c:'#BA7517', bg:'#FAEEDA'},
+    {t:'바닷가·고양이·계절 이동 라이프 완성형', sub:'억지로 만든 게 아니라 그냥 이렇게 살고 있음', c:'#888780', bg:'#EDE8DE'}
+  ]}
+};
+
+var SG = {
+  summer: {name:'여름', emoji:'🍉', color:'#1A6E9A', bg:'#DDF0FA', keyword:'조용히 준비하고 쓰는 계절', mood:'"겉은 평온하게, 속은 단단하게."',
+    goals:[
+      {t:'경장편 초고 500매 완성', sub:'세노테 다이빙 매일 밤 · 6→7→8월', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'〈삶을 위한 연구〉 1~12호 발행', sub:'매주 금요일 · 6/5 첫 호', c:'#3B6D11', bg:'#EAF3DE'},
+      {t:'D-day 버퍼 스톡 4주치 확보', sub:'가을 D-day 전후 발행 공백 대비', c:'#3B6D11', bg:'#EAF3DE'},
+      {t:'매주 심리상담 후 편지 초안 다듬기', sub:'초안 있음 · 여름 내 천천히 · 가을 D-day 전 완성', c:'#9B3020', bg:'#FAE8E5'},
+      {t:'세노테 다이빙 루틴 정착', sub:'매일 밤 · 소설 전용 침잠 + 집필', c:'#2C2C2A', bg:'#EDE8DE'}
+    ], months:['june','july','august']},
+  autumn: {name:'가을', emoji:'🍂', color:'#9B3020', bg:'#FAE8E5', keyword:'실행하고 법적으로 굳히는 계절', mood:'"감정이 아니라 서류로 말한다."',
+    goals:[
+      {t:'D-day 실행 — 큰언니 집 10일 분리', sub:'고양이 예고제 기습 분리 · 식탁 편지', c:'#9B3020', bg:'#FAE8E5'},
+      {t:'이혼 전문 변호사 선임 + 조정 신청', sub:'재산 분할 30% 협상 위임', c:'#9B3020', bg:'#FAE8E5'},
+      {t:'경장편 탈고 완성', sub:'초고 → 탈고본 · 11월 완성', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'〈삶을 위한 연구〉 연재 유지', sub:'D-day 전후 2주 고지 후 스톡 소진', c:'#3B6D11', bg:'#EAF3DE'}
+    ]},
+  winter: {name:'겨울', emoji:'❄️', color:'#555553', bg:'#E8E8E6', keyword:'마무리하고 나를 되찾는 계절', mood:'"드디어 내 시간, 내 공간, 내 리듬."',
+    goals:[
+      {t:'조정이혼 법적 완료 + 새 주거 안착', sub:'재산 분할 수령 · 계약 · 이사', c:'#555553', bg:'#E8E8E6'},
+      {t:'경장편 연재 시작 (원고료)', sub:'출판사 투고 or 연재 플랫폼', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'〈삶을 위한 연구〉 연재 완주 + 산문집 원고 마감', sub:'24호 완성 · 출판사 투고', c:'#3B6D11', bg:'#EAF3DE'},
+      {t:'장편 초고 200매 + ARKO 장편소설지원사업 응모', sub:'장편 집필 시작 · 마감 전 200매 완성', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'남쪽 나라 5~7일 충전 여행', sub:'수(水) 보충 · 리셋', c:'#888780', bg:'#EDE8DE'}
+    ]},
+  spring27: {name:'봄 2027', emoji:'🌱', color:'#3B6D11', bg:'#EAF3DE', keyword:'드디어 내 세계를 짓는 계절', mood:'"처음으로 온전히 나로서."',
+    goals:[
+      {t:'유튜브 채널 개설 + 첫 영상', sub:'창작 과정 · 취약성 콘텐츠', c:'#3B6D11', bg:'#EAF3DE'},
+      {t:'〈삶을 위한 연구〉 유료 전환 (월 구독) 시작', sub:'새 시작', c:'#3B6D11', bg:'#EAF3DE'},
+      {t:'혼자 사는 리듬 완전 정착', sub:'나만의 오전·오후·저녁·밤 루틴', c:'#888780', bg:'#EDE8DE'}
+    ]}
+};
+
+var YS = {
+  2027: {
+    spring: {name:'봄', emoji:'🌱', color:'#3B6D11', bg:'#EAF3DE', dates:'3·4·5월', mood:'"처음으로 온전히 나로서."', goals:[
+      {t:'장편 원고 초고 마무리 (ARKO)', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'〈삶을 위한 연구〉 유료 전환 (월 구독)', c:'#3B6D11', bg:'#EAF3DE'},
+      {t:'두 번째 에세이집 원고 확정 (계약분)', sub:'뉴스레터 연재분 → 에세이집', c:'#3B6D11', bg:'#EAF3DE'},
+      {t:'혼자 사는 리듬 완전 정착', c:'#888780', bg:'#EDE8DE'},
+      {t:'고양이 입양 🐱', c:'#888780', bg:'#EDE8DE'},
+      {t:'유튜브 채널 개설 + 첫 영상', c:'#534AB7', bg:'#EEEDFE'}
+    ]},
+    summer: {name:'여름', emoji:'🍉', color:'#1A6E9A', bg:'#DDF0FA', dates:'6·7·8월', mood:'"결실이 시작되는 계절."', goals:[
+      {t:'장편 퇴고 및 마감 (계약분)', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'ARKO 사업 마무리 및 출간', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'유튜브 정기 발행 루틴 정착 (월 2회 이상)', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'일본 어학연수 (교토·가나자와 or 홋카이도)', c:'#888780', bg:'#EDE8DE'}
+    ]},
+    autumn: {name:'가을', emoji:'🍂', color:'#9B3020', bg:'#FAE8E5', dates:'9·10·11월', mood:'"책이 쏟아지는 계절."', goals:[
+      {t:'중편 구상 및 집필 시작 (계약분)', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'뉴스레터 연재분 수정 + 에세이집 출간 (계약분)', c:'#3B6D11', bg:'#EAF3DE'},
+      {t:'서울문화재단 소설집 발간 지원사업 공모 신청', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'중편 초고 집중 집필', c:'#534AB7', bg:'#EEEDFE'}
+    ]},
+    winter: {name:'겨울', emoji:'❄️', color:'#555553', bg:'#E8E8E6', dates:'12·1·2월', mood:'"쿨타임. 바닷가에서 다음을 꿈꾸는 계절."', goals:[
+      {t:'바닷가 여행 (쿨타임)', c:'#888780', bg:'#EDE8DE'},
+      {t:'중편 퇴고', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'가슴 줄기세포 지방이식 수술 1차 (SC301)', c:'#888780', bg:'#EDE8DE'},
+      {t:'중고차 구입 + 운전 연수', c:'#888780', bg:'#EDE8DE'}
+    ]}
+  },
+  2028: {
+    spring: {name:'봄', emoji:'🌱', color:'#3B6D11', bg:'#EAF3DE', dates:'3·4·5월', mood:'"마감으로 시작하는 계절."', goals:[
+      {t:'중편 마감 (계약분)', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'소설집 원고 준비 — 그간의 원고 수정', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'가슴 줄기세포 지방이식 수술 2차 (SC301)', c:'#888780', bg:'#EDE8DE'}
+    ]},
+    summer: {name:'여름', emoji:'🍉', color:'#1A6E9A', bg:'#DDF0FA', dates:'6·7·8월', mood:'"소설집이 나오는 계절 — 꼭 여름에!"', goals:[
+      {t:'소설집 출간 (계약분) ★ 여름 필수', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'유튜브 강의 기획 본격화', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'수입 연 1억 방향 확인', c:'#BA7517', bg:'#FAEEDA'}
+    ]},
+    autumn: {name:'가을', emoji:'🍂', color:'#9B3020', bg:'#FAE8E5', dates:'9·10·11월', mood:'"중편이 나오는 계절."', goals:[
+      {t:'중편 소설 출간', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'첫 유료 강의 모집·운영', c:'#534AB7', bg:'#EEEDFE'},
+      {t:'IP 자산화 로드맵 작성', c:'#BA7517', bg:'#FAEEDA'}
+    ]},
+    winter: {name:'겨울', emoji:'❄️', color:'#555553', bg:'#E8E8E6', dates:'12·1·2월', mood:'"바닷가에서 길게 쉬는 계절."', goals:[
+      {t:'바닷가 휴양 (길게)', c:'#888780', bg:'#EDE8DE'},
+      {t:'2029 레지던시 구상 시작', c:'#888780', bg:'#EDE8DE'},
+      {t:'바닷가 거점 후보지 확정', c:'#888780', bg:'#EDE8DE'}
+    ]}
+  }
+};
+
+var MD = {
+  june: {name:'6월', title:'시동 거는 달', mood:'"매일 조금씩 심어두면 여름이 끝날 때 다 자라 있다."',
+    paces:[{l:'경장편',v:'~150매',s:'세노테 다이빙 매일 밤'},{l:'뉴스레터',v:'4호 발행',s:'6/5 첫 호'},{l:'결혼생활 마무리',v:'기반 세팅',s:'상담+편지 다듬기'}],
+    tracks:[
+      {c:'#534AB7', n:'경장편', tag:'세노테 다이빙 집필', tBg:'#EEEDFE', tC:'#534AB7', tasks:[
+        {t:'원고 전체 훑기 + 다음 챕터 방향 메모', b:'이번 주', now:true},
+        {t:'매일 밤 세노테 다이빙 — 침잠 + 집필', b:'매일 밤'},
+        {t:'6월 말 150매 목표 확인', b:'6월 말'}]},
+      {c:'#3B6D11', n:'〈삶을 위한 연구〉', tag:'첫 발행', tBg:'#EAF3DE', tC:'#3B6D11', tasks:[
+        {t:'스티비 채널 개설 완료', b:'완료 ✓', done:true},
+        {t:'1호 초고 완성', b:'5/28', now:true},
+        {t:'인스타 + 책방 홍보', b:'6/1'},
+        {t:'6/5 금요일 1호 발행', b:'6/5'},
+        {t:'매주 금요일 발행 유지', b:'매주 금'},
+        {t:'D-day 버퍼 스톡 4주치 확보', b:'6월 말'}]},
+      {c:'#D85A30', n:'결혼생활 마무리', tag:'기반 세팅', tBg:'#FAECE7', tC:'#993C1D', tasks:[
+        {t:'심리상담 센터 선정 완료', b:'완료 ✓', done:true},
+        {t:'6월 1일 심리상담 예약하기', b:'6/1부터', now:true},
+        {t:'매주 상담 후 편지 초안 다듬기', b:'매주'},
+        {t:'내 명의 서류·통장 현황 파악', b:'6/2(화)'},
+        {t:'이혼 후 월 고정 지출 예상 메모', b:'6월 중'}]}
+    ],
+    ends:['경장편 150매 완성','4호 발행 완료','D-day 버퍼 스톡 4주치 확보','이혼 편지 여름 내 다듬기 진행 중','심리상담 루틴 정착'],
+    weeks:['setup','w1','w2','w3','w4']},
+  july: {name:'7월', title:'집중하는 달', mood:'"이 달이 초고의 허리를 결정한다."',
+    paces:[{l:'경장편',v:'~300매',s:'누적 150→300매'},{l:'뉴스레터',v:'4호+스톡 4호',s:'버퍼 완성'},{l:'결혼생활 마무리',v:'편지 다듬기',s:'짐 정리 본격'}],
+    tracks:[
+      {c:'#534AB7', n:'경장편', tag:'허리를 쓰는 달', tBg:'#EEEDFE', tC:'#534AB7', tasks:[
+        {t:'세노테 다이빙 페이스 이어가기', b:'매일 밤'},
+        {t:'중반부 흐름 점검 + 막히는 지점 우회', b:'주중'},
+        {t:'7월 말 300매 확인', b:'7월 말'}]},
+      {c:'#3B6D11', n:'〈삶을 위한 연구〉', tag:'스톡 4주치 완성', tBg:'#EAF3DE', tC:'#3B6D11', tasks:[
+        {t:'매주 금요일 발행 유지 (5~8호)', b:'매주 금'},
+        {t:'D-day 버퍼 스톡 5·6·7·8호 초고 완성', b:'7월 중'}]},
+      {c:'#D85A30', n:'결혼생활 마무리', tag:'편지 + 짐', tBg:'#FAECE7', tC:'#993C1D', tasks:[
+        {t:'매주 상담 후 편지 다듬기', b:'매주'},
+        {t:'짐 본격적으로 빼두기', b:'매주'},
+        {t:'큰언니와 D-day 타이밍 합의', b:'7월 말'}]}
+    ],
+    ends:['경장편 300매 근처','D-day 버퍼 스톡 완성','편지 다듬기 진행 중','D-day 타이밍 합의'],
+    weeks:[]},
+  august: {name:'8월', title:'완성하는 달', mood:'"끝난 초고가 안 끝난 완벽고보다 낫다."',
+    paces:[{l:'경장편',v:'500매 완성',s:'8월 말 초고 끝'},{l:'뉴스레터',v:'연재 유지',s:'스톡으로 여유'},{l:'결혼생활 마무리',v:'D-day 전 완료',s:'모든 준비'}],
+    tracks:[
+      {c:'#534AB7', n:'경장편', tag:'무조건 끝까지', tBg:'#EEEDFE', tC:'#534AB7', tasks:[
+        {t:'세노테 다이빙 마지막 스퍼트', b:'매일 밤'},
+        {t:'8월 말 초고 완성 선언', b:'8월 말'}]},
+      {c:'#3B6D11', n:'〈삶을 위한 연구〉', tag:'스톡 소진하며 유지', tBg:'#EAF3DE', tC:'#3B6D11', tasks:[
+        {t:'스톡 소재 활용해 발행', b:'매주 금'},
+        {t:'D-day 전후 2주 버퍼 따로 보관', b:'8월 중'}]},
+      {c:'#D85A30', n:'결혼생활 마무리', tag:'D-day 전 완료', tBg:'#FAECE7', tC:'#993C1D', tasks:[
+        {t:'매주 상담 후 편지 다듬기', b:'매주'},
+        {t:'중요한 짐 대부분 이동 완료', b:'8월 중'},
+        {t:'큰언니 집 10일 준비 확정', b:'8월 말'},
+        {t:'이혼 전문 변호사 후보 리스트업', b:'8월 말'}]}
+    ],
+    ends:['경장편 500매 완성','편지 완성','짐 대부분 이동','D-day 준비 완료'],
+    weeks:[]}
+};
+
+var WD = {
+  setup: {label:'세팅주', dates:'5/26~31', title:'판 까는 주간', mood:'"6월 1일 아침에 바로 달릴 수 있게."', cur:true,
+    tracks:[
+      {c:'#534AB7', n:'경장편', tag:'침잠 준비', tBg:'#EEEDFE', tC:'#534AB7', tasks:[
+        {t:'원고 전체 훑기 + 다음 챕터 방향 메모', b:'이번 주', now:true},
+        {t:'세노테 다이빙 첫날 — 인물·자료 침잠 시작', b:'오늘 밤'}]},
+      {c:'#3B6D11', n:'〈삶을 위한 연구〉', tag:'채널 개설 완료', tBg:'#EAF3DE', tC:'#3B6D11', tasks:[
+        {t:'스티비 채널 개설 완료', b:'완료 ✓', done:true},
+        {t:'1호 초고 완성', b:'5/28', now:true},
+        {t:'2~4호 소재 목록 잡기', b:'주말'}]},
+      {c:'#D85A30', n:'결혼생활 마무리', tag:'기반 세팅', tBg:'#FAECE7', tC:'#993C1D', tasks:[
+        {t:'심리상담 센터 선정 완료', b:'완료 ✓', done:true},
+        {t:'6/1부터 예약 가능 — 달력에 메모', b:'이번 주'},
+        {t:'이혼 후 월 고정 지출 예상 메모', b:'주말'}]}
+    ],
+    ends:['스티비 채널 개설 완료','1호 초고 완성','심리상담 6/1 예약 준비','세노테 다이빙 루틴 시작']},
+  w1: {label:'1주', dates:'6/1~7', title:'첫 발행 주간', mood:'"6/5 금요일, 1호가 나가는 날."', cur:false,
+    tracks:[
+      {c:'#534AB7', n:'경장편', tag:'세노테 다이빙 집필', tBg:'#EEEDFE', tC:'#534AB7', tasks:[
+        {t:'매일 밤 세노테 다이빙 — 소설 침잠 + 집필', b:'매일 밤'},
+        {t:'막히는 날 이유 한 줄 기록', b:'필요시'}]},
+      {c:'#3B6D11', n:'〈삶을 위한 연구〉', tag:'첫 발행', tBg:'#EAF3DE', tC:'#3B6D11', tasks:[
+        {t:'인스타 구독 링크 + 책방 홍보', b:'6/1'},
+        {t:'1호 최종 + 발행 (6/5)', b:'금'},
+        {t:'2호 초고 완성', b:'주말'}]},
+      {c:'#D85A30', n:'결혼생활 마무리', tag:'편지 시작', tBg:'#FAECE7', tC:'#993C1D', tasks:[
+        {t:'심리상담 예약 + 1회차', b:'6/1·주중'},
+        {t:'내 명의 서류·통장 현황 파악', b:'6/2(화)'},
+        {t:'편지 초안 — 검열 없이 쏟아내기', b:'주말'},
+        {t:'짐 1회분 빼두기', b:'주중'}]}
+    ],
+    ends:['인스타 + 책방 홍보 올라감 (6/1)','내 명의 현황 파악 완료 (6/2)','심리상담 예약 완료','1호 발행 완료 (6/5)']},
+  w2: {label:'2주', dates:'6/8~14', title:'페이스 잡는 주간', mood:'"루틴이 불편에서 익숙함으로."', cur:false,
+    tracks:[
+      {c:'#534AB7', n:'경장편', tag:'세노테 다이빙 집필', tBg:'#EEEDFE', tC:'#534AB7', tasks:[
+        {t:'매일 밤 세노테 다이빙 — 소설 침잠 + 집필', b:'매일 밤'}]},
+      {c:'#3B6D11', n:'〈삶을 위한 연구〉', tag:'2호 + 스톡', tBg:'#EAF3DE', tC:'#3B6D11', tasks:[
+        {t:'2호 발행 (6/12)', b:'금'},
+        {t:'D-day 버퍼 소재 목록 잡기', b:'주말'}]},
+      {c:'#D85A30', n:'결혼생활 마무리', tag:'편지 1차 완성', tBg:'#FAECE7', tC:'#993C1D', tasks:[
+        {t:'심리상담 2회차', b:'주중'},
+        {t:'편지 1차 다듬기', b:'상담 후'}]}
+    ],
+    ends:['2호 발행 완료','편지 1차 다듬기','스톡 소재 목록 확보']},
+  w3: {label:'3주', dates:'6/15~21', title:'스톡 쌓는 주간', mood:'"가을 버퍼를 위한 스톡 쌓기."', cur:false,
+    tracks:[
+      {c:'#534AB7', n:'경장편', tag:'세노테 다이빙 집필', tBg:'#EEEDFE', tC:'#534AB7', tasks:[
+        {t:'매일 밤 세노테 다이빙 — 소설 침잠 + 집필', b:'매일 밤'}]},
+      {c:'#3B6D11', n:'〈삶을 위한 연구〉', tag:'스톡 쌓기', tBg:'#EAF3DE', tC:'#3B6D11', tasks:[
+        {t:'3호 발행 (6/19)', b:'금'},
+        {t:'버퍼 스톡 5·6호 초고', b:'주중'}]},
+      {c:'#D85A30', n:'결혼생활 마무리', tag:'타이밍 합의', tBg:'#FAECE7', tC:'#993C1D', tasks:[
+        {t:'심리상담 3회차', b:'주중'},
+        {t:'큰언니와 D-day 타이밍 합의', b:'주말'}]}
+    ],
+    ends:['3호 발행 완료','스톡 2호 이상 쌓임','D-day 타이밍 합의']},
+  w4: {label:'4주', dates:'6/22~30', title:'6월 마무리', mood:'"루틴이 생겼다."', cur:false,
+    tracks:[
+      {c:'#534AB7', n:'경장편', tag:'150매 달성', tBg:'#EEEDFE', tC:'#534AB7', tasks:[
+        {t:'세노테 다이빙 매일 밤 — 150매 향해', b:'매일 밤'},
+        {t:'7월 집필 계획 잡기', b:'일'}]},
+      {c:'#3B6D11', n:'〈삶을 위한 연구〉', tag:'스톡 4호 완성', tBg:'#EAF3DE', tC:'#3B6D11', tasks:[
+        {t:'4호 발행 (6/26)', b:'금'},
+        {t:'D-day 버퍼 스톡 완성', b:'주말'}]},
+      {c:'#D85A30', n:'결혼생활 마무리', tag:'편지 완성', tBg:'#FAECE7', tC:'#993C1D', tasks:[
+        {t:'편지 최종본 완성', b:'주중'},
+        {t:'7월 짐 정리 계획 잡기', b:'주말'}]}
+    ],
+    ends:['경장편 150매 완성','4호 발행 완료','스톡 4주치 확보','편지 최종본 완성']}
+};
+
+// ── 렌더링 ──────────────────────────────────────────────────────
+function showLv(id) {
+  document.querySelectorAll('.lv').forEach(function(l){ l.classList.remove('on'); });
+  document.getElementById('lv-'+id).classList.add('on');
+  curLv = id;
+  updBc();
+}
+
+function updBc() {
+  var path = [];
+  path.push({l:'홈', fn: curLv==='home' ? null : 'goHome()'});
+  if (['years','year','season','month','week'].indexOf(curLv) >= 0) path.push({l:'연도별 목표', fn:'goYears()'});
+  if (['year','season','month','week'].indexOf(curLv) >= 0) path.push({l:curYear+'년', fn:'goYear('+curYear+')'});
+  if (['season','month','week'].indexOf(curLv) >= 0) path.push({l:SG[curSeason].name, fn:"goSeason('"+curSeason+"')"});
+  if (['month','week'].indexOf(curLv) >= 0) path.push({l:MD[curMonth].name, fn:"goMonth('"+curMonth+"')"});
+  if (curLv === 'week') path.push({l:WD[curWeek].label, fn:null});
+  path[path.length-1].fn = null;
+  document.getElementById('bc').innerHTML = path.map(function(p,i){
+    return '<span class="bci'+(i===path.length-1?' on':'')+'" '+(p.fn?'onclick="'+p.fn+'"':'')+' style="'+(p.fn?'':'cursor:default')+'">'+ p.l+'</span>'+(i<path.length-1?'<span class="bcs"> › </span>':'');
+  }).join('');
+}
+
+function goHome() { renderHome(); }
+
+function renderHome() {
+  var h = '';
+  h += '<div class="sc-card">';
+  h += '<div style="font-size:10px;font-weight:500;color:#888780;letter-spacing:.06em;margin-bottom:6px">통합 시나리오 · 잠재력 각성 × 운명 초월</div>';
+  h += '<div class="sc-vision">"이야기로 세상과 연결되고, 글로 생계를 만들며, 공간으로 다음 세대를 키운다."</div>';
+  h += '<div class="sc-row">';
+  h += '<div class="sc-stat"><div class="sc-stat-label">연 수입 · 지금</div><div class="sc-stat-val">2,000만원</div><div class="sc-stat-goal">→ 목표 2~4억</div></div>';
+  h += '<div class="sc-stat"><div class="sc-stat-label">순자산 · 지금</div><div class="sc-stat-val">600만원</div><div class="sc-stat-goal">→ 목표 10~20억</div></div>';
+  h += '<div class="sc-stat"><div class="sc-stat-label">타이틀 · 지금</div><div class="sc-stat-val" style="font-size:11px">소설가</div><div class="sc-stat-goal">→ 작은 우주의 주인</div></div>';
+  h += '</div></div>';
+
+  h += '<div class="sec-label sec-label-first">신해 대운 3단계 (2026~2034)</div>';
+  h += '<div class="dw-grid">';
+  h += '<div class="dw" style="background:#DDF0FA;cursor:pointer" onclick="goYears()">';
+  h += '<div class="dw-head"><div><span style="font-size:10px;font-weight:500;color:#1A6E9A">2026 — 2028</span><span class="now-badge">지금</span></div><span class="tag" style="background:#B8E0F0;color:#0D4F73">1단계</span></div>';
+  h += '<div class="dw-title">구조 전환기</div><div class="dw-desc">"끊을 것 끊고, 시작할 것 시작하기."</div>';
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap"><span class="chip" style="background:#B8E0F0;color:#0D4F73">결혼생활 마무리</span><span class="chip" style="background:#B8E0F0;color:#0D4F73">경장편·산문집</span><span class="chip" style="background:#B8E0F0;color:#0D4F73">뉴스레터 런칭</span></div>';
+  h += '<div style="font-size:10px;color:#1A6E9A;margin-top:8px;font-weight:500">→ 연도별 목표 보기</div></div>';
+
+  h += '<div class="dw" style="background:#EDE8DE;cursor:pointer" onclick="goYears()">';
+  h += '<div class="dw-head"><div><span style="font-size:10px;font-weight:500;color:#888780">2029 — 2031</span></div><span class="tag" style="background:#D3D1C7;color:#444441">2단계</span></div>';
+  h += '<div class="dw-title">확장기</div><div class="dw-desc">"이름값이 붙기 시작하는 시기."</div>';
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap"><span class="chip" style="background:#D3D1C7;color:#444441">유튜브 성장</span><span class="chip" style="background:#D3D1C7;color:#444441">강의·멤버십</span></div></div>';
+
+  h += '<div class="dw" style="background:#E8E8E6;cursor:pointer" onclick="goYears()">';
+  h += '<div class="dw-head"><div><span style="font-size:10px;font-weight:500;color:#888780">2032 — 2034</span></div><span class="tag" style="background:#D0D0CE;color:#444442">3단계</span></div>';
+  h += '<div class="dw-title">수확 준비기</div><div class="dw-desc">"레지던시 구축, 바닷가 거점 확보."</div>';
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap"><span class="chip" style="background:#D0D0CE;color:#444442">레지던시</span><span class="chip" style="background:#D0D0CE;color:#444442">고양이·바다</span></div></div>';
+  h += '</div>';
+
+  h += '<div class="sec-label">핵심 리스크 & 우선순위</div>';
+  h += '<div class="risk-grid">';
+  h += '<div class="rc" style="background:#FAE8E5"><div class="rc-title" style="color:#9B3020">정리 지연 ⚠️ 최우선</div><span class="rc-level" style="background:#F5C4BB;color:#7A2215">매우 높음</span><div class="rc-desc" style="color:#712B13">2026년 최우선 해결.</div></div>';
+  h += '<div class="rc" style="background:#EEEDFE"><div class="rc-title" style="color:#534AB7">재정 구조 취약</div><span class="rc-level" style="background:#D4D2F5;color:#3A318A">중간</span><div class="rc-desc" style="color:#3A318A">파이프라인 2개 이상 확보 필수.</div></div>';
+  h += '<div class="rc" style="background:#EAF3DE"><div class="rc-title" style="color:#3B6D11">번아웃</div><span class="rc-level" style="background:#C0DD97;color:#27500A">높음</span><div class="rc-desc" style="color:#27500A">수(水) 부재. 회복 루틴 의무화.</div></div>';
+  h += '<div class="rc" style="background:#FAEEDA"><div class="rc-title" style="color:#BA7517">대인관계·동업</div><span class="rc-level" style="background:#FAC775;color:#633806">매우 높음</span><div class="rc-desc" style="color:#633806">계약 문서화 필수.</div></div>';
+  h += '</div>';
+
+  h += '<div class="card" style="cursor:pointer" onclick="goYears()">';
+  h += '<div style="display:flex;align-items:center;justify-content:space-between"><div><div class="card-title">연도별 목표 보기 →</div><div class="card-body">2026~2034 대운 전체</div></div><span style="font-size:18px;color:#B4B2A9">›</span></div></div>';
+
+  document.getElementById('lv-home').innerHTML = h;
+  showLv('home');
+}
+
+function goYears() {
+  var h = '<button class="back-btn" onclick="goHome()">← 홈</button>';
+
+  function buildSection(title, years) {
+    var s = '<div class="sec-label sec-label-first">'+title+'</div><div class="yr-list">';
+    years.forEach(function(yr) {
+      var y = YG[yr];
+      var goalsH = y.goals.map(function(g) {
+        return '<div class="goal-item" onclick="togGoal(this)" style="background:'+g.bg+'"><div class="g-chk"></div><div><div class="g-text">'+g.t+'</div><div class="g-sub">'+g.sub+'</div></div></div>';
+      }).join('');
+      var clickable = yr <= 2028;
+      s += '<div class="yc'+(y.active?' cur':'')+'">';
+      s += '<div class="yc-head" '+(clickable?'onclick="goYear('+yr+')" style="cursor:pointer"':'style="cursor:default"')+'>';
+      s += '<div><div style="font-size:16px;font-weight:500;color:#2C2C2A">'+yr+'년'+(y.active?'<span class="now-badge">지금</span>':'')+'</div>';
+      s += '<div style="font-size:10px;font-weight:500;color:#B4B2A9;margin-top:1px">'+y.phase+'</div>';
+      s += '<div style="font-size:11px;color:#888780;font-style:italic;margin-top:1px">"'+y.keyword+'"</div></div>';
+      s += (clickable?'<span style="font-size:16px;color:#B4B2A9">›</span>':'')+'</div>';
+      s += '<div style="margin-top:8px">'+goalsH+'</div></div>';
+    });
+    s += '</div>';
+    return s;
+  }
+
+  h += buildSection('신해 대운 1단계 · 구조 전환기 (2026~2028)', [2026,2027,2028]);
+  h += buildSection('신해 대운 2단계 · 확장기 (2029~2031)', [2029,2030,2031]);
+  h += buildSection('신해 대운 3단계 · 수확 준비기 (2032~2034)', [2032,2033,2034]);
+
+  document.getElementById('lv-years').innerHTML = h;
+  showLv('years');
+}
+
+function goYear(yr) {
+  curYear = yr;
+  var y = YG[yr];
+  var h = '<button class="back-btn" onclick="goYears()">← 연도별 목표</button>';
+  h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+yr+'년 · '+y.keyword+'</div>';
+  h += '<div style="font-size:11px;color:#888780;margin-bottom:1rem">'+y.phase+'</div>';
+  h += '<div class="sec-label sec-label-first">연간 목표</div>';
+  y.goals.forEach(function(g) {
+    h += '<div class="sg-item" onclick="togSg(this)" style="background:'+g.bg+'"><div class="sg-chk"></div><div class="sg-text">'+g.t+'</div><span class="sg-badge" style="background:rgba(0,0,0,.06);color:#888780">'+g.sub.split('·')[0].trim()+'</span></div>';
+  });
+  if (yr === 2026) {
+    h += '<div class="sec-label">계절별 목표</div><div class="sn-grid">';
+    h += '<div class="sn" style="background:#F1EFE8;opacity:.45;cursor:default"><div style="font-size:20px;margin-bottom:5px">🌱</div><div style="font-size:14px;font-weight:500;color:#888780;margin-bottom:2px">봄</div><div style="font-size:11px;color:#888780;opacity:.75;margin-bottom:5px">3·4·5월</div><div style="font-size:11px;color:#B4B2A9">지나감</div></div>';
+    h += '<div class="sn" style="background:#DDF0FA" onclick="goSeason(\'summer\')"><div style="font-size:20px;margin-bottom:5px">🍉</div><div style="font-size:14px;font-weight:500;color:#1A6E9A;margin-bottom:2px">여름</div><div style="font-size:11px;color:#1A6E9A;opacity:.75;margin-bottom:5px">6·7·8월</div><div style="font-size:11px;color:#1A6E9A;font-style:italic;margin-bottom:5px">'+SG.summer.mood+'</div><div style="font-size:10px;color:#1A6E9A;font-weight:500">지금 ★ → 들어가기</div></div>';
+    h += '<div class="sn" style="background:#FAE8E5" onclick="goSeason(\'autumn\')"><div style="font-size:20px;margin-bottom:5px">🍂</div><div style="font-size:14px;font-weight:500;color:#9B3020;margin-bottom:2px">가을</div><div style="font-size:11px;color:#9B3020;opacity:.75;margin-bottom:5px">9·10·11월</div><div style="font-size:11px;color:#9B3020;font-style:italic">'+SG.autumn.mood+'</div></div>';
+    h += '<div class="sn" style="background:#E8E8E6" onclick="goSeason(\'winter\')"><div style="font-size:20px;margin-bottom:5px">❄️</div><div style="font-size:14px;font-weight:500;color:#555553;margin-bottom:2px">겨울</div><div style="font-size:11px;color:#888780;opacity:.75;margin-bottom:5px">12·1·2월</div><div style="font-size:11px;color:#888780;font-style:italic">'+SG.winter.mood+'</div></div>';
+    h += '</div>';
+  } else if (YS[yr]) {
+    h += '<div class="sec-label">계절별 목표</div><div class="sn-grid">';
+    var seasonOrder = ['spring','summer','autumn','winter'];
+    seasonOrder.forEach(function(sid) {
+      var s = YS[yr][sid];
+      h += '<div class="sn" style="background:'+s.bg+'" onclick="goSeasonOf('+yr+',\''+sid+'\')">';
+      h += '<div style="font-size:20px;margin-bottom:5px">'+s.emoji+'</div>';
+      h += '<div style="font-size:14px;font-weight:500;color:'+s.color+';margin-bottom:2px">'+s.name+'</div>';
+      h += '<div style="font-size:11px;color:'+s.color+';opacity:.75;margin-bottom:5px">'+s.dates+'</div>';
+      h += '<div style="font-size:11px;color:'+s.color+';font-style:italic">'+s.mood+'</div>';
+      h += '<div style="font-size:10px;color:'+s.color+';font-weight:500;margin-top:5px">→ 들어가기</div></div>';
+    });
+    h += '</div>';
+  }
+  document.getElementById('lv-year').innerHTML = h;
+  showLv('year');
+}
+
+function goSeasonOf(yr, sid) {
+  curYear = yr;
+  var s = YS[yr][sid];
+  var h = '<button class="back-btn" onclick="goYear('+yr+')">← '+yr+'년</button>';
+  h += '<div style="font-size:15px;font-weight:500;color:'+s.color+';margin-bottom:3px">'+s.emoji+' '+s.name+' '+yr+' · '+s.dates+'</div>';
+  h += '<div style="font-size:12px;font-style:italic;color:'+s.color+';padding:8px 12px;border-radius:8px;background:'+s.bg+';margin-bottom:1.25rem">'+s.mood+'</div>';
+  h += '<div class="sec-label sec-label-first">계절 목표</div>';
+  s.goals.forEach(function(g) {
+    h += '<div class="sg-item" onclick="togSg(this)" style="background:'+g.bg+'"><div class="sg-chk"></div><div class="sg-text">'+g.t+'</div></div>';
+  });
+  document.getElementById('lv-season').innerHTML = h;
+  showLv('season');
+}
+
+function goSeason(sid) {
+  curSeason = sid;
+  var s = SG[sid];
+  var h = '<button class="back-btn" onclick="goYear('+curYear+')">← '+curYear+'년</button>';
+  h += '<div style="font-size:15px;font-weight:500;color:'+s.color+';margin-bottom:3px">'+s.emoji+' '+s.name+' · '+s.keyword+'</div>';
+  h += '<div style="font-size:12px;font-style:italic;color:'+s.color+';padding:8px 12px;border-radius:8px;background:'+s.bg+';margin-bottom:1.25rem">'+s.mood+'</div>';
+  h += '<div class="sec-label sec-label-first">계절 목표</div>';
+  s.goals.forEach(function(g) {
+    h += '<div class="sg-item" onclick="togSg(this)" style="background:'+g.bg+'"><div class="sg-chk"></div><div class="sg-text">'+g.t+'</div></div>';
+  });
+  if (sid === 'summer') {
+    h += '<div class="sec-label">월별 목표</div><div class="mo-grid">';
+    ['june','july','august'].forEach(function(m) {
+      h += '<div class="mc" onclick="goMonth(\''+m+'\')">';
+      h += '<div style="font-size:10px;font-weight:500;color:#B4B2A9;margin-bottom:2px">'+MD[m].name+'</div>';
+      h += '<div style="font-size:13px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+MD[m].title+'</div>';
+      h += '<div style="font-size:11px;color:#888780;font-style:italic;line-height:1.4">'+MD[m].mood+'</div>';
+      h += '<div style="font-size:10px;color:#1A6E9A;font-weight:500;margin-top:4px">→ 들어가기</div></div>';
+    });
+    h += '</div>';
+  } else {
+    h += '<div class="card" style="margin-top:1rem"><div class="card-body" style="color:#888780">상세 계획은 해당 계절이 다가올 때 업데이트해요.</div></div>';
+  }
+  document.getElementById('lv-season').innerHTML = h;
+  showLv('season');
+}
+
+function goMonth(mid) {
+  curMonth = mid;
+  var m = MD[mid];
+  var h = '<button class="back-btn" onclick="goSeason(\''+curSeason+'\')">← '+SG[curSeason].name+'</button>';
+  h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+m.name+' · '+m.title+'</div>';
+  h += '<div style="font-size:12px;color:#888780;font-style:italic;margin-bottom:1rem">'+m.mood+'</div>';
+  h += '<div class="pace-row">'+m.paces.map(function(p){ return '<div class="pace"><div class="pace-label">'+p.l+'</div><div class="pace-val">'+p.v+'</div><div class="pace-sub">'+p.s+'</div></div>'; }).join('')+'</div>';
+  m.tracks.forEach(function(tr) {
+    h += '<div class="track"><div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
+    tr.tasks.forEach(function(t) {
+      h += '<div class="task" onclick="togT(this)"><div class="chk'+(t.done?' done':'')+'"></div><div class="task-text'+(t.done?' done':'')+'">'+t.t+'</div><span class="task-badge'+(t.now?' now':'')+'">'+t.b+'</span></div>';
+    });
+    h += '</div>';
+  });
+  h += '<div class="end-card"><div class="sec-label sec-label-first">'+m.name+' 끝에 확인</div>';
+  m.ends.forEach(function(e) {
+    h += '<div class="task" onclick="togT(this)" style="background:transparent"><div class="chk"></div><div class="task-text">'+e+'</div></div>';
+  });
+  h += '</div>';
+  if (mid === 'june') {
+    h += '<div class="sec-label">주간 선택</div><div class="wk-list">';
+    ['setup','w1','w2','w3','w4'].forEach(function(wid) {
+      var w = WD[wid];
+      h += '<div class="wkc'+(w.cur?' cur':'')+'" onclick="goWeek(\''+wid+'\')"><div style="display:flex;align-items:center;justify-content:space-between"><div>';
+      h += '<div style="font-size:10px;font-weight:500;color:#B4B2A9;margin-bottom:2px">'+w.label+' · '+w.dates+(w.cur?'<span class="now-badge">지금</span>':'')+'</div>';
+      h += '<div style="font-size:13px;font-weight:500;color:#2C2C2A">'+w.title+'</div>';
+      h += '<div style="font-size:11px;color:#888780;font-style:italic;margin-top:2px">'+w.mood+'</div>';
+      h += '</div><span style="font-size:16px;color:#B4B2A9;margin-left:8px">›</span></div></div>';
+    });
+    h += '</div>';
+  } else {
+    h += '<div class="card" style="margin-top:.5rem"><div class="card-body" style="color:#888780">주간 계획은 해당 달에 업데이트해요.</div></div>';
+  }
+  document.getElementById('lv-month').innerHTML = h;
+  showLv('month');
+}
+
+function goWeek(wid) {
+  curWeek = wid;
+  var w = WD[wid];
+  var h = '<button class="back-btn" onclick="goMonth(\''+curMonth+'\')">← '+MD[curMonth].name+'</button>';
+  h += '<div style="border-bottom:0.5px solid #D3D1C7;margin-bottom:1rem;padding-bottom:10px">';
+  h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+w.label+' · '+w.dates+(w.cur?'<span class="now-badge">지금</span>':'')+'</div>';
+  h += '<div style="font-size:12px;color:#888780;font-style:italic">'+w.mood+'</div></div>';
+  w.tracks.forEach(function(tr) {
+    h += '<div class="track"><div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
+    tr.tasks.forEach(function(t) {
+      h += '<div class="task" onclick="togT(this)"><div class="chk'+(t.done?' done':'')+'"></div><div class="task-text'+(t.done?' done':'')+'">'+t.t+'</div><span class="task-badge'+(t.now?' now':'')+'">'+t.b+'</span></div>';
+    });
+    h += '</div>';
+  });
+  h += '<div class="end-card"><div class="sec-label sec-label-first">이번 주 끝에 확인</div>';
+  w.ends.forEach(function(e) {
+    h += '<div class="task" onclick="togT(this)" style="background:transparent"><div class="chk"></div><div class="task-text">'+e+'</div></div>';
+  });
+  h += '</div>';
+  document.getElementById('lv-week').innerHTML = h;
+  showLv('week');
+}
+
+function togT(el) {
+  var c = el.querySelector('.chk');
+  var t = el.querySelector('.task-text');
+  c.classList.toggle('done');
+  if (t) t.classList.toggle('done');
+}
+function togSg(el) { el.classList.toggle('done'); el.querySelector('.sg-chk').classList.toggle('done'); }
+function togGoal(el) { el.classList.toggle('done'); el.querySelector('.g-chk').classList.toggle('done'); }
+
+renderHome();
+</script>
+</body>
+</html>
