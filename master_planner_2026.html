@@ -109,6 +109,16 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 
 
 .page-wrap{max-width:700px;margin:0 auto;background:#F5F0E8;min-height:100vh;padding:0 1.5rem 1.5rem;position:relative}
+
+/* ── 할 일 추가 ── */
+.add-task-row{display:flex;gap:6px;padding:7px 0 2px;border-top:0.5px dashed #EDE8DE;margin-top:4px}
+.add-task-inp{flex:1;height:28px;border:0.5px solid #D3D1C7;border-radius:7px;padding:0 9px;font-size:11px;background:#F5F0E8;color:#2C2C2A}
+.add-task-inp:focus{outline:none;border-color:#888780}
+.add-task-btn{height:28px;width:28px;border:0.5px solid #D3D1C7;border-radius:7px;background:#F5F0E8;color:#888780;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.add-task-btn:hover{border-color:#888780;color:#2C2C2A}
+.task-del{cursor:pointer;color:#D3D1C7;font-size:11px;margin-left:4px;flex-shrink:0;padding:2px}
+.task-del:hover{color:#9B3020}
+
 </style>
 </head>
 <body>
@@ -136,6 +146,39 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 <div id="lv-week" class="lv"></div>
 
 <script>
+
+// ── STATE 관리 (localStorage) ──────────────────────────
+var STATE = {tasks:{}, goals:{}, custom:{}};
+(function(){
+  try {
+    var s = JSON.parse(localStorage.getItem('planner-state')||'{}');
+    STATE.tasks  = s.tasks  || {};
+    STATE.goals  = s.goals  || {};
+    STATE.custom = s.custom || {};
+  } catch(e) {}
+})();
+function saveState(){ localStorage.setItem('planner-state', JSON.stringify(STATE)); }
+
+function addCustomTask(key) {
+  var inp = document.getElementById('add-inp-'+key);
+  var val = (inp ? inp.value : '').trim();
+  if(!val) return;
+  if(!STATE.custom[key]) STATE.custom[key] = [];
+  STATE.custom[key].push(val);
+  saveState();
+  inp.value = '';
+  // 현재 뷰 새로고침
+  var parts = key.split('|');
+  if(parts[0]==='wk') goWeek(parts[1]+':'+parts[2]);
+  else if(parts[0]==='mo') goMonth(curMonth);
+}
+function delCustomTask(key, idx) {
+  if(STATE.custom[key]) { STATE.custom[key].splice(idx,1); saveState(); }
+  var parts = key.split('|');
+  if(parts[0]==='wk') goWeek(parts[1]+':'+parts[2]);
+  else if(parts[0]==='mo') goMonth(curMonth);
+}
+
 var curLv='home', curYear=2026, curSeason='summer', curMonth='june', curWeek='setup';
 
 // ── 데이터 ──────────────────────────────────────────────────────
@@ -500,8 +543,8 @@ function goYears() {
     var s = '<div class="sec-label sec-label-first">'+title+'</div><div class="yr-list">';
     years.forEach(function(yr) {
       var y = YG[yr];
-      var goalsH = y.goals.map(function(g) {
-        return '<div class="goal-item" onclick="togGoal(this)" style="background:'+g.bg+'"><div class="g-chk"></div><div><div class="g-text">'+g.t+'</div><div class="g-sub">'+g.sub+'</div></div></div>';
+      var goalsH = y.goals.map(function(g, gi) {
+        var gid='goal:yr:'+yr+':'+gi; var gdone=STATE.goals[gid]; return '<div class="goal-item'+(gdone?' done':'')+'" onclick="togGoal(this,\''+gid+'\')" style="background:'+g.bg+'"><div class="g-chk'+(gdone?' done':'')+'"></div><div><div class="g-text">'+g.t+'</div><div class="g-sub">'+g.sub+'</div></div></div>';
       }).join('');
       var clickable = yr <= 2028;
       s += '<div class="yc'+(y.active?' cur':'')+'">';
@@ -531,8 +574,8 @@ function goYear(yr) {
   h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+yr+'년 · '+y.keyword+'</div>';
   h += '<div style="font-size:11px;color:#888780;margin-bottom:1rem">'+y.phase+'</div>';
   h += '<div class="sec-label sec-label-first">연간 목표</div>';
-  y.goals.forEach(function(g) {
-    h += '<div class="sg-item" onclick="togSg(this)" style="background:'+g.bg+'"><div class="sg-chk"></div><div class="sg-text">'+g.t+'</div><span class="sg-badge" style="background:rgba(0,0,0,.06);color:#888780">'+g.sub.split('·')[0].trim()+'</span></div>';
+  y.goals.forEach(function(g, gi) {
+    var sgid='goal:year:'+yr+':'+gi; var sgdone=STATE.goals[sgid]; h += '<div class="sg-item'+(sgdone?' done':'')+'" onclick="togSg(this,\''+sgid+'\')" style="background:'+g.bg+'"><div class="sg-chk'+(sgdone?' done':'')+'"></div><div class="sg-text">'+g.t+'</div><span class="sg-badge" style="background:rgba(0,0,0,.06);color:#888780">'+g.sub.split('·')[0].trim()+'</span></div>';
   });
   if (yr === 2026) {
     h += '<div class="sec-label">계절별 목표</div><div class="sn-grid">';
@@ -607,16 +650,25 @@ function goMonth(mid) {
   h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+m.name+' · '+m.title+'</div>';
   h += '<div style="font-size:12px;color:#888780;font-style:italic;margin-bottom:1rem">'+m.mood+'</div>';
   h += '<div class="pace-row">'+m.paces.map(function(p){ return '<div class="pace"><div class="pace-label">'+p.l+'</div><div class="pace-val">'+p.v+'</div><div class="pace-sub">'+p.s+'</div></div>'; }).join('')+'</div>';
-  m.tracks.forEach(function(tr) {
+  m.tracks.forEach(function(tr, trIdx) {
     h += '<div class="track"><div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
-    tr.tasks.forEach(function(t) {
-      h += '<div class="task" onclick="togT(this)"><div class="chk'+(t.done?' done':'')+'"></div><div class="task-text'+(t.done?' done':'')+'">'+t.t+'</div><span class="task-badge'+(t.now?' now':'')+'">'+t.b+'</span></div>';
+    tr.tasks.forEach(function(t, tIdx) {
+      var tid = 'mo:'+mid+':'+trIdx+':'+tIdx;
+      var done = STATE.tasks[tid] || t.done;
+      h += '<div class="task" onclick="togT(this,\''+tid+'\')">';
+      h += '<div class="chk'+(done?' done':'')+'"></div>';
+      h += '<div class="task-text'+(done?' done':'')+'">'+t.t+'</div>';
+      h += '<span class="task-badge'+(t.now?' now':'')+'">'+t.b+'</span></div>';
     });
     h += '</div>';
   });
   h += '<div class="end-card"><div class="sec-label sec-label-first">'+m.name+' 끝에 확인</div>';
-  m.ends.forEach(function(e) {
-    h += '<div class="task" onclick="togT(this)" style="background:transparent"><div class="chk"></div><div class="task-text">'+e+'</div></div>';
+  m.ends.forEach(function(e, eIdx) {
+    var tid = 'mo:'+mid+':end:'+eIdx;
+    var done = STATE.tasks[tid];
+    h += '<div class="task" onclick="togT(this,\''+tid+'\')" style="background:transparent">';
+    h += '<div class="chk'+(done?' done':'')+'"></div>';
+    h += '<div class="task-text'+(done?' done':'')+'">'+e+'</div></div>';
   });
   h += '</div>';
   if (mid === 'june') {
@@ -644,30 +696,54 @@ function goWeek(wid) {
   h += '<div style="border-bottom:0.5px solid #D3D1C7;margin-bottom:1rem;padding-bottom:10px">';
   h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+w.label+' · '+w.dates+(w.cur?'<span class="now-badge">지금</span>':'')+'</div>';
   h += '<div style="font-size:12px;color:#888780;font-style:italic">'+w.mood+'</div></div>';
-  w.tracks.forEach(function(tr) {
+  w.tracks.forEach(function(tr, trIdx) {
+    var ck = 'wk|'+wid+'|'+trIdx;
     h += '<div class="track"><div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
-    tr.tasks.forEach(function(t) {
-      h += '<div class="task" onclick="togT(this)"><div class="chk'+(t.done?' done':'')+'"></div><div class="task-text'+(t.done?' done':'')+'">'+t.t+'</div><span class="task-badge'+(t.now?' now':'')+'">'+t.b+'</span></div>';
+    tr.tasks.forEach(function(t, tIdx) {
+      var tid = 'wk:'+wid+':'+trIdx+':'+tIdx;
+      var done = STATE.tasks[tid] || t.done;
+      h += '<div class="task" onclick="togT(this,\''+tid+'\')">';
+      h += '<div class="chk'+(done?' done':'')+'"></div>';
+      h += '<div class="task-text'+(done?' done':'')+'">'+t.t+'</div>';
+      h += '<span class="task-badge'+(t.now?' now':'')+'">'+t.b+'</span></div>';
     });
+    // 커스텀 태스크
+    (STATE.custom[ck]||[]).forEach(function(ct, ctIdx) {
+      var tid = 'wk:'+wid+':'+trIdx+':c'+ctIdx;
+      var done = STATE.tasks[tid];
+      h += '<div class="task" onclick="togT(this,\''+tid+'\')">';
+      h += '<div class="chk'+(done?' done':'')+'"></div>';
+      h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+ct+'</div>';
+      h += '<span class="task-del" onclick="event.stopPropagation();delCustomTask(\''+ck+'\','+ctIdx+')">✕</span></div>';
+    });
+    // 추가 입력
+    h += '<div class="add-task-row">';
+    h += '<input class="add-task-inp" id="add-inp-'+ck+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+ck+'\')"/>';
+    h += '<button class="add-task-btn" onclick="addCustomTask(\''+ck+'\')" title="추가">+</button></div>';
     h += '</div>';
   });
   h += '<div class="end-card"><div class="sec-label sec-label-first">이번 주 끝에 확인</div>';
-  w.ends.forEach(function(e) {
-    h += '<div class="task" onclick="togT(this)" style="background:transparent"><div class="chk"></div><div class="task-text">'+e+'</div></div>';
+  w.ends.forEach(function(e, eIdx) {
+    var tid = 'wk:'+wid+':end:'+eIdx;
+    var done = STATE.tasks[tid];
+    h += '<div class="task" onclick="togT(this,\''+tid+'\')" style="background:transparent">';
+    h += '<div class="chk'+(done?' done':'')+'"></div>';
+    h += '<div class="task-text'+(done?' done':'')+'">'+e+'</div></div>';
   });
   h += '</div>';
   document.getElementById('lv-week').innerHTML = h;
   showLv('week');
 }
 
-function togT(el) {
+function togT(el, id) {
   var c = el.querySelector('.chk');
   var t = el.querySelector('.task-text');
   c.classList.toggle('done');
-  if (t) t.classList.toggle('done');
+  if(t) t.classList.toggle('done');
+  if(id){ STATE.tasks[id] = c.classList.contains('done'); saveState(); }
 }
-function togSg(el) { el.classList.toggle('done'); el.querySelector('.sg-chk').classList.toggle('done'); }
-function togGoal(el) { el.classList.toggle('done'); el.querySelector('.g-chk').classList.toggle('done'); }
+function togSg(el,id) { el.classList.toggle('done'); el.querySelector('.sg-chk').classList.toggle('done'); if(id){ STATE.goals[id]=el.classList.contains('done'); saveState(); } }
+function togGoal(el,id) { el.classList.toggle('done'); el.querySelector('.g-chk').classList.contains('done'); el.querySelector('.g-chk').classList.toggle('done'); if(id){ STATE.goals[id]=el.classList.contains('done'); saveState(); } }
 
 renderHome();
 if(location.hash==='#week'){
