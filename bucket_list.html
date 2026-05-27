@@ -6,7 +6,7 @@
 <title>버킷리스트 가계부</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#F5F0E8;min-height:100vh;padding:1.5rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2C2C2A}
+body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2C2C2A}
 .top-label{font-size:10px;font-weight:500;color:#B4B2A9;letter-spacing:.06em;margin-bottom:3px}
 .top-title{font-size:17px;font-weight:500;color:#2C2C2A;margin-bottom:3px}
 .top-desc{font-size:11px;color:#B4B2A9;margin-bottom:1.5rem;font-style:italic}
@@ -55,7 +55,7 @@ body{background:#F5F0E8;min-height:100vh;padding:1.5rem;font-family:-apple-syste
 .dep-del:hover{color:#9B3020}
 
 /* ── 공통 헤더 ── */
-.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;margin:-1.5rem -1.5rem 0;padding:20px 1.5rem 0}
+.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;margin:-1.5rem -1.5rem 0;padding:20px 1.5rem 0;box-shadow:none}
 .site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
 .site-header-title:hover{color:#888780}
 .site-header-manifesto{font-size:11px;color:#888780;font-style:italic;margin-bottom:3px}
@@ -65,9 +65,12 @@ body{background:#F5F0E8;min-height:100vh;padding:1.5rem;font-family:-apple-syste
 .site-nav-btn{font-size:11px;padding:4px 11px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#5F5E5A;text-decoration:none;white-space:nowrap;flex-shrink:0}
 .site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
 
+
+.page-wrap{max-width:700px;margin:0 auto;background:#F5F0E8;min-height:100vh;padding:1.5rem;position:relative}
 </style>
 </head>
 <body>
+<div class="page-wrap">
 <!-- ── 공통 헤더 ── -->
 <div class="site-header">
   <a class="site-header-title" href="index.html">나의 우주 🌙</a>
@@ -76,7 +79,7 @@ body{background:#F5F0E8;min-height:100vh;padding:1.5rem;font-family:-apple-syste
   <div class="site-header-nav">
     <a class="site-nav-btn" href="master_planner_2026.html#week">탑다운 플래너</a>
     <a class="site-nav-btn" href="life_roadmap_beige.html">인생 로드맵</a>
-    <a class="site-nav-btn" href="bucket_list.html">버킷리스트</a>
+    <a class="site-nav-btn" href="bucket_list.html">버킷 가계부</a>
   </div>
 </div>
 <div style="height:1.5rem"></div>
@@ -214,5 +217,6 @@ function render(){
 
 render();
 </script>
+</div>
 </body>
 </html>

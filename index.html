@@ -6,10 +6,10 @@
 <title>나의 우주 · 인생관리 시스템</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#F5F0E8;min-height:100vh;padding:1.5rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2C2C2A}
+body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2C2C2A}
 
 /* ── 공통 헤더 ── */
-.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;margin:-1.5rem -1.5rem 0;padding:20px 1.5rem 0}
+.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;margin:-1.5rem -1.5rem 0;padding:20px 1.5rem 0;box-shadow:none}
 .site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
 .site-header-title:hover{color:#888780}
 .site-header-manifesto{font-size:11px;color:#888780;font-style:italic;margin-bottom:3px}
@@ -48,9 +48,12 @@ body{background:#F5F0E8;min-height:100vh;padding:1.5rem;font-family:-apple-syste
 .manifesto-title{font-size:14px;color:#5F5E5A;font-style:italic;line-height:1.65;margin-bottom:5px}
 .manifesto-keywords{font-size:11px;color:#B4B2A9;letter-spacing:.04em}
 .footer{text-align:center;padding:.75rem 0 .5rem;font-size:10px;color:#B4B2A9;line-height:1.8}
+
+.page-wrap{max-width:700px;margin:0 auto;background:#F5F0E8;min-height:100vh;padding:1.5rem;position:relative}
 </style>
 </head>
 <body>
+<div class="page-wrap">
 
 <!-- ── 공통 헤더 ── -->
 <div class="site-header">
@@ -60,7 +63,7 @@ body{background:#F5F0E8;min-height:100vh;padding:1.5rem;font-family:-apple-syste
   <div class="site-header-nav">
     <a class="site-nav-btn" href="master_planner_2026.html#week">탑다운 플래너</a>
     <a class="site-nav-btn" href="life_roadmap_beige.html">인생 로드맵</a>
-    <a class="site-nav-btn" href="bucket_list.html">버킷리스트</a>
+    <a class="site-nav-btn" href="bucket_list.html">버킷 가계부</a>
   </div>
 </div>
 <div style="height:1.5rem"></div>
@@ -158,5 +161,6 @@ var mantras=[
   document.getElementById('quote-source').textContent=m.s;
 })();
 </script>
+</div>
 </body>
 </html>
