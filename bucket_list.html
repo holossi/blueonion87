@@ -67,6 +67,27 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 
 
 .page-wrap{max-width:700px;margin:0 auto;background:#F5F0E8;min-height:100vh;padding:0 1.5rem 1.5rem;position:relative}
+
+/* ── 항목 추가 폼 ── */
+.add-item-card{background:#FDFAF6;border:0.5px dashed #C4B49A;border-radius:12px;padding:14px 15px;margin-bottom:10px}
+.add-item-title{font-size:12px;font-weight:500;color:#888780;margin-bottom:10px}
+.add-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px}
+.add-row.single{grid-template-columns:1fr}
+.add-inp{width:100%;height:34px;border:0.5px solid #D3D1C7;border-radius:8px;padding:0 10px;font-size:12px;background:#F5F0E8;color:#2C2C2A}
+.add-inp:focus{outline:none;border-color:#888780}
+.add-submit{width:100%;height:36px;border:none;border-radius:8px;background:#2C2C2A;color:#F5F0E8;font-size:13px;font-weight:500;cursor:pointer;margin-top:4px}
+.add-submit:hover{background:#3C3C3A}
+.item-del-btn{font-size:10px;color:#B4B2A9;cursor:pointer;padding:2px 6px;border:0.5px solid #D3D1C7;border-radius:6px;background:#F5F0E8}
+.item-del-btn:hover{color:#9B3020;border-color:#9B3020}
+
+
+.edit-form{margin-top:10px;padding-top:10px;border-top:0.5px solid #EDE8DE;display:flex;flex-direction:column;gap:6px}
+.edit-inp{width:100%;height:32px;border:0.5px solid #D3D1C7;border-radius:7px;padding:0 10px;font-size:12px;background:#F5F0E8;color:#2C2C2A}
+.edit-inp:focus{outline:none;border-color:#888780}
+.edit-btns{display:flex;gap:6px}
+.edit-save{flex:1;height:30px;border:none;border-radius:7px;background:#2C2C2A;color:#F5F0E8;font-size:12px;cursor:pointer}
+.edit-cancel{height:30px;padding:0 12px;border:0.5px solid #D3D1C7;border-radius:7px;background:#F5F0E8;color:#888780;font-size:12px;cursor:pointer}
+
 </style>
 </head>
 <body>
@@ -98,24 +119,36 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
   <div style="font-size:10px;color:#B4B2A9;text-align:right" id="td">적립을 시작해봐요</div>
 </div>
 
-<div class="calc-card">
-  <div class="calc-title">💰 10% 적립 계산기 — 수입이 들어오면</div>
-  <div class="calc-row">
-    <input class="calc-input" id="income-inp" type="number" placeholder="이번 수입 입력 (원)" oninput="calcTen()">
-  </div>
-  <div class="calc-result">
-    <div class="calc-result-label">버킷리스트 통장에 넣을 금액 (10%)</div>
-    <div class="calc-result-val" id="ten-result">—</div>
-    <div class="calc-result-sub" id="ten-sub">수입을 입력하면 10%가 계산돼요</div>
-  </div>
-</div>
-<div style="height:1.5rem"></div>
-
 <div class="sec-label">버킷리스트 · 시기 순</div>
 <div id="bucket-list"></div>
 
+<div class="add-item-card">
+  <div class="add-item-title">+ 새 항목 추가</div>
+  <div class="add-row">
+    <input class="add-inp" id="new-emoji" placeholder="이모지 (예: 🌊)" maxlength="4">
+    <input class="add-inp" id="new-title" placeholder="항목 이름 *">
+  </div>
+  <div class="add-row">
+    <input class="add-inp" id="new-when" placeholder="시기 (예: 2027년 봄)">
+    <input class="add-inp" id="new-goal" type="number" placeholder="목표 금액 (원) *">
+  </div>
+  <div class="add-row single">
+    <input class="add-inp" id="new-sub" placeholder="메모 (선택)">
+  </div>
+  <button class="add-submit" onclick="addItem()">추가하기</button>
+</div>
+
 <script>
-var ITEMS = [
+var COLORS = [
+  {wc:'#3B6D11', wb:'#EAF3DE', color:'#3B6D11'},
+  {wc:'#D85A30', wb:'#FAECE7', color:'#D85A30'},
+  {wc:'#BA7517', wb:'#FAEEDA', color:'#BA7517'},
+  {wc:'#1A6E9A', wb:'#DDF0FA', color:'#1A6E9A'},
+  {wc:'#555553', wb:'#E8E8E6', color:'#555553'},
+  {wc:'#534AB7', wb:'#EEEDFE', color:'#534AB7'},
+];
+
+var DEFAULT_ITEMS = [
   {id:'cat', emoji:'🐱', title:'고양이 입양 + 동네 고양이 대모',
    when:'2027년 봄', wc:'#3B6D11', wb:'#EAF3DE',
    goal:1500000, color:'#3B6D11', sub:'입양비+초기 용품+병원비 · 이후 월 유지비 별도'},
@@ -133,10 +166,66 @@ var ITEMS = [
    goal:5000000, color:'#1A6E9A', sub:'교토·가나자와 or 홋카이도 · 책방 영업 종료 + 수술 회복 후'}
 ];
 
+function loadItems(){
+  try {
+    var saved = JSON.parse(localStorage.getItem('bl-items')||'null');
+    return saved || DEFAULT_ITEMS;
+  } catch(e){ return DEFAULT_ITEMS; }
+}
+function saveItems(){ localStorage.setItem('bl-items', JSON.stringify(ITEMS)); }
+
+var ITEMS = loadItems();
+
 var deps = {};
 ITEMS.forEach(function(i){ deps[i.id] = JSON.parse(localStorage.getItem('bl-'+i.id)||'[]'); });
 
 function save(id){ localStorage.setItem('bl-'+id, JSON.stringify(deps[id])); }
+
+function addItem(){
+  var emoji = document.getElementById('new-emoji').value.trim() || '⭐';
+  var title = document.getElementById('new-title').value.trim();
+  var when  = document.getElementById('new-when').value.trim();
+  var goal  = parseInt((document.getElementById('new-goal').value||'').replace(/[^0-9]/g,''));
+  var sub   = document.getElementById('new-sub').value.trim();
+  if(!title || !goal) return;
+  var clr = COLORS[ITEMS.length % COLORS.length];
+  var id = 'item_' + Date.now();
+  ITEMS.push({id:id, emoji:emoji, title:title, when:when||'미정',
+    wc:clr.wc, wb:clr.wb, goal:goal, color:clr.color, sub:sub});
+  deps[id] = [];
+  saveItems();
+  ['new-emoji','new-title','new-when','new-goal','new-sub'].forEach(function(k){
+    document.getElementById(k).value='';
+  });
+  render();
+}
+
+
+function editItem(id){
+  var el = document.getElementById('edit-form-'+id);
+  if(el) { el.style.display = el.style.display==='none' ? 'block' : 'none'; return; }
+  render(); // re-render opens form
+}
+function saveEdit(id){
+  var item = ITEMS.find(function(i){ return i.id===id; });
+  if(!item) return;
+  var t = document.getElementById('edit-title-'+id).value.trim();
+  var w = document.getElementById('edit-when-'+id).value.trim();
+  var g = parseInt((document.getElementById('edit-goal-'+id).value||'').replace(/[^0-9]/g,''));
+  if(t) item.title = t;
+  if(w) item.when = w;
+  if(g>0) item.goal = g;
+  saveItems();
+  render();
+}
+
+function delItem(id){
+  ITEMS = ITEMS.filter(function(i){ return i.id !== id; });
+  delete deps[id];
+  localStorage.removeItem('bl-'+id);
+  saveItems();
+  render();
+}
 
 function addDep(id){
   var inp=document.getElementById('i-'+id);
@@ -158,15 +247,6 @@ function fmt(n){
   return n.toLocaleString()+'원';
 }
 
-function calcTen(){
-  var v=parseInt((document.getElementById('income-inp').value||'').replace(/[^0-9]/g,''));
-  var res=document.getElementById('ten-result');
-  var sub=document.getElementById('ten-sub');
-  if(!v||v<=0){ res.textContent='—'; sub.textContent='수입을 입력하면 10%가 계산돼요'; return; }
-  var ten=Math.round(v*0.1);
-  res.textContent=fmt(ten);
-  sub.textContent='수입 '+fmt(v)+' × 10% — 버킷리스트 통장에 이체하기';
-}
 
 function render(){
   var tg=0, ts=0;
@@ -201,7 +281,7 @@ function render(){
     h+='<span class="b-when" style="background:'+item.wb+';color:'+item.wc+'">'+item.when+'</span>';
     if(item.sub) h+='<div class="b-sub">'+item.sub+'</div>';
     h+='</div></div>';
-    h+='<div class="b-cost"><div class="cost-label">목표</div><div class="cost-val">'+fmt(item.goal)+'</div>';
+    h+='<div class="b-cost"><div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:3px">'+'<span class="item-del-btn" style="color:#888780" onclick="editItem(\''+item.id+'\')" title="편집">편집</span>'+'<span class="item-del-btn" onclick="delItem(\''+item.id+'\')" title="삭제">삭제</span>'+'</div><div class="cost-label">목표</div><div class="cost-val">'+fmt(item.goal)+'</div>';
     if(done) h+='<div style="font-size:10px;font-weight:500;color:#639922;margin-top:2px">완료 ✓</div>';
     h+='</div></div>';
 
@@ -210,6 +290,14 @@ function render(){
     h+='<div class="b-input-row"><input class="b-input" id="i-'+item.id+'" type="number" placeholder="적립 금액 (원)"><button class="add-btn" onclick="addDep(\''+item.id+'\')">+ 적립</button></div>';
     h+='<input class="memo-inp" id="m-'+item.id+'" type="text" placeholder="메모 (예: 5월 원고료에서)">';
     if(deps[item.id].length>0) h+='<div class="dep-list">'+depHtml+'</div>';
+    h+='<div id="edit-form-'+item.id+'" class="edit-form" style="display:none">';
+    h+='<input class="edit-inp" id="edit-title-'+item.id+'" value="'+item.title+'" placeholder="제목">';
+    h+='<input class="edit-inp" id="edit-when-'+item.id+'" value="'+item.when+'" placeholder="예상 시점">';
+    h+='<input class="edit-inp" id="edit-goal-'+item.id+'" value="'+item.goal+'" type="number" placeholder="목표 금액 (원)">';
+    h+='<div class="edit-btns">';
+    h+='<button class="edit-save" onclick="saveEdit(\''+item.id+'\')" >저장</button>';
+    h+='<button class="edit-cancel" onclick="document.getElementById(\'edit-form-'+item.id+'\').style.display=\'none\'">취소</button>';
+    h+='</div></div>';
     h+='</div>';
     list.innerHTML+=h;
   });
