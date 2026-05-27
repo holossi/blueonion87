@@ -1,8 +1,13 @@
-
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인생 로드맵</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:#DDD8CE;margin:0;padding:0}
-.page{background:#F5F0E8;min-height:100vh;padding:2rem 1.5rem;font-family:var(--font-sans,sans-serif);max-width:700px;margin:0 auto;}
+.page{background:#F5F0E8;min-height:100vh;padding:0 1.5rem 1.5rem;font-family:var(--font-sans,sans-serif);max-width:700px;margin:0 auto;}
 .top-label{font-size:11px;font-weight:500;color:#B4B2A9;letter-spacing:.06em;margin-bottom:4px}
 .top-title{font-size:17px;font-weight:500;color:#2C2C2A;margin-bottom:4px}
 .top-desc{font-size:12px;color:#B4B2A9;margin-bottom:1.25rem;font-family:var(--font-serif,serif)}
@@ -81,7 +86,7 @@ html,body{background:#DDD8CE;margin:0;padding:0}
 .now-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;background:#FAEEDA;color:#854F0B;margin-left:6px}
 
 /* ── 공통 헤더 ── */
-.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;margin:0 -1.5rem 0;padding:20px 1.5rem 0}
+.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;padding:1.5rem 1.5rem 0}
 .site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
 .site-header-title:hover{color:#888780}
 .site-header-manifesto{font-size:11px;color:#888780;font-style:italic;margin-bottom:3px}
@@ -93,7 +98,6 @@ html,body{background:#DDD8CE;margin:0;padding:0}
 
 
 /* ── 공통 헤더 ── */
-.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;margin:0 -1.5rem 0;padding:20px 1.5rem 0}
 .site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
 .site-header-title:hover{color:#888780}
 .site-header-manifesto{font-size:11px;color:#888780;font-style:italic;margin-bottom:3px}
@@ -104,7 +108,8 @@ html,body{background:#DDD8CE;margin:0;padding:0}
 .site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
 
 </style>
-
+</head>
+<body>
 <div class="page">
 <h2 style="position:absolute;left:-9999px">인생 로드맵 대시보드</h2>
 <!-- ── 공통 헤더 ── -->
@@ -118,6 +123,7 @@ html,body{background:#DDD8CE;margin:0;padding:0}
     <a class="site-nav-btn" href="bucket_list.html">버킷 가계부</a>
   </div>
 </div>
+<div style="height:1.5rem"></div>
 
 
 <div class="tab-nav">
@@ -536,3 +542,5 @@ function swSc(id,btn){
   btn.classList.add('active-'+id);
 }
 </script>
+</body>
+</html>
