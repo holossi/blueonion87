@@ -158,14 +158,27 @@ body{
   color:#B4B2A9;
   line-height:1.8;
 }
+
+/* ── 공통 헤더 ── */
+.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;margin:-1.5rem -1.5rem 1.5rem;padding:0 1.5rem}
+.site-header-inner{display:flex;align-items:center;justify-content:space-between;height:44px}
+.site-header-label{font-size:10px;font-weight:500;color:#B4B2A9;letter-spacing:.06em}
+.site-header-title{font-size:15px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.01em}
+.site-header-title:hover{color:#888780}
+
 </style>
 </head>
 <body>
+<!-- ── 공통 헤더 ── -->
+<div class="site-header">
+  <div class="site-header-inner">
+    <div class="site-header-label">을축일주 · 신해대운 · 인생관리 시스템</div>
+    <a class="site-header-title" href="index.html">나의 우주 🌙</a>
+  </div>
+</div>
 
 <!-- 헤더 -->
 <div class="header">
-  <div class="header-label">을축일주 · 신해대운 · 인생관리 시스템</div>
-  <div class="header-title">나의 우주 🌙</div>
   <div class="header-motto">"기꺼이 머뭇거리고, 용기 있게 취약한"<br>취약성 · 머뭇거림 · 삶다움</div>
   <div class="small-btns">
     <a class="small-btn" href="life_roadmap_beige.html">
