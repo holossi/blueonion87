@@ -6,7 +6,86 @@
 <title>인생 로드맵</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2C2C2A}
+html,body{background:#DDD8CE;margin:0;padding:0}
+.page{background:#F5F0E8;min-height:100vh;padding:0 1.5rem 1.5rem;font-family:var(--font-sans,sans-serif);max-width:700px;margin:0 auto;}
+.top-label{font-size:11px;font-weight:500;color:#B4B2A9;letter-spacing:.06em;margin-bottom:4px}
+.top-title{font-size:17px;font-weight:500;color:#2C2C2A;margin-bottom:4px}
+.top-desc{font-size:12px;color:#B4B2A9;margin-bottom:1.25rem;font-family:var(--font-serif,serif)}
+.tab-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
+.t-btn{padding:6px 14px;border:0.5px solid #D3D1C7;border-radius:20px;font-size:12px;cursor:pointer;background:#F5F0E8;color:#888780;transition:all .15s}
+.t-btn.active{font-weight:500;color:#2C2C2A;border-color:#888780;background:#EDE8DE}
+.tab{display:none}
+.tab.active{display:block}
+.section{margin-bottom:1.25rem}
+.sec-label{font-size:11px;font-weight:500;color:#B4B2A9;letter-spacing:.04em;margin-bottom:8px}
+.card{border:0.5px solid #D3D1C7;border-radius:12px;padding:14px 16px;background:#FDFAF6;margin-bottom:8px}
+.card-title{font-size:13px;font-weight:500;color:#2C2C2A;margin-bottom:6px}
+.card-body{font-size:12px;color:#5F5E5A;line-height:1.7}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.metric{background:#EDE8DE;border-radius:8px;padding:10px 12px}
+.metric-label{font-size:10px;font-weight:500;color:#B4B2A9;margin-bottom:3px}
+.metric-val{font-size:16px;font-weight:500;color:#2C2C2A}
+.metric-sub{font-size:11px;color:#B4B2A9;margin-top:2px}
+.tl-item{position:relative;padding-left:22px;margin-bottom:1rem}
+.tl-item::before{content:'';position:absolute;left:7px;top:0;bottom:-1rem;width:1px;background:#D3D1C7}
+.tl-item:last-child::before{display:none}
+.tl-dot{position:absolute;left:3px;top:4px;width:9px;height:9px;border-radius:50%;border:2px solid #F5F0E8}
+.tl-card{border:0.5px solid #D3D1C7;border-radius:12px;padding:12px 14px;background:#FDFAF6;cursor:pointer}
+.tl-card.now{border-color:#888780;background:#FDFAF6}
+.tl-header{display:flex;align-items:center;justify-content:space-between}
+.tl-age{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px}
+.tl-name{font-size:13px;font-weight:500;color:#2C2C2A;margin:0 8px}
+.tl-tag{font-size:11px;color:#B4B2A9}
+.tl-chevron{font-size:11px;color:#B4B2A9;transition:transform .2s}
+.tl-card.open .tl-chevron{transform:rotate(180deg)}
+.tl-body{display:none;margin-top:10px;padding-top:10px;border-top:0.5px solid #EDE8DE}
+.tl-card.open .tl-body{display:block}
+.tl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.tl-mini{background:#EDE8DE;border-radius:8px;padding:8px 10px}
+.tl-mini-label{font-size:10px;color:#B4B2A9;margin-bottom:3px}
+.tl-mini-val{font-size:12px;color:#2C2C2A;line-height:1.4}
+.bullets{list-style:none;font-size:12px;color:#5F5E5A;line-height:1.7}
+.bullets li::before{content:'·  '}
+.tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;margin-bottom:6px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bar-label{font-size:11px;color:#888780;width:80px;flex-shrink:0;text-align:right}
+.bar-track{flex:1;height:20px;background:#EDE8DE;border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:500;color:#fff}
+.bar-val{font-size:11px;color:#888780;width:50px;flex-shrink:0}
+.stream-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+.stream{border:0.5px solid #D3D1C7;border-radius:10px;padding:12px 14px;background:#FDFAF6}
+.stream-icon{font-size:16px;margin-bottom:5px;color:#888780}
+.stream-name{font-size:13px;font-weight:500;color:#2C2C2A;margin-bottom:4px}
+.stream-desc{font-size:11px;color:#888780;line-height:1.5}
+.stream-timing{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:5px}
+.risk-card{border:0.5px solid #D3D1C7;border-radius:12px;padding:14px 16px;background:#FDFAF6;margin-bottom:8px}
+.risk-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.risk-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.risk-title{font-size:13px;font-weight:500;color:#2C2C2A;flex:1}
+.risk-level{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px}
+.risk-body{font-size:12px;color:#5F5E5A;line-height:1.6;margin-bottom:8px}
+.patch-list{list-style:none;border-top:0.5px solid #EDE8DE;padding-top:8px}
+.patch-list li{font-size:11px;color:#888780;padding:2px 0}
+.patch-list li::before{content:'→  ';color:#B4B2A9}
+.action-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:0.5px solid #EDE8DE}
+.action-item:last-child{border-bottom:none}
+.action-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px}
+.action-text{font-size:13px;color:#2C2C2A;line-height:1.5;flex:1}
+.action-sub{font-size:11px;color:#888780;margin-top:3px;line-height:1.5}
+.sc-tabs{display:flex;gap:6px;margin-bottom:1rem}
+.sc-btn{flex:1;padding:7px 6px;border:0.5px solid #D3D1C7;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;background:#F5F0E8;color:#888780;text-align:center;transition:all .15s}
+.sc-btn.active-b{background:#EDE8DE;border-color:#888780;color:#2C2C2A}
+.sc-btn.active-h{background:#EAF3DE;border-color:#97C459;color:#3B6D11}
+.sc-btn.active-e{background:#FAEEDA;border-color:#EF9F27;color:#854F0B}
+.sc-panel{display:none}
+.sc-panel.active{display:block}
+.sc-quote{border-left:2px solid #D3D1C7;padding-left:12px;margin:10px 0;font-size:13px;color:#888780;line-height:1.6;font-family:var(--font-serif,serif)}
+.send-btn{font-size:11px;padding:5px 10px;border:0.5px solid #D3D1C7;border-radius:14px;background:#F5F0E8;color:#888780;cursor:pointer;margin-top:8px}
+.send-btn:hover{border-color:#888780}
+.now-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;background:#FAEEDA;color:#854F0B;margin-left:6px}
+
+/* ── 공통 헤더 ── */
 .site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;padding:1.5rem 1.5rem 0}
 .site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
 .site-header-title:hover{color:#888780}
@@ -16,49 +95,452 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .site-header-nav::-webkit-scrollbar{display:none}
 .site-nav-btn{font-size:11px;padding:4px 11px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#5F5E5A;text-decoration:none;white-space:nowrap;flex-shrink:0}
 .site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
-.page-wrap{max-width:700px;margin:0 auto;background:#F5F0E8;min-height:100vh;padding:0 1.5rem 1.5rem;position:relative}
-.top-label{font-size:11px;font-weight:500;color:#B4B2A9;letter-spacing:.06em;margin-bottom:4px}
-.top-title{font-size:17px;font-weight:500;color:#2C2C2A;margin-bottom:4px}
-.top-desc{font-size:12px;color:#B4B2A9;margin-bottom:1.25rem;font-style:italic}
-.card{border:0.5px solid #D3D1C7;border-radius:12px;padding:14px 16px;background:#FDFAF6;margin-bottom:12px}
-.card-title{font-size:14px;font-weight:600;color:#2C2C2A;margin-bottom:6px}
-.bullets{padding-left:18px;font-size:12.5px;color:#5F5E5A;line-height:1.7}
-.bullets li{margin-bottom:6px}
+
+
+/* ── 공통 헤더 ── */
+.site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
+.site-header-title:hover{color:#888780}
+.site-header-manifesto{font-size:11px;color:#888780;font-style:italic;margin-bottom:3px}
+.site-header-keywords{font-size:10px;color:#B4B2A9;letter-spacing:.04em}
+.site-header-nav{display:flex;gap:6px;padding:10px 0 12px;overflow-x:auto;scrollbar-width:none}
+.site-header-nav::-webkit-scrollbar{display:none}
+.site-nav-btn{font-size:11px;padding:4px 11px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#5F5E5A;text-decoration:none;white-space:nowrap;flex-shrink:0}
+.site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
+
 </style>
 </head>
 <body>
-<div class="page-wrap">
-  <div class="site-header">
-    <a class="site-header-title" href="index.html">나의 우주 🌙</a>
-    <div class="site-header-manifesto">"기꺼이 머뭇거리고, 용기 있게 취약한"</div>
-    <div class="site-header-keywords">취약성 · 머뭇거림 · 삶다움</div>
-    <div class="site-header-nav">
-      <a class="site-nav-btn" href="master_planner_2026.html">탑다운 플래너</a>
-      <a class="site-nav-btn" href="life_roadmap_beige.html">인생 로드맵</a>
-      <a class="site-nav-btn" href="bucket_list.html">버킷 가계부</a>
+<div class="page">
+<h2 style="position:absolute;left:-9999px">인생 로드맵 대시보드</h2>
+<!-- ── 공통 헤더 ── -->
+<div class="site-header">
+  <a class="site-header-title" href="index.html">나의 우주 🌙</a>
+  <div class="site-header-manifesto">"기꺼이 머뭇거리고, 용기 있게 취약한"</div>
+  <div class="site-header-keywords">취약성 · 머뭇거림 · 삶다움</div>
+  <div class="site-header-nav">
+    <a class="site-nav-btn" href="master_planner_2026.html#week">탑다운 플래너</a>
+    <a class="site-nav-btn" href="life_roadmap_beige.html">인생 로드맵</a>
+    <a class="site-nav-btn" href="bucket_list.html">버킷 가계부</a>
+  </div>
+</div>
+<div style="height:1.5rem"></div>
+
+
+<div class="tab-nav">
+  <button class="t-btn active" onclick="swTab('timeline')">인생 타임라인</button>
+  <button class="t-btn" onclick="swTab('wealth')">부의 구조</button>
+  <button class="t-btn" onclick="swTab('risks')">리스크 관리</button>
+  <button class="t-btn" onclick="swTab('actions')">지금 당장 할 일</button>
+  <button class="t-btn" onclick="swTab('scenarios')">10년 후 시나리오</button>
+</div>
+
+<!-- 타임라인 -->
+<div id="tab-timeline" class="tab active">
+  <div class="tl-item">
+    <div class="tl-dot" style="background:#B4B2A9"></div>
+    <div class="tl-card" onclick="togTl(this)">
+      <div class="tl-header">
+        <div style="display:flex;align-items:center">
+          <span class="tl-age" style="background:#EDE8DE;color:#888780">~27세</span>
+          <span class="tl-name">준비기</span>
+          <span class="tl-tag">무신·기유 대운</span>
+        </div>
+        <span class="tl-chevron">▼</span>
+      </div>
+      <div class="tl-body">
+        <div class="tl-row">
+          <div class="tl-mini"><div class="tl-mini-label">키워드</div><div class="tl-mini-val">적응과 훈련</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">대운</div><div class="tl-mini-val">무신(정재·정관) → 기유(편재·편관)</div></div>
+        </div>
+        <ul class="bullets">
+          <li>타인의 기준에 맞추며 시스템을 몸으로 배운 시기</li>
+          <li>창작의 씨앗은 있었지만 숨겼던 시기</li>
+          <li>결혼, 첫 직업, 사회 구조 안에서 나를 실험</li>
+        </ul>
+      </div>
     </div>
   </div>
-  <div style="height:1.5rem"></div>
 
-  <div class="top-label">장기 비전 매트릭스</div>
-  <div class="top-title">을축일주 대운 타임라인 🌊</div>
-  <div class="top-desc">"운명은 정해진 극본이 아니라, 취약성을 무기로 개척하는 나의 소설이다."</div>
-
-  <div class="card">
-    <div class="card-title" style="color:#BA7517">구조 전환기 마일스톤 (2026 ~ 2028)</div>
-    <ul class="bullets">
-      <li><strong>2026년:</strong> 결혼생활 종결 및 온전한 나로서의 자립 · 경장편 및 산문집 마감 · 뉴스레터 구독자 기반 확보.</li>
-      <li><strong>2027년:</strong> 새 공간 안착 및 고양이 메인 대모 활동 시작 🐱 · 장편 소설 계약 및 가을 단행본 출간.</li>
-      <li><strong>2028년:</strong> 첫 독립 소설집 여름 출간 · 개인 유료 강연 런칭을 통한 연 수입 파이프라인 확장기 진입.</li>
-    </ul>
+  <div class="tl-item">
+    <div class="tl-dot" style="background:#888780"></div>
+    <div class="tl-card" onclick="togTl(this)">
+      <div class="tl-header">
+        <div style="display:flex;align-items:center">
+          <span class="tl-age" style="background:#EDE8DE;color:#5F5E5A">28~37세</span>
+          <span class="tl-name">성장기</span>
+          <span class="tl-tag">경술 대운</span>
+        </div>
+        <span class="tl-chevron">▼</span>
+      </div>
+      <div class="tl-body">
+        <div class="tl-row">
+          <div class="tl-mini"><div class="tl-mini-label">키워드</div><div class="tl-mini-val">외형 성취 + 내면 회의</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">대운</div><div class="tl-mini-val">경술(정관·정재)</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">미션</div><div class="tl-mini-val">내 프로젝트를 포기하지 말 것</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">돈·커리어</div><div class="tl-mini-val">커리어 성장, 번아웃 위험</div></div>
+        </div>
+        <ul class="bullets">
+          <li>사회적 포지션을 쌓으면서도 "이게 진짜 내 삶인가" 자문</li>
+          <li>작가로서의 정체성, 책방, 결혼 생활의 틀 구축</li>
+          <li>"내가 만든 삶인데 내가 안에 없다"는 공허감</li>
+        </ul>
+      </div>
+    </div>
   </div>
 
-  <div class="card" style="background:#EDE8DE; border:none">
-    <div class="card-title" style="font-family:serif; font-style:italic; color:#2C2C2A">소설가의 다짐</div>
-    <div style="font-size:12px; color:#5F5E5A; line-height:1.6; font-family:serif">
-      "기꺼이 머뭇거린다는 것은 세상의 속도에 휩쓸리지 않고 내면의 문장을 고른다는 뜻이며, 용기 있게 취약해진다는 것은 상처받을 위험을 감수하고도 세상에 진짜 내 글을 던지겠다는 맹세다. 2026년, 모든 낡은 껍질을 깨고 진짜 내 우주를 건설한다."
+  <div class="tl-item">
+    <div class="tl-dot" style="background:#854F0B"></div>
+    <div class="tl-card now" onclick="togTl(this)">
+      <div class="tl-header">
+        <div style="display:flex;align-items:center">
+          <span class="tl-age" style="background:#FAEEDA;color:#854F0B">38~47세</span>
+          <span class="tl-name">폭발기</span>
+          <span class="tl-tag">신해 대운</span>
+          <span class="now-badge">지금 ★</span>
+        </div>
+        <span class="tl-chevron">▼</span>
+      </div>
+      <div class="tl-body">
+        <div class="tl-row">
+          <div class="tl-mini"><div class="tl-mini-label">키워드</div><div class="tl-mini-val">관계·시스템 재설계</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">대운</div><div class="tl-mini-val">신금(정관) + 해수(정인)</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">돈·커리어</div><div class="tl-mini-val">브랜드·IP 수입 본격화</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">미션</div><div class="tl-mini-val">끝낼 것은 끝내고, 남길 것에 몰아줄 것</div></div>
+        </div>
+        <ul class="bullets">
+          <li>2026: 결혼생활 마무리 · 경장편 탈고 · 뉴스레터 〈삶을 위한 연구〉 런칭</li>
+          <li>2027: 이혼 법적 완료 · 장편·에세이집 출간 · 유튜브 개설 · 고양이 입양 🐱</li>
+          <li>2028: 소설집·중편 출간 · 첫 유료 강의 · 수입 연 1억 방향</li>
+          <li>2029~2031: 유튜브 성장 · 멤버십·강의 본격화 · 수입 연 1.5~2억</li>
+          <li>2032~2034: 레지던시 오픈 · 바닷가 거점 확보 · 순자산 10억</li>
+        </ul>
+        <button class="send-btn" onclick="event.stopPropagation();sendPrompt('지금 신해 대운에서 가장 먼저 해야 할 일은 무엇인가요?')">더 알아보기 ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-dot" style="background:#3B6D11"></div>
+    <div class="tl-card" onclick="togTl(this)">
+      <div class="tl-header">
+        <div style="display:flex;align-items:center">
+          <span class="tl-age" style="background:#EAF3DE;color:#3B6D11">48~57세</span>
+          <span class="tl-name">수확기</span>
+          <span class="tl-tag">임자 대운</span>
+        </div>
+        <span class="tl-chevron">▼</span>
+      </div>
+      <div class="tl-body">
+        <div class="tl-row">
+          <div class="tl-mini"><div class="tl-mini-label">키워드</div><div class="tl-mini-val">지식·바다·이주의 시대</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">대운</div><div class="tl-mini-val">임수(정인) + 자수(편인)</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">미션</div><div class="tl-mini-val">"흐르는 삶"에 맞는 수입 구조 완성</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">자산 목표</div><div class="tl-mini-val">순자산 30~50억 방향</div></div>
+        </div>
+        <ul class="bullets">
+          <li>레지던시 안정적 운영 + 후진 양성 본격화</li>
+          <li>온라인클래스·IP 자산 최대화 — 만들어둔 것이 일하기 시작</li>
+          <li>패시브 인컴 비중 높이기 · 순자산 30~50억 방향</li>
+          <li>바닷가·고양이·계절 이동 라이프 완성형으로 안착</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-dot" style="background:#534AB7"></div>
+    <div class="tl-card" onclick="togTl(this)">
+      <div class="tl-header">
+        <div style="display:flex;align-items:center">
+          <span class="tl-age" style="background:#EEEDFE;color:#534AB7">58세~</span>
+          <span class="tl-name">레거시기</span>
+          <span class="tl-tag">계축·갑인 대운</span>
+        </div>
+        <span class="tl-chevron">▼</span>
+      </div>
+      <div class="tl-body">
+        <div class="tl-row">
+          <div class="tl-mini"><div class="tl-mini-label">키워드</div><div class="tl-mini-val">작은 제국의 주인</div></div>
+          <div class="tl-mini"><div class="tl-mini-label">미션</div><div class="tl-mini-val">권한을 후배에게 넘기는 것이 곧 자유</div></div>
+        </div>
+        <ul class="bullets">
+          <li>회고록·창작론 출간 — 취약성의 글쓰기로 완성하는 삶의 이론</li>
+          <li>레지던시 운영권 후계자에게 이양 · 느슨한 연결로만 관여</li>
+          <li>이동하며 쓰는 삶 · 억지로 만든 게 아니라 그냥 이렇게 살고 있음</li>
+          <li>수입보다 의미 · 남길 것에만 에너지 쓰기</li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- 부의 구조 -->
+<div id="tab-wealth" class="tab">
+  <div class="section">
+    <div class="sec-label">예상 자산 규모 (단계별)</div>
+    <div class="bar-row"><span class="bar-label">지금 ~42세</span><div class="bar-track"><div class="bar-fill" style="width:8%;background:#888780">구조 정비</div></div><span class="bar-val">3~5억</span></div>
+    <div class="bar-row"><span class="bar-label">40대 중반</span><div class="bar-track"><div class="bar-fill" style="width:24%;background:#3B6D11">자산 점프</div></div><span class="bar-val">7~15억</span></div>
+    <div class="bar-row"><span class="bar-label">50대 초반</span><div class="bar-track"><div class="bar-fill" style="width:50%;background:#BA7517">IP+부동산</div></div><span class="bar-val">20~30억</span></div>
+    <div class="bar-row"><span class="bar-label">50대 후반~</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#534AB7">레거시 수확</div></div><span class="bar-val">30~50억</span></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-label">수입 파이프라인</div>
+    <div class="stream-grid">
+      <div class="stream">
+        <div class="stream-icon"><i class="ti ti-edit" aria-hidden="true"></i></div>
+        <div class="stream-name">소설·에세이·IP</div>
+        <div class="stream-desc">인세, 원고료, 저작권. 한 번 만들고 계속 파는 구조.</div>
+        <span class="stream-timing" style="background:#EDE8DE;color:#5F5E5A">현재~</span>
+      </div>
+      <div class="stream">
+        <div class="stream-icon"><i class="ti ti-mail" aria-hidden="true"></i></div>
+        <div class="stream-name">뉴스레터·산문집</div>
+        <div class="stream-desc">삶을 위한 연구. 연말 산문집 마감. 2시즌부터 유료 전환.</div>
+        <span class="stream-timing" style="background:#EAF3DE;color:#3B6D11">2026~</span>
+      </div>
+      <div class="stream">
+        <div class="stream-icon"><i class="ti ti-player-play" aria-hidden="true"></i></div>
+        <div class="stream-name">유튜브·크리에이터</div>
+        <div class="stream-desc">결혼 정리 후 2027년 봄 시작. 광고·후원·온라인클래스.</div>
+        <span class="stream-timing" style="background:#FAEEDA;color:#854F0B">2027~</span>
+      </div>
+      <div class="stream">
+        <div class="stream-icon"><i class="ti ti-home" aria-hidden="true"></i></div>
+        <div class="stream-name">레지던시·공간</div>
+        <div class="stream-desc">참가비+후원. 수익보다 브랜드 베이스캠프 역할.</div>
+        <span class="stream-timing" style="background:#EEEDFE;color:#534AB7">2032~</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-label">재물운 대박 타이밍</div>
+    <div class="two-col">
+      <div class="card">
+        <div class="tag" style="background:#FAEEDA;color:#854F0B">2027~2028년</div>
+        <div class="card-title">브랜딩·콘텐츠 점프</div>
+        <div class="card-body">식신·편재 에너지가 세게 자극받는 구간. 내 이름, 내 색깔로 재정비하기 최적 타이밍.</div>
+      </div>
+      <div class="card">
+        <div class="tag" style="background:#EAF3DE;color:#3B6D11">2028~2030년</div>
+        <div class="card-title">사업 구조화 + 부동산</div>
+        <div class="card-body">금·토가 강해지며 계약·파트너십에 좋은 구간. 생활+사업 겸용 소형 부동산 매수 적기.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:#EDE8DE;border:none">
+    <div class="card-title">머니 모델 핵심 원칙</div>
+    <ul class="bullets" style="margin-top:6px">
+      <li>"시간당 페이"가 아니라 "한 번 만들고 계속 파는 구조"</li>
+      <li>단기 변동성 높은 투기성 자산은 체질에 안 맞음</li>
+      <li>오프라인 장사 규모 키우기보다 고정비 적은 IP 비즈니스</li>
+      <li>재산 분할 수령 후 → 주거 안정 + 1년 생활비 + 비상자금 순서</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 리스크 -->
+<div id="tab-risks" class="tab">
+  <div class="risk-card">
+    <div class="risk-header">
+      <div class="risk-dot" style="background:#D85A30"></div>
+      <span class="risk-title">대인관계 리스크</span>
+      <span class="risk-level" style="background:#FAECE7;color:#993C1D">매우 높음</span>
+    </div>
+    <div class="risk-body">상대의 상처를 너무 잘 읽어서 필요 이상으로 감싸줌. 경계선을 못 그어 "나만 더 하고 있다"는 배신감으로 돌아옴. 돈·시간·아이디어가 얽힌 관계에서 특히 위험.</div>
+    <ul class="patch-list">
+      <li>동업·파트너십은 역할 분담 문서화 필수</li>
+      <li>1:1 깊은 관계는 소수만 유지</li>
+      <li>서면 계약과 수익 배분 명시 습관화</li>
+    </ul>
+  </div>
+
+  <div class="risk-card">
+    <div class="risk-header">
+      <div class="risk-dot" style="background:#185FA5"></div>
+      <span class="risk-title">재정 구조 리스크</span>
+      <span class="risk-level" style="background:#E6F1FB;color:#185FA5">중간</span>
+    </div>
+    <div class="risk-body">수입은 있는데 구조가 약함. 편재는 기회를 잘 만들지만 흐름이 빠르고 안정성이 약함. 저축 전략 없이 들어오는 대로 쓰는 패턴.</div>
+    <ul class="patch-list">
+      <li>세무사·재무 컨설턴트와 정기 컨설팅</li>
+      <li>수입 구조 지도 시각화 관리</li>
+      <li>1년치 생활비 + 비상자금 중기 플랜</li>
+    </ul>
+  </div>
+
+  <div class="risk-card">
+    <div class="risk-header">
+      <div class="risk-dot" style="background:#3B6D11"></div>
+      <span class="risk-title">건강·번아웃 리스크</span>
+      <span class="risk-level" style="background:#EAF3DE;color:#3B6D11">높음</span>
+    </div>
+    <div class="risk-body">수(水)가 전무해서 회복력이 약함. 가만히 쉬면서도 머릿속은 일을 하고 있음. 관계 문제를 오래 끌 때 폭발적 번아웃.</div>
+    <ul class="patch-list">
+      <li>휴식을 일정에 먼저 박아 넣는 역전 설계</li>
+      <li>물 관련 활동 루틴화 (수영·반신욕·물가 산책)</li>
+      <li>밤 시간 저널링으로 무의식 배출</li>
+    </ul>
+  </div>
+
+  <div class="risk-card">
+    <div class="risk-header">
+      <div class="risk-dot" style="background:#854F0B"></div>
+      <span class="risk-title">정리 지연 리스크</span>
+      <span class="risk-level" style="background:#FAEEDA;color:#854F0B">매우 높음</span>
+    </div>
+    <div class="risk-body">마음은 떠났는데 "지금 정리하면 누가 힘들까"를 고민하며 시간을 질질 끄는 패턴. 에너지가 유지비에 다 들어가 새로운 시도에 쓸 힘이 모자라짐.</div>
+    <ul class="patch-list">
+      <li>정리 기준을 감정이 아니라 구조로 세울 것</li>
+      <li>"3년 후에도 이 상태를 감당하고 싶은가?" 자문</li>
+      <li>데드라인을 스스로 정하고 날짜 이후 추가 투입 금지</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="sec-label">구조적 결함 & 패치</div>
+    <div class="two-col">
+      <div class="card">
+        <div class="tag" style="background:#EDE8DE;color:#5F5E5A">금(金) 부재</div>
+        <div class="card-title">냉정한 판단력 없음</div>
+        <div class="card-body">논리·분석·경계 설정이 약함. 패치: 세무사·변호사·비즈니스 코치 등 "냉정한 타자"를 외주로 붙일 것. 스토리 감성은 내가, 구조 전략은 다른 사람.</div>
+      </div>
+      <div class="card">
+        <div class="tag" style="background:#E6F1FB;color:#185FA5">수(水) 부재</div>
+        <div class="card-title">회복력·장기 전략 없음</div>
+        <div class="card-body">휴식·회복·장기 전략이 약함. 패치: 남쪽 나라 연 1~2개월 체류, 온라인 기반 수입 구조로 물리적 위치와 수입 분리.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 지금 당장 할 일 -->
+<div id="tab-actions" class="tab">
+  <div class="card" style="background:#EDE8DE;border:none;margin-bottom:1rem">
+    <div class="card-body">신해 대운 초입. 지금 2~3년이 모든 걸 결정합니다. 새 것을 시작하기 전에 새는 구멍을 막는 것이 먼저예요.</div>
+  </div>
+
+  <div class="card">
+    <div class="action-item">
+      <div class="action-num" style="background:#FAECE7;color:#993C1D">1</div>
+      <div>
+        <div class="action-text">결혼 정리 실행</div>
+        <div class="action-sub">여름: 심리상담 + 편지 다듬기 + 짐 정리 병행. 가을: D-day 실행 (큰언니 집 10일) + 이혼 전문 변호사 선임. 겨울: 조정이혼 법적 완료 + 새 주거 안착.</div>
+        <button class="send-btn" onclick="sendPrompt('결혼생활 정리 판단 체크리스트를 다시 보여줘')">체크리스트 ↗</button>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num" style="background:#EAF3DE;color:#3B6D11">2</div>
+      <div>
+        <div class="action-text">시그니처 IP 확정 — 완료</div>
+        <div class="action-sub">매니페스토: "기꺼이 머뭇거리고, 용기 있게 취약한" / 취약성·머뭇거림·삶다움. 삶을 위한 연구 시즌1 〈쓸 수 없음에 대해 쓰기〉.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num" style="background:#EEEDFE;color:#534AB7">3</div>
+      <div>
+        <div class="action-text">뉴스레터 연재 시작</div>
+        <div class="action-sub">스티비 채널 개설 완료. 6/5 금요일 1호 발행. 매주 금요일 연재. 원고지 20매 × 24호 = 산문집 480매. 가을 D-day 전 버퍼 스톡 4주치 확보.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num" style="background:#FAEEDA;color:#854F0B">4</div>
+      <div>
+        <div class="action-text">수입 새는 구멍 차단</div>
+        <div class="action-sub">비상자금 단독 계좌 분리. 이혼 비용 예상 목록 작성. 재산 분할 수령 후 용처 미리 확정 (주거·생활·비상자금 순서).</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num" style="background:#EEEDFE;color:#534AB7">5</div>
+      <div>
+        <div class="action-text">경장편 초고 완성</div>
+        <div class="action-sub">세노테 다이빙 — 매일 밤 침잠 + 집필 루틴. 6월 150매 → 7월 300매 → 8월 말 500매 완성. 가을 탈고 후 겨울 연재 시작.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="margin-top:1rem">
+    <div class="sec-label">성공 공식 vs 실패 공식</div>
+    <div class="two-col">
+      <div class="card">
+        <div class="tag" style="background:#EAF3DE;color:#3B6D11">성공 공식</div>
+        <div class="card-body">"이야기를 만드는 일에 감정·관계·공간을 전부 연결하면, 그때마다 돈과 사람과 기회가 함께 따라온다."</div>
+      </div>
+      <div class="card">
+        <div class="tag" style="background:#FAECE7;color:#993C1D">실패 공식</div>
+        <div class="card-body">"완벽한 준비가 갖춰질 때까지 결정을 미루는 순간, 삶은 타인의 서사 속 조연으로 추락한다."</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 시나리오 -->
+<div id="tab-scenarios" class="tab">
+  <div class="sc-tabs">
+    <button class="sc-btn active-b" onclick="swSc('b',this)">현상 유지</button>
+    <button class="sc-btn" onclick="swSc('h',this)">목표 시나리오</button>
+  </div>
+
+  <div id="sc-b" class="sc-panel active">
+    <div class="sc-quote">"그럭저럭, 그러나 스스로에게는 잔인한 10년"</div>
+    <div class="three-col">
+      <div class="metric"><div class="metric-label">연 수입</div><div class="metric-val">3천~5천</div><div class="metric-sub">정체 구간</div></div>
+      <div class="metric"><div class="metric-label">10년 후 자산</div><div class="metric-val">큰 자산 없음</div><div class="metric-sub">경험만 쌓임</div></div>
+      <div class="metric"><div class="metric-label">타이틀</div><div class="metric-val" style="font-size:12px">"감각은 좋은데 아까운 사람"</div></div>
+    </div>
+    <ul class="bullets" style="margin-bottom:1rem">
+      <li>결혼·책방 결정 미루며 에너지 유지비로 소모</li>
+      <li>유튜브는 "언젠가", 에세이는 "좀 더 잘 쓸 때"로 미룸</li>
+      <li>아이디어만 쌓이고 실제 발행 안 됨</li>
+      <li>자책과 비교로 에너지 소모 반복</li>
+    </ul>
+    <button class="send-btn" onclick="sendPrompt('현상 유지 시나리오에서 가장 먼저 바꿔야 할 것은?')">탈출하려면 ↗</button>
+  </div>
+
+  <div id="sc-h" class="sc-panel">
+    <div class="sc-quote">"작은 우주의 주인 — 이야기로 세상과 연결되고, 글로 생계를 만들며, 공간으로 다음 세대를 키운다."</div>
+    <div class="three-col">
+      <div class="metric"><div class="metric-label">연 수입 목표</div><div class="metric-val">2~5억</div><div class="metric-sub">2030년 2억 → 2033년 3억+</div></div>
+      <div class="metric"><div class="metric-label">10년 후 자산</div><div class="metric-val">20~30억</div><div class="metric-sub">IP+부동산+금융 복합</div></div>
+      <div class="metric"><div class="metric-label">타이틀</div><div class="metric-val" style="font-size:12px">작은 우주의 주인</div></div>
+    </div>
+    <ul class="bullets" style="margin-bottom:1rem">
+      <li>2026: 결혼생활 마무리 · 경장편·산문집 탈고 · 뉴스레터 〈삶을 위한 연구〉 런칭</li>
+      <li>2027: 이혼 완료 + 새 주거 안착 · 장편·에세이집 출간 (계약분) · 유튜브 개설 · 고양이 입양 🐱</li>
+      <li>2028: 소설집·중편 출간 (계약분) · 첫 유료 강의 · 수입 연 1억 방향</li>
+      <li>2029~2030: 유튜브 성장 · 멤버십·온라인클래스 본격화 · 소형 부동산 매수 · 수입 연 2억</li>
+      <li>2031~2032: 레지던시 프로토타입 → 정식 오픈 · 장편 대작 집필 · 순자산 10억</li>
+      <li>2033~2034: 레지던시 황금기 · 장편 대작 출간 · 바닷가·고양이·계절 이동 라이프 완성 · 순자산 20~30억</li>
+    </ul>
+    <div class="card" style="background:#EDE8DE;border:none">
+      <div class="card-body" style="font-family:var(--font-serif,serif);font-size:13px;color:#5F5E5A">"당신의 운명은 기다리는 이야기가 아니라 써야만 존재하는 이야기다. 쓰지 않으면 사라지고, 던지지 않으면 열리지 않는다."</div>
+    </div>
+  </div>
+
+
+
+</div>
+
+<script>
+function swTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.t-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+function togTl(el){
+  el.classList.toggle('open');
+}
+function swSc(id,btn){
+  document.querySelectorAll('.sc-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sc-btn').forEach(b=>{
+    b.classList.remove('active-b','active-h','active-e');
+  });
+  document.getElementById('sc-'+id).classList.add('active');
+  btn.classList.add('active-'+id);
+}
+</script>
 </body>
 </html>

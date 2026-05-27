@@ -53,6 +53,8 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .dep-item{display:flex;align-items:center;gap:6px;padding:5px 8px;background:#EDE8DE;border-radius:7px;font-size:11px}
 .dep-del{cursor:pointer;color:#B4B2A9;margin-left:auto}
 .dep-del:hover{color:#9B3020}
+
+/* ── 공통 헤더 ── */
 .site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;padding:1.5rem 1.5rem 0}
 .site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
 .site-header-title:hover{color:#888780}
@@ -62,11 +64,14 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .site-header-nav::-webkit-scrollbar{display:none}
 .site-nav-btn{font-size:11px;padding:4px 11px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#5F5E5A;text-decoration:none;white-space:nowrap;flex-shrink:0}
 .site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
+
+
 .page-wrap{max-width:700px;margin:0 auto;background:#F5F0E8;min-height:100vh;padding:0 1.5rem 1.5rem;position:relative}
 </style>
 </head>
 <body>
 <div class="page-wrap">
+<!-- ── 공통 헤더 ── -->
 <div class="site-header">
   <a class="site-header-title" href="index.html">나의 우주 🌙</a>
   <div class="site-header-manifesto">"기꺼이 머뭇거리고, 용기 있게 취약한"</div>
@@ -77,7 +82,6 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
     <a class="site-nav-btn" href="bucket_list.html">버킷 가계부</a>
   </div>
 </div>
-<div style="height:1.5rem"></div>
 <div class="top-label">혼자 살게 되면 · 버킷리스트 가계부</div>
 <div class="top-title">하고 싶은 것들 💛</div>
 <div class="top-desc">수입의 10%씩 · 타임라인 순으로</div>
@@ -112,17 +116,25 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 
 <script>
 var ITEMS = [
-  {id:'cat', emoji:'🐱', title:'고양이 입양 + 동네 고양이 대모', when:'2027년 봄', wc:'#3B6D11', wb:'#EAF3DE', goal:1500000, color:'#3B6D11', sub:'입양비+초기 용품+병원비 · 이후 월 유지비 별도'},
-  {id:'surgery1', emoji:'✨', title:'가슴 줄기세포 지방이식 1차 (SC301)', when:'2027년 겨울', wc:'#D85A30', wb:'#FAECE7', goal:9000000, color:'#D85A30', sub:'1차 수술 · 겨울에 회복이 좋음'},
-  {id:'car', emoji:'🚗', title:'중고차 구입 + 운전 연수', when:'2027년 겨울', wc:'#BA7517', wb:'#FAEEDA', goal:10000000, color:'#BA7517', sub:'차량 500~800만원 + 연수비 100~200만원 예상'},
-  {id:'surgery2', emoji:'✨', title:'가슴 줄기세포 지방이식 2차 (SC301)', when:'2028년 봄', wc:'#D85A30', wb:'#FAECE7', goal:9000000, color:'#D85A30', sub:'2차 수술 · 총 1,800만원 완성'},
-  {id:'japan', emoji:'🇯🇵', title:'일본 어학연수', when:'2028년 가을~겨울', wc:'#555553', wb:'#E8E8E6', goal:5000000, color:'#1A6E9A', sub:'교토·가나자와 or 홋카이도 · 책방 영업 종료 + 수술 회복 후'}
+  {id:'cat', emoji:'🐱', title:'고양이 입양 + 동네 고양이 대모',
+   when:'2027년 봄', wc:'#3B6D11', wb:'#EAF3DE',
+   goal:1500000, color:'#3B6D11', sub:'입양비+초기 용품+병원비 · 이후 월 유지비 별도'},
+  {id:'surgery1', emoji:'✨', title:'가슴 줄기세포 지방이식 1차 (SC301)',
+   when:'2027년 겨울', wc:'#D85A30', wb:'#FAECE7',
+   goal:9000000, color:'#D85A30', sub:'1차 수술 · 겨울에 회복이 좋음'},
+  {id:'car', emoji:'🚗', title:'중고차 구입 + 운전 연수',
+   when:'2027년 겨울', wc:'#BA7517', wb:'#FAEEDA',
+   goal:10000000, color:'#BA7517', sub:'차량 500~800만원 + 연수비 100~200만원 예상'},
+  {id:'surgery2', emoji:'✨', title:'가슴 줄기세포 지방이식 2차 (SC301)',
+   when:'2028년 봄', wc:'#D85A30', wb:'#FAECE7',
+   goal:9000000, color:'#D85A30', sub:'2차 수술 · 총 1,800만원 완성'},
+  {id:'japan', emoji:'🇯🇵', title:'일본 어학연수',
+   when:'2028년 가을~겨울', wc:'#555553', wb:'#E8E8E6',
+   goal:5000000, color:'#1A6E9A', sub:'교토·가나자와 or 홋카이도 · 책방 영업 종료 + 수술 회복 후'}
 ];
 
 var deps = {};
-ITEMS.forEach(function(i){ 
-  deps[i.id] = JSON.parse(localStorage.getItem('bl-'+i.id) || '[]'); 
-});
+ITEMS.forEach(function(i){ deps[i.id] = JSON.parse(localStorage.getItem('bl-'+i.id)||'[]'); });
 
 function save(id){ localStorage.setItem('bl-'+id, JSON.stringify(deps[id])); }
 
@@ -202,6 +214,7 @@ function render(){
     list.innerHTML+=h;
   });
 }
+
 render();
 </script>
 </div>
