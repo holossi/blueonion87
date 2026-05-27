@@ -95,9 +95,33 @@ body{background:#F5F0E8;min-height:100vh;padding:1.5rem;font-family:-apple-syste
 .prog-row{display:flex;justify-content:space-between;font-size:11px;color:#888780;margin-bottom:4px}
 .prog-track{height:4px;background:#EDE8DE;border-radius:2px;overflow:hidden}
 .prog-bar{height:100%;border-radius:2px;transition:width .3s}
+
+/* ── 공통 헤더 ── */
+.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;margin:-1.5rem -1.5rem 0;padding:20px 1.5rem 0}
+.site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
+.site-header-title:hover{color:#888780}
+.site-header-manifesto{font-size:11px;color:#888780;font-style:italic;margin-bottom:3px}
+.site-header-keywords{font-size:10px;color:#B4B2A9;letter-spacing:.04em}
+.site-header-nav{display:flex;gap:6px;padding:10px 0 12px;overflow-x:auto;scrollbar-width:none}
+.site-header-nav::-webkit-scrollbar{display:none}
+.site-nav-btn{font-size:11px;padding:4px 11px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#5F5E5A;text-decoration:none;white-space:nowrap;flex-shrink:0}
+.site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
+
 </style>
 </head>
 <body>
+<!-- ── 공통 헤더 ── -->
+<div class="site-header">
+  <a class="site-header-title" href="index.html">나의 우주 🌙</a>
+  <div class="site-header-manifesto">"기꺼이 머뭇거리고, 용기 있게 취약한"</div>
+  <div class="site-header-keywords">취약성 · 머뭇거림 · 삶다움</div>
+  <div class="site-header-nav">
+    <a class="site-nav-btn" href="master_planner_2026.html">탑다운 플래너</a>
+    <a class="site-nav-btn" href="life_roadmap_beige.html">인생 로드맵</a>
+    <a class="site-nav-btn" href="bucket_list.html">버킷리스트</a>
+  </div>
+</div>
+<div style="height:1.5rem"></div>
 <div class="top-label">을축일주 · 신해대운 · 마스터 플래너</div>
 <div class="top-title">2026 탑다운 플래너</div>
 <div class="top-desc">대운 & 시나리오 → 연도 → 계절 → 월 → 주간</div>

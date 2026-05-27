@@ -6,298 +6,156 @@
 <title>나의 우주 · 인생관리 시스템</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{
-  background:#F5F0E8;
-  min-height:100vh;
-  padding:1.5rem;
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  color:#2C2C2A;
-}
+body{background:#F5F0E8;min-height:100vh;padding:1.5rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2C2C2A}
 
-/* ── 헤더 ── */
-.header{margin-bottom:1.75rem}
-.header-label{font-size:10px;font-weight:500;color:#B4B2A9;letter-spacing:.08em;margin-bottom:5px}
-.header-title{font-size:22px;font-weight:500;color:#2C2C2A;margin-bottom:4px;letter-spacing:-.01em}
-.header-motto{font-size:12px;color:#888780;font-style:italic;line-height:1.6;margin-bottom:1rem}
+/* ── 공통 헤더 ── */
+.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;margin:-1.5rem -1.5rem 0;padding:20px 1.5rem 0}
+.site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
+.site-header-title:hover{color:#888780}
+.site-header-manifesto{font-size:11px;color:#888780;font-style:italic;margin-bottom:3px}
+.site-header-keywords{font-size:10px;color:#B4B2A9;letter-spacing:.04em}
+.site-header-nav{display:flex;gap:6px;padding:10px 0 12px;overflow-x:auto;scrollbar-width:none}
+.site-header-nav::-webkit-scrollbar{display:none}
+.site-nav-btn{font-size:11px;padding:4px 11px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#5F5E5A;text-decoration:none;white-space:nowrap;flex-shrink:0}
+.site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
 
-/* ── 현재 상태 배너 ── */
-.now-banner{
-  background:#2C2C2A;
-  border-radius:14px;
-  padding:14px 16px;
-  margin-bottom:1.5rem;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
-.now-left{}
-.now-phase{font-size:9px;font-weight:500;color:#888780;letter-spacing:.06em;margin-bottom:4px}
-.now-text{font-size:13px;font-weight:500;color:#F5F0E8;line-height:1.5}
-.now-sub{font-size:11px;color:#888780;margin-top:3px}
-.now-badge{
-  background:#FAEEDA;
-  color:#854F0B;
-  font-size:10px;
-  font-weight:500;
-  padding:4px 10px;
-  border-radius:20px;
-  white-space:nowrap;
-  flex-shrink:0;
-}
-
-/* ── 퀵 스탯 ── */
-.stats-row{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  margin-bottom:1.5rem;
-}
-.stat-card{
-  background:#EDE8DE;
-  border-radius:10px;
-  padding:10px 12px;
-  text-align:center;
-}
-.stat-label{font-size:9px;font-weight:500;color:#B4B2A9;letter-spacing:.04em;margin-bottom:4px}
-.stat-val{font-size:14px;font-weight:500;color:#2C2C2A;line-height:1.2}
-.stat-sub{font-size:10px;color:#888780;margin-top:2px}
-
-/* ── 섹션 라벨 ── */
+/* ── 대운 섹션 ── */
 .sec-label{font-size:10px;font-weight:500;color:#B4B2A9;letter-spacing:.05em;margin-bottom:10px}
-
-/* ── 메인 카드 (플래너) ── */
-.main-card{
-  background:#FDFAF6;
-  border:0.5px solid #D3D1C7;
-  border-radius:14px;
-  padding:16px 17px;
-  text-decoration:none;
-  color:inherit;
-  display:block;
-  transition:border-color .15s, box-shadow .15s;
-  position:relative;
-  overflow:hidden;
-  margin-bottom:1.5rem;
-}
-.main-card:hover{
-  border-color:#888780;
-  box-shadow:0 2px 12px rgba(44,44,42,.06);
-}
-.main-card::before{
-  content:'';
-  position:absolute;
-  left:0;top:0;bottom:0;
-  width:3px;
-  background:#BA7517;
-  border-radius:3px 0 0 3px;
-}
-.module-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
-.module-left{flex:1}
-.module-tag{
-  font-size:9px;font-weight:500;
-  padding:2px 7px;border-radius:8px;
-  display:inline-block;margin-bottom:5px;
-}
-.module-title{font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px}
-.module-desc{font-size:11px;color:#888780;line-height:1.55}
-.module-arrow{
-  font-size:16px;color:#D3D1C7;
-  margin-left:10px;margin-top:2px;
-  flex-shrink:0;
-  transition:color .15s, transform .15s;
-}
-.main-card:hover .module-arrow{color:#888780;transform:translateX(2px)}
-.module-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
-.chip{font-size:10px;color:#888780;background:#EDE8DE;padding:2px 8px;border-radius:8px;}
-.module-status{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-top:10px;padding-top:9px;
-  border-top:0.5px solid #EDE8DE;
-}
-.status-left{font-size:11px;color:#888780}
-.status-right{font-size:10px;font-weight:500}
-
-/* ── 진행 바 ── */
-.prog-row{display:flex;justify-content:space-between;font-size:10px;color:#B4B2A9;margin-bottom:4px;margin-top:10px}
-.prog-track{height:4px;background:#EDE8DE;border-radius:2px;overflow:hidden}
-.prog-fill{height:100%;border-radius:2px;transition:width .4s}
-
-/* ── 작은 버튼 행 ── */
-.small-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem}
-.small-btn{
-  display:flex;align-items:center;gap:6px;
-  padding:7px 13px;
-  border:0.5px solid #D3D1C7;
-  border-radius:20px;
-  background:#FDFAF6;
-  text-decoration:none;
-  color:#5F5E5A;
-  font-size:12px;
-  transition:border-color .15s, background .15s;
-}
-.small-btn:hover{border-color:#888780;background:#EDE8DE;color:#2C2C2A}
-.small-btn-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-
-/* ── 오늘의 문장 ── */
-.quote-card{
-  background:#EDE8DE;
-  border-radius:12px;
-  padding:14px 16px;
-  margin-bottom:1.5rem;
-}
+.vision-card{background:#FDFAF6;border-radius:14px;padding:16px;margin-bottom:1rem;border:1px solid #C4B49A}
+.vision-label{font-size:9px;font-weight:500;color:#B4A88A;letter-spacing:.06em;margin-bottom:6px}
+.vision-text{font-size:13px;color:#5F5E5A;line-height:1.7;font-style:italic;margin-bottom:14px}
+.vision-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.vs{background:#EDE8DE;border-radius:8px;padding:8px 10px;text-align:center}
+.vs-label{font-size:9px;color:#B4B2A9;margin-bottom:3px}
+.vs-val{font-size:13px;font-weight:500;color:#2C2C2A}
+.vs-goal{font-size:9px;color:#3B6D11;margin-top:3px}
+.phase-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem}
+.phase-card{border-radius:12px;padding:14px 16px;cursor:pointer;text-decoration:none;display:block;color:inherit;border:0.5px solid #D3D1C7;background:#EDE8DE;transition:border-color .15s,background .15s}
+.phase-card:hover{border-color:#BA7517;background:#E0D9CC}
+.phase-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.phase-years{font-size:10px;font-weight:500}
+.phase-badge{font-size:9px;font-weight:500;padding:2px 7px;border-radius:8px}
+.phase-title{font-size:14px;font-weight:500;color:#2C2C2A;margin-bottom:3px}
+.phase-desc{font-size:11px;line-height:1.5;font-style:italic}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:10px;padding:2px 8px;border-radius:8px}
+.now-dot{font-size:9px;font-weight:500;padding:2px 7px;border-radius:8px;background:#FAEEDA;color:#854F0B;margin-left:6px}
+.quote-card{background:#EDE8DE;border-radius:12px;padding:14px 16px;margin-bottom:1rem}
 .quote-label{font-size:9px;font-weight:500;color:#B4B2A9;letter-spacing:.06em;margin-bottom:6px}
 .quote-text{font-size:12px;color:#5F5E5A;line-height:1.7;font-style:italic}
 .quote-source{font-size:10px;color:#B4B2A9;margin-top:5px}
-
-/* ── 푸터 ── */
-.footer{
-  text-align:center;
-  padding:1rem 0 .5rem;
-  font-size:10px;
-  color:#B4B2A9;
-  line-height:1.8;
-}
-
-/* ── 공통 헤더 ── */
-.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;margin:-1.5rem -1.5rem 1.5rem;padding:0 1.5rem}
-.site-header-inner{display:flex;align-items:center;justify-content:space-between;height:44px}
-.site-header-label{font-size:10px;font-weight:500;color:#B4B2A9;letter-spacing:.06em}
-.site-header-title{font-size:15px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.01em}
-.site-header-title:hover{color:#888780}
-
+.manifesto{margin-bottom:1.5rem}
+.manifesto-title{font-size:14px;color:#5F5E5A;font-style:italic;line-height:1.65;margin-bottom:5px}
+.manifesto-keywords{font-size:11px;color:#B4B2A9;letter-spacing:.04em}
+.footer{text-align:center;padding:.75rem 0 .5rem;font-size:10px;color:#B4B2A9;line-height:1.8}
 </style>
 </head>
 <body>
+
 <!-- ── 공통 헤더 ── -->
 <div class="site-header">
-  <div class="site-header-inner">
-    <div class="site-header-label">을축일주 · 신해대운 · 인생관리 시스템</div>
-    <a class="site-header-title" href="index.html">나의 우주 🌙</a>
+  <a class="site-header-title" href="index.html">나의 우주 🌙</a>
+  <div class="site-header-manifesto">"기꺼이 머뭇거리고, 용기 있게 취약한"</div>
+  <div class="site-header-keywords">취약성 · 머뭇거림 · 삶다움</div>
+  <div class="site-header-nav">
+    <a class="site-nav-btn" href="master_planner_2026.html">탑다운 플래너</a>
+    <a class="site-nav-btn" href="life_roadmap_beige.html">인생 로드맵</a>
+    <a class="site-nav-btn" href="bucket_list.html">버킷리스트</a>
+  </div>
+</div>
+<div style="height:1.5rem"></div>
+
+
+<div class="vision-card">
+  <div class="vision-label">잠재력 각성 × 운명 초월</div>
+  <div class="vision-text">"이야기로 세상과 연결되고, 글로 생계를 만들며, 공간으로 다음 세대를 키운다."</div>
+  <div class="vision-stats">
+    <div class="vs"><div class="vs-label">연 수입 · 지금</div><div class="vs-val">2,000만</div><div class="vs-goal">→ 목표 2~4억</div></div>
+    <div class="vs"><div class="vs-label">순자산 · 지금</div><div class="vs-val">600만</div><div class="vs-goal">→ 목표 10~20억</div></div>
+    <div class="vs"><div class="vs-label">타이틀 · 지금</div><div class="vs-val" style="font-size:11px">소설가</div><div class="vs-goal">→ 작은 우주의 주인</div></div>
   </div>
 </div>
 
-<!-- 헤더 -->
-<div class="header">
-  <div class="header-motto">"기꺼이 머뭇거리고, 용기 있게 취약한"<br>취약성 · 머뭇거림 · 삶다움</div>
-  <div class="small-btns">
-    <a class="small-btn" href="life_roadmap_beige.html">
-      <span class="small-btn-dot" style="background:#639922"></span>
-      인생 로드맵
-    </a>
-    <a class="small-btn" href="bucket_list.html">
-      <span class="small-btn-dot" style="background:#534AB7"></span>
-      버킷리스트 가계부
-    </a>
-  </div>
-</div>
+<!-- 3단계 대운 -->
+<div class="sec-label">신해 대운 3단계 (2026~2034)</div>
+<div class="phase-list">
 
-<!-- 현재 상태 배너 -->
-<div class="now-banner">
-  <div class="now-left">
-    <div class="now-phase">NOW · 신해대운 1단계</div>
-    <div class="now-text">2026 · 끊고 시작하는 해</div>
-    <div class="now-sub">구조 전환기 · 여름 🍉</div>
-  </div>
-  <div class="now-badge">지금 ★</div>
-</div>
-
-<!-- 퀵 스탯 -->
-<div class="stats-row">
-  <div class="stat-card">
-    <div class="stat-label">연 수입 목표</div>
-    <div class="stat-val">2,000만</div>
-    <div class="stat-sub">→ 2~4억</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">신해대운</div>
-    <div class="stat-val">38~47세</div>
-    <div class="stat-sub">폭발기</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">버킷리스트</div>
-    <div class="stat-val">5개</div>
-    <div class="stat-sub">총 3,450만원</div>
-  </div>
-</div>
-
-<!-- 메인 모듈 -->
-<div class="sec-label">THIS YEAR</div>
-<a class="main-card" href="master_planner_2026.html">
-  <div class="module-top">
-    <div class="module-left">
-      <span class="module-tag" style="background:#FAEEDA;color:#854F0B">마스터 플래너</span>
-      <div class="module-title">2026 탑다운 플래너</div>
-      <div class="module-desc">대운 → 연도 → 계절 → 월 → 주간</div>
+  <a class="phase-card" href="master_planner_2026.html">
+    <div class="phase-head">
+      <div>
+        <span class="phase-years" style="color:#888780">2026 — 2028</span>
+        <span class="now-dot">지금 ★</span>
+      </div>
+      <span class="phase-badge" style="background:#D3D1C7;color:#5F5E5A">1단계</span>
     </div>
-    <div class="module-arrow">›</div>
-  </div>
-  <div class="module-chips">
-    <span class="chip">경장편 집필</span>
-    <span class="chip">결혼생활 마무리</span>
-    <span class="chip">뉴스레터 런칭</span>
-  </div>
-  <div class="prog-row">
-    <span>2026년 진행률</span>
-    <span id="year-pct">—</span>
-  </div>
-  <div class="prog-track">
-    <div class="prog-fill" id="year-bar" style="background:#BA7517;width:0%"></div>
-  </div>
-  <div class="module-status">
-    <span class="status-left">지금 · 여름 🍉 / 세팅주</span>
-    <span class="status-right" style="color:#BA7517">열어보기 →</span>
-  </div>
-</a>
+    <div class="phase-title">구조 전환기</div>
+    <div class="phase-desc" style="color:#888780">"끊을 것 끊고, 시작할 것 시작하기."</div>
+    <div class="chips">
+      <span class="chip" style="background:#D3D1C7;color:#5F5E5A">결혼생활 마무리</span>
+      <span class="chip" style="background:#D3D1C7;color:#5F5E5A">경장편·산문집</span>
+      <span class="chip" style="background:#D3D1C7;color:#5F5E5A">뉴스레터 런칭</span>
+    </div>
+  </a>
 
-<!-- 오늘의 문장 -->
+  <div class="phase-card">
+    <div class="phase-head">
+      <span class="phase-years" style="color:#888780">2029 — 2031</span>
+      <span class="phase-badge" style="background:#D3D1C7;color:#444441">2단계</span>
+    </div>
+    <div class="phase-title">확장기</div>
+    <div class="phase-desc" style="color:#888780">"이름값이 붙기 시작하는 시기."</div>
+    <div class="chips">
+      <span class="chip" style="background:#D3D1C7;color:#444441">유튜브 성장</span>
+      <span class="chip" style="background:#D3D1C7;color:#444441">강의·멤버십</span>
+    </div>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-head">
+      <span class="phase-years" style="color:#888780">2032 — 2034</span>
+      <span class="phase-badge" style="background:#D0D0CE;color:#444442">3단계</span>
+    </div>
+    <div class="phase-title">수확 준비기</div>
+    <div class="phase-desc" style="color:#888780">"레지던시 구축, 바닷가 거점 확보."</div>
+    <div class="chips">
+      <span class="chip" style="background:#D0D0CE;color:#444442">레지던시</span>
+      <span class="chip" style="background:#D0D0CE;color:#444442">고양이·바다</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- 만트라 -->
 <div class="quote-card">
   <div class="quote-label">MANTRA</div>
-  <div class="quote-text" id="quote-text">"당신의 운명은 기다리는 이야기가 아니라 써야만 존재하는 이야기다. 쓰지 않으면 사라지고, 던지지 않으면 열리지 않는다."</div>
-  <div class="quote-source" id="quote-source">인생 로드맵 · 운명 초월 시나리오</div>
+  <div class="quote-text" id="quote-text"></div>
+  <div class="quote-source" id="quote-source"></div>
 </div>
 
-<!-- 푸터 -->
 <div class="footer">
   을축일주 · 신해대운 (2026~2034) · 38세<br>
-  <span id="today-str" style="color:#D3D1C7"></span>
+  <span id="today-str"></span>
 </div>
 
 <script>
-// ── 오늘 날짜
 (function(){
-  var d = new Date();
-  var days = ['일','월','화','수','목','금','토'];
-  document.getElementById('today-str').textContent =
-    d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일 (' + days[d.getDay()] + ')';
+  var d=new Date();
+  var days=['일','월','화','수','목','금','토'];
+  document.getElementById('today-str').textContent=
+    d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')';
 })();
-
-// ── 2026년 진행률 (날짜 기준)
-(function(){
-  var start = new Date('2026-01-01');
-  var end   = new Date('2026-12-31');
-  var now   = new Date();
-  var pct   = Math.min(100, Math.max(0, Math.round((now - start) / (end - start) * 100)));
-  document.getElementById('year-bar').style.width = pct + '%';
-  document.getElementById('year-pct').textContent = pct + '%';
-})();
-
-
-
-
-// ── 만트라 랜덤
-var mantras = [
-  {t:'"기꺼이 머뭇거리고, 용기 있게 취약한."', s:'을축일주 · 삶의 매니페스토'},
-  {t:'"이야기로 세상과 연결되고, 글로 생계를 만들며, 공간으로 다음 세대를 키운다."', s:'통합 시나리오 · 비전'},
-  {t:'"당신의 운명은 기다리는 이야기가 아니라 써야만 존재하는 이야기다."', s:'인생 로드맵 · 운명 초월 시나리오'},
-  {t:'"끝낼 것은 끝내고, 남길 것에 몰아줄 것."', s:'신해대운 1단계 · 미션'},
-  {t:'"감각으로 잡고, 구조로 굳히는 삶을 위한 설계도."', s:'인생 로드맵 · 부제'},
+var mantras=[
+  {t:'"기꺼이 머뭇거리고, 용기 있게 취약한."',s:'을축일주 · 삶의 매니페스토'},
+  {t:'"이야기로 세상과 연결되고, 글로 생계를 만들며, 공간으로 다음 세대를 키운다."',s:'통합 시나리오 · 비전'},
+  {t:'"당신의 운명은 기다리는 이야기가 아니라 써야만 존재하는 이야기다."',s:'인생 로드맵 · 운명 초월 시나리오'},
+  {t:'"끝낼 것은 끝내고, 남길 것에 몰아줄 것."',s:'신해대운 1단계 · 미션'},
+  {t:'"감각으로 잡고, 구조로 굳히는 삶을 위한 설계도."',s:'인생 로드맵 · 부제'},
 ];
 (function(){
-  var d = new Date();
-  var m = mantras[d.getDate() % mantras.length];
-  document.getElementById('quote-text').textContent = m.t;
-  document.getElementById('quote-source').textContent = m.s;
+  var d=new Date();
+  var m=mantras[d.getDate()%mantras.length];
+  document.getElementById('quote-text').textContent=m.t;
+  document.getElementById('quote-source').textContent=m.s;
 })();
 </script>
 </body>
