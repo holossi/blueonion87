@@ -117,7 +117,17 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .add-task-btn{height:28px;width:28px;border:0.5px solid #D3D1C7;border-radius:7px;background:#F5F0E8;color:#888780;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .add-task-btn:hover{border-color:#888780;color:#2C2C2A}
 .task-del{cursor:pointer;color:#D3D1C7;font-size:11px;margin-left:4px;flex-shrink:0;padding:2px}
+.task-next{cursor:pointer;color:#D3D1C7;font-size:12px;margin-left:2px;flex-shrink:0;padding:2px}
+.task-next:hover{color:#BA7517}
+.task-date{font-size:10px;color:#B4B2A9;margin-left:4px;flex-shrink:0;white-space:nowrap}
 .task-del:hover{color:#9B3020}
+
+
+.track.drag-over{border:1.5px dashed #BA7517;background:#FDFAF6}
+.track.drag-over .track-head{opacity:.6}
+.drag-handle{cursor:grab;color:#C4B49A;font-size:12px;margin-right:4px;flex-shrink:0}
+.task.drag-target{border:1px dashed #BA7517;background:#FDFAF6}
+.drag-handle:active{cursor:grabbing}
 
 </style>
 </head>
@@ -152,10 +162,12 @@ var STATE = {tasks:{}, goals:{}, custom:{}};
 (function(){
   try {
     var s = JSON.parse(localStorage.getItem('planner-state')||'{}');
-    STATE.tasks   = s.tasks   || {};
-    STATE.goals   = s.goals   || {};
-    STATE.custom  = s.custom  || {};
-    STATE.deleted = s.deleted || {};
+    STATE.tasks     = s.tasks     || {};
+    STATE.goals     = s.goals     || {};
+    STATE.custom    = s.custom    || {};
+    STATE.deleted   = s.deleted   || {};
+    STATE.allItems  = s.allItems  || {};
+
   } catch(e) {}
 })();
 function saveState(){ localStorage.setItem('planner-state', JSON.stringify(STATE)); }
@@ -165,13 +177,20 @@ function addCustomTask(key) {
   var inp = document.getElementById('add-inp-'+safeId);
   var val = (inp ? inp.value : '').trim();
   if(!val) return;
-  if(!STATE.custom[key]) STATE.custom[key] = [];
-  STATE.custom[key].push(val);
-  saveState();
   var parts = key.split('|');
-  if(parts[0]==='wk') goWeek(parts[1]);
-  else if(parts[0]==='mo') goMonth(curMonth);
-  else if(parts[0]==='se') goSeason(curSeason);
+  if(parts[0]==='wk') {
+    if(!STATE.allItems) STATE.allItems = {};
+    if(!STATE.allItems[key]) STATE.allItems[key] = [];
+    STATE.allItems[key].push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), text:val});
+    saveState();
+    goWeek(parts[1]);
+  } else {
+    if(!STATE.custom[key]) STATE.custom[key] = [];
+    STATE.custom[key].push(val);
+    saveState();
+    if(parts[0]==='mo') goMonth(curMonth);
+    else if(parts[0]==='se') goSeason(curSeason);
+  }
 }
 function delCustomTask(key, idx) {
   if(STATE.custom[key]) { STATE.custom[key].splice(idx,1); saveState(); }
@@ -179,6 +198,122 @@ function delCustomTask(key, idx) {
   if(parts[0]==='wk') goWeek(parts[1]);
   else if(parts[0]==='mo') goMonth(curMonth);
   else if(parts[0]==='se') goSeason(curSeason);
+}
+
+
+
+// ── 통합 아이템 관리 ──────────────────────────────────
+function getAllItems(ck, wid, trIdx) {
+  if(!STATE.allItems) STATE.allItems = {};
+  if(STATE.allItems[ck]) return STATE.allItems[ck];
+  var items = [];
+  if(trIdx !== 'etc') {
+    var ti = parseInt(trIdx);
+    var tr = WD[wid] && WD[wid].tracks && WD[wid].tracks[ti];
+    if(tr) tr.tasks.forEach(function(t, i) {
+      var old = 'wk:'+wid+':'+ti+':'+i;
+      if(!STATE.deleted[old]) items.push({id:old, text:t.t});
+    });
+  }
+  (STATE.custom[ck]||[]).forEach(function(ct) {
+    var txt = (typeof ct==='object') ? ct.t : ct;
+    items.push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), text:txt});
+  });
+  STATE.allItems[ck] = items;
+  STATE.custom[ck] = [];
+  return items;
+}
+
+// ── 드래그앤드롭 ──────────────────────────────────────
+var _di = null; // {ck, idx}
+function onItemDragStart(e, ck, idx) {
+  _di = {ck:ck, idx:idx};
+  e.dataTransfer.effectAllowed = 'move';
+  e.stopPropagation();
+}
+function onItemDragOver(e, ck, idx) {
+  if(!_di) return;
+  e.preventDefault(); e.stopPropagation();
+  document.querySelectorAll('.task').forEach(function(el){ el.classList.remove('drag-target'); });
+  var el = document.getElementById('item-'+ck.replace(/[|:]/g,'_')+'-'+idx);
+  if(el) el.classList.add('drag-target');
+}
+function onItemDrop(e, ck, idx) {
+  e.preventDefault(); e.stopPropagation();
+  document.querySelectorAll('.task').forEach(function(el){ el.classList.remove('drag-target'); });
+  if(!_di) return;
+  var srcCk = _di.ck, srcIdx = _di.idx;
+  if(srcCk === ck && srcIdx === idx) { _di=null; return; }
+  if(!STATE.allItems[srcCk]) { _di=null; return; }
+  var item = STATE.allItems[srcCk].splice(srcIdx,1)[0];
+  if(!STATE.allItems[ck]) STATE.allItems[ck] = [];
+  var ti = (srcCk===ck && srcIdx<idx) ? idx-1 : idx;
+  STATE.allItems[ck].splice(ti,0,item);
+  _di = null;
+  saveState();
+  goWeek(curWeek);
+}
+function onTrackDropEnd(e, ck) {
+  e.preventDefault(); e.stopPropagation();
+  document.querySelectorAll('.task').forEach(function(el){ el.classList.remove('drag-target'); });
+  if(!_di) return;
+  if(!STATE.allItems[_di.ck]) { _di=null; return; }
+  var item = STATE.allItems[_di.ck].splice(_di.idx,1)[0];
+  if(!STATE.allItems[ck]) STATE.allItems[ck] = [];
+  STATE.allItems[ck].push(item);
+  _di = null;
+  saveState();
+  goWeek(curWeek);
+}
+var WEEK_ORDER = ['setup','w1','w2','w3','w4'];
+
+function delItem(ck, idx, wid) {
+  if(STATE.allItems && STATE.allItems[ck]) {
+    STATE.allItems[ck].splice(idx,1);
+    saveState();
+  }
+  goWeek(wid);
+}
+function moveItemToNextWeek(ck, idx, wid) {
+  var widIdx = WEEK_ORDER.indexOf(wid);
+  if(widIdx<0||widIdx>=WEEK_ORDER.length-1){alert('다음 주가 없어요!');return;}
+  var nextWid = WEEK_ORDER[widIdx+1];
+  if(!STATE.allItems||!STATE.allItems[ck]) return;
+  var item = STATE.allItems[ck].splice(idx,1)[0];
+  var eck = 'wk|'+nextWid+'|etc';
+  if(!STATE.allItems) STATE.allItems = {};
+  if(!STATE.allItems[eck]) STATE.allItems[eck] = [];
+  STATE.allItems[eck].push(item);
+  saveState();
+  goWeek(wid);
+}
+
+function moveToNextWeek(tid, text, wid) {
+  var idx = WEEK_ORDER.indexOf(wid);
+  if(idx === -1 || idx >= WEEK_ORDER.length-1) { alert('다음 주가 없어요!'); return; }
+  var nextWid = WEEK_ORDER[idx+1];
+  // 현재 주에서 삭제
+  STATE.deleted[tid] = true;
+  // 다음 주 etc.에 추가
+  var eck = 'wk|'+nextWid+'|etc';
+  if(!STATE.custom[eck]) STATE.custom[eck] = [];
+  STATE.custom[eck].push(text);
+  saveState();
+  goWeek(wid);
+}
+function moveCustomToNextWeek(ck, idx, text, wid) {
+  var parts = ck.split('|');
+  var widIdx = WEEK_ORDER.indexOf(wid);
+  if(widIdx === -1 || widIdx >= WEEK_ORDER.length-1) { alert('다음 주가 없어요!'); return; }
+  var nextWid = WEEK_ORDER[widIdx+1];
+  // 현재 주에서 제거
+  STATE.custom[ck].splice(idx, 1);
+  // 다음 주 etc.에 추가
+  var eck = 'wk|'+nextWid+'|etc';
+  if(!STATE.custom[eck]) STATE.custom[eck] = [];
+  STATE.custom[eck].push(text);
+  saveState();
+  goWeek(wid);
 }
 function delTask(tid, wid) {
   STATE.deleted[tid] = true; saveState(); goWeek(wid);
@@ -649,7 +784,7 @@ function goSeason(sid) {
     var done = STATE.goals[gid];
     h += '<div class="sg-item'+(done?' done':'')+'" onclick="togSg(this,\''+gid+'\')" style="background:#EDE8DE">';
     h += '<div class="sg-chk'+(done?' done':'')+'"></div>';
-    h += '<div class="sg-text" style="flex:1">'+ct+'</div>';
+    h += '<div class="sg-text" style="flex:1">'+(typeof ct==='object'?ct.t:ct)+'</div>';
     h += '<span class="task-del" onclick="event.stopPropagation();delCustomTask(\''+sck+'\','+ctIdx+')">✕</span></div>';
   });
   h += '<div class="add-task-row" style="margin-bottom:1rem">';
@@ -681,7 +816,8 @@ function goMonth(mid) {
   h += '<div class="pace-row">'+m.paces.map(function(p){ return '<div class="pace"><div class="pace-label">'+p.l+'</div><div class="pace-val">'+p.v+'</div><div class="pace-sub">'+p.s+'</div></div>'; }).join('')+'</div>';
   m.tracks.forEach(function(tr, trIdx) {
     var mck = 'mo|'+mid+'|'+trIdx;
-    h += '<div class="track"><div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
+    h += '<div class="track">';
+    h += '<div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
     tr.tasks.forEach(function(t, tIdx) {
       var tid = 'mo:'+mid+':'+trIdx+':'+tIdx;
       if(STATE.deleted[tid]) return;
@@ -696,7 +832,7 @@ function goMonth(mid) {
       var done = STATE.tasks[tid];
       h += '<div class="task" onclick="togT(this,\''+tid+'\')">';
       h += '<div class="chk'+(done?' done':'')+'"></div>';
-      h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+ct+'</div>';
+      h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+(typeof ct==='object'?ct.t:ct)+'</div>';
       h += '<span class="task-del" onclick="event.stopPropagation();delCustomTask(\''+mck+'\','+ctIdx+')">✕</span></div>';
     });
     h += '<div class="add-task-row">';
@@ -729,47 +865,56 @@ function goWeek(wid) {
   h += '<div style="border-bottom:0.5px solid #D3D1C7;margin-bottom:1rem;padding-bottom:10px">';
   h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+w.label+' · '+w.dates+(w.cur?'<span class="now-badge">지금</span>':'')+'</div>';
   h += '<div style="font-size:12px;color:#888780;font-style:italic">'+w.mood+'</div></div>';
+  // 메인 트랙
   w.tracks.forEach(function(tr, trIdx) {
     var ck = 'wk|'+wid+'|'+trIdx;
-    h += '<div class="track"><div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
-    tr.tasks.forEach(function(t, tIdx) {
-      var tid = 'wk:'+wid+':'+trIdx+':'+tIdx;
-      if(STATE.deleted[tid]) return;
-      var done = STATE.tasks[tid] || t.done;
-      h += '<div class="task" onclick="togT(this,\''+tid+'\')">';
+    var items = getAllItems(ck, wid, trIdx);
+    var ckSafe = ck.replace(/[|:]/g,'_');
+    h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+ck+'\')">'
+;    h += '<div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
+    items.forEach(function(item, itemIdx) {
+      var done = STATE.tasks[item.id];
+      var safeText = item.text.replace(/'/g,"\\'");
+      var itemId = 'item-'+ckSafe+'-'+itemIdx;
+      h += '<div class="task" id="'+itemId+'" draggable="true"';
+      h += ' ondragstart="onItemDragStart(event,\''+ck+'\','+itemIdx+')"';
+      h += ' ondragover="onItemDragOver(event,\''+ck+'\','+itemIdx+')"';
+      h += ' ondrop="onItemDrop(event,\''+ck+'\','+itemIdx+')"';
+      h += ' onclick="togT(this,\''+item.id+'\')">'; 
+      h += '<span class="drag-handle">⠿</span>';
       h += '<div class="chk'+(done?' done':'')+'"></div>';
-      h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+t.t+'</div>';
-      h += '<span class="task-del" onclick="event.stopPropagation();delTask(\''+tid+'\',\''+wid+'\')" title="삭제">✕</span></div>';
+      h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+item.text+'</div>';
+      h += '<span class="task-next" onclick="event.stopPropagation();moveItemToNextWeek(\''+ck+'\','+itemIdx+',\''+wid+'\')" title="다음 주로">→</span>';
+      h += '<span class="task-del" onclick="event.stopPropagation();delItem(\''+ck+'\','+itemIdx+',\''+wid+'\')" title="삭제">✕</span></div>';
     });
-    // 커스텀 태스크
-    (STATE.custom[ck]||[]).forEach(function(ct, ctIdx) {
-      var tid = 'wk:'+wid+':'+trIdx+':c'+ctIdx;
-      var done = STATE.tasks[tid];
-      h += '<div class="task" onclick="togT(this,\''+tid+'\')">';
-      h += '<div class="chk'+(done?' done':'')+'"></div>';
-      h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+ct+'</div>';
-      h += '<span class="task-del" onclick="event.stopPropagation();delCustomTask(\''+ck+'\','+ctIdx+')">✕</span></div>';
-    });
-    // 추가 입력
     h += '<div class="add-task-row">';
-    h += '<input class="add-task-inp" id="add-inp-'+ck.replace(/[|:]/g,'_')+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+ck+'\')"/>';
+    h += '<input class="add-task-inp" id="add-inp-'+ckSafe+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+ck+'\')">';
     h += '<button class="add-task-btn" onclick="addCustomTask(\''+ck+'\')" title="추가">+</button></div>';
     h += '</div>';
   });
   // etc. 박스
   var eck = 'wk|'+wid+'|etc';
-  h += '<div class="track">';
+  var etcItems = getAllItems(eck, wid, 'etc');
+  var eckSafe = eck.replace(/[|:]/g,'_');
+  h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+eck+'\')">';
   h += '<div class="track-head"><div class="tl"><div class="td" style="background:#B4B2A9"></div><div class="tn">etc.</div></div><span class="tt" style="background:#EDE8DE;color:#888780">그때그때 할 일</span></div>';
-  (STATE.custom[eck]||[]).forEach(function(ct, ctIdx) {
-    var tid = 'wk:'+wid+':etc:c'+ctIdx;
-    var done = STATE.tasks[tid];
-    h += '<div class="task" onclick="togT(this,\''+tid+'\')">';
+  etcItems.forEach(function(item, itemIdx) {
+    var done = STATE.tasks[item.id];
+    var safeText = item.text.replace(/'/g,"\\'");
+    var itemId = 'item-'+eckSafe+'-'+itemIdx;
+    h += '<div class="task" id="'+itemId+'" draggable="true"';
+    h += ' ondragstart="onItemDragStart(event,\''+eck+'\','+itemIdx+')"';
+    h += ' ondragover="onItemDragOver(event,\''+eck+'\','+itemIdx+')"';
+    h += ' ondrop="onItemDrop(event,\''+eck+'\','+itemIdx+')"';
+    h += ' onclick="togT(this,\''+item.id+'\')">'
+;    h += '<span class="drag-handle">⠿</span>';
     h += '<div class="chk'+(done?' done':'')+'"></div>';
-    h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+ct+'</div>';
-    h += '<span class="task-del" onclick="event.stopPropagation();delCustomTask(\''+eck+'\','+ctIdx+')">✕</span></div>';
+    h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+item.text+'</div>';
+    h += '<span class="task-next" onclick="event.stopPropagation();moveItemToNextWeek(\''+eck+'\','+itemIdx+',\''+wid+'\')" title="다음 주로">→</span>';
+    h += '<span class="task-del" onclick="event.stopPropagation();delItem(\''+eck+'\','+itemIdx+',\''+wid+'\')" title="삭제">✕</span></div>';
   });
   h += '<div class="add-task-row">';
-  h += '<input class="add-task-inp" id="add-inp-'+eck.replace(/[|:]/g,'_')+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+eck+'\')">';
+  h += '<input class="add-task-inp" id="add-inp-'+eckSafe+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+eck+'\')">';
   h += '<button class="add-task-btn" onclick="addCustomTask(\''+eck+'\')" title="추가">+</button></div>';
   h += '</div>';
 
