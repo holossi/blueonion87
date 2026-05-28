@@ -120,7 +120,7 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 <div class="global-dep-card">
   <div class="gdep-title">💳 전체 적립 — 1순위부터 차례로 채워집니다</div>
   <div class="gdep-row">
-    <input class="gdep-amt" id="gdep-amt" type="number" placeholder="적립 금액 (원)" step="10000">
+    <input class="gdep-amt" id="gdep-amt" type="text" inputmode="numeric" placeholder="적립 금액 (원)" oninput="fmtInput(this)" onkeydown="numKey(event,this,10000)">
     <button class="gdep-btn" onclick="addGlobalDep()">+ 적립</button>
   </div>
   <input class="gdep-memo" id="gdep-memo" type="text" placeholder="메모 (예: 5월 원고료에서 10%)">
@@ -142,7 +142,7 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
   </div>
   <div class="add-row">
     <input class="add-inp" id="new-when" placeholder="시기 (예: 2027년 봄)">
-    <input class="add-inp" id="new-goal" type="number" placeholder="목표 금액 (원) *" step="10000">
+    <input class="add-inp" id="new-goal" type="text" inputmode="numeric" placeholder="목표 금액 (원) *" oninput="fmtInput(this)" onkeydown="numKey(event,this,10000)">
   </div>
   <div class="add-row single">
     <input class="add-inp" id="new-sub" placeholder="메모 (선택)">
@@ -194,6 +194,18 @@ function resetOrder() {
 /* ── 포맷 ── */
 function fmt(n) {
   return n.toLocaleString('ko-KR') + '원';
+}
+function fmtInput(el) {
+  var raw = el.value.replace(/[^0-9]/g,'');
+  el.value = raw ? parseInt(raw).toLocaleString('ko-KR') : '';
+}
+function numKey(e, el, step) {
+  if(e.key==='ArrowUp'||e.key==='ArrowDown') {
+    e.preventDefault();
+    var v = parseInt((el.value||'').replace(/[^0-9]/g,'')||'0');
+    v = e.key==='ArrowUp' ? v+step : Math.max(0,v-step);
+    el.value = v.toLocaleString('ko-KR');
+  }
 }
 
 /* ── 우선순위 기반 배분 ── */
@@ -359,7 +371,7 @@ function render() {
         + '</div>'
         + '<div class="edit-row">'
         +   '<input class="edit-inp" id="edit-when-' + item.id + '" value="' + escHtml(item.when) + '" placeholder="시기">'
-        +   '<input class="edit-inp" id="edit-goal-' + item.id + '" type="number" value="' + item.goal + '" placeholder="목표 금액" step="10000">'
+        +   '<input class="edit-inp" id="edit-goal-' + item.id + '" type="text" inputmode="numeric" value="' + item.goal.toLocaleString('ko-KR') + '" placeholder="목표 금액" oninput="fmtInput(this)" onkeydown="numKey(event,this,10000)">'
         + '</div>'
         + '<input class="edit-inp" id="edit-sub-' + item.id + '" value="' + escHtml(item.sub || '') + '" placeholder="메모 (선택)" style="width:100%">'
         + '<div class="edit-btns">'
