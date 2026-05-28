@@ -131,7 +131,6 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 <!-- 버킷 리스트 -->
 <div class="sec-row">
   <div class="sec-label" style="margin-bottom:0">버킷리스트 · 드래그로 우선순위 조정</div>
-  <button class="reset-btn" onclick="resetOrder()">시기 순 초기화</button>
 </div>
 <div id="bucket-list"></div>
 
@@ -165,13 +164,7 @@ var COLORS = [
   {wc:'#534AB7', wb:'#EEEDFE', color:'#534AB7'},
 ];
 
-var DEFAULT_ITEMS = [
-  {id:'cat',     emoji:'🐱', title:'고양이 입양 + 동네 고양이 대모',      when:'2027년 봄',       wc:'#3B6D11', wb:'#EAF3DE', goal:1500000,  color:'#3B6D11', sub:'입양비+초기 용품+병원비 · 이후 월 유지비 별도'},
-  {id:'surgery1',emoji:'✨', title:'가슴 줄기세포 지방이식 1차 (SC301)',  when:'2027년 겨울',     wc:'#D85A30', wb:'#FAECE7', goal:9000000,  color:'#D85A30', sub:'1차 수술 · 겨울에 회복이 좋음'},
-  {id:'car',     emoji:'🚗', title:'중고차 구입 + 운전 연수',             when:'2027년 겨울',     wc:'#BA7517', wb:'#FAEEDA', goal:10000000, color:'#BA7517', sub:'차량 500~800만원 + 연수비 100~200만원 예상'},
-  {id:'surgery2',emoji:'✨', title:'가슴 줄기세포 지방이식 2차 (SC301)', when:'2028년 봄',       wc:'#D85A30', wb:'#FAECE7', goal:9000000,  color:'#D85A30', sub:'2차 수술 · 총 1,800만원 완성'},
-  {id:'japan',   emoji:'🇯🇵', title:'일본 어학연수',                     when:'2028년 가을~겨울', wc:'#555553', wb:'#E8E8E6', goal:5000000,  color:'#1A6E9A', sub:'교토·가나자와 or 홋카이도 · 책방 영업 종료 + 수술 회복 후'}
-];
+var DEFAULT_ITEMS = [];
 
 /* ── 데이터 로드 ── */
 function loadItems() {
