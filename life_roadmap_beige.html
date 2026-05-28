@@ -85,17 +85,6 @@ html,body{background:#DDD8CE;margin:0;padding:0}
 .send-btn:hover{border-color:#888780}
 .now-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;background:#FAEEDA;color:#854F0B;margin-left:6px}
 
-/* ── 공통 헤더 ── */
-.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;padding:1.5rem 1.5rem 0}
-.site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
-.site-header-title:hover{color:#888780}
-.site-header-manifesto{font-size:11px;color:#888780;font-style:italic;margin-bottom:3px}
-.site-header-keywords{font-size:10px;color:#B4B2A9;letter-spacing:.04em}
-.site-header-nav{display:flex;gap:6px;padding:10px 0 12px;overflow-x:auto;scrollbar-width:none}
-.site-header-nav::-webkit-scrollbar{display:none}
-.site-nav-btn{font-size:11px;padding:4px 11px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#5F5E5A;text-decoration:none;white-space:nowrap;flex-shrink:0}
-.site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
-
 
 /* ── 공통 헤더 ── */
 .site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
@@ -106,6 +95,7 @@ html,body{background:#DDD8CE;margin:0;padding:0}
 .site-header-nav::-webkit-scrollbar{display:none}
 .site-nav-btn{font-size:11px;padding:4px 11px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#5F5E5A;text-decoration:none;white-space:nowrap;flex-shrink:0}
 .site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
+
 
 </style>
 </head>
@@ -114,7 +104,17 @@ html,body{background:#DDD8CE;margin:0;padding:0}
 <h2 style="position:absolute;left:-9999px">인생 로드맵 대시보드</h2>
 <!-- ── 공통 헤더 ── -->
 <div class="site-header">
+  <div style="display:flex;align-items:center;justify-content:space-between">
   <a class="site-header-title" href="index.html">나의 우주 🌙</a>
+  <div class="backup-btn" id="backupBtn">
+    <div class="backup-icon" onclick="toggleBackup()" title="백업/복원">☰</div>
+    <div class="backup-panel" id="backupPanel">
+      <div class="backup-row" onclick="exportData()">↑ 내보내기 (백업)</div>
+      <div class="backup-divider"></div>
+      <div class="backup-row" onclick="importData()">↓ 가져오기 (복원)</div>
+    </div>
+  </div>
+</div>
   <div class="site-header-manifesto">"기꺼이 머뭇거리고, 용기 있게 취약한"</div>
   <div class="site-header-keywords">취약성 · 머뭇거림 · 삶다움</div>
   <div class="site-header-nav">
@@ -541,6 +541,7 @@ function swSc(id,btn){
   document.getElementById('sc-'+id).classList.add('active');
   btn.classList.add('active-'+id);
 }
+
 </script>
 </body>
 </html>

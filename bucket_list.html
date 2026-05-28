@@ -18,55 +18,72 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .prog-label{display:flex;justify-content:space-between;font-size:11px;color:#888780;margin-bottom:6px}
 .prog-track{height:8px;background:#EDE8DE;border-radius:4px;overflow:hidden;margin-bottom:4px}
 .prog-bar{height:100%;border-radius:4px;background:#639922;transition:width .4s}
-.calc-card{background:#2C2C2A;border-radius:12px;padding:14px 15px;margin-bottom:1.5rem}
-.calc-title{font-size:11px;font-weight:500;color:#888780;margin-bottom:10px}
-.calc-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.calc-input{flex:1;height:36px;border:0.5px solid rgba(255,255,255,.15);border-radius:8px;padding:0 12px;font-size:13px;background:rgba(255,255,255,.08);color:#F5F0E8}
-.calc-input::placeholder{color:#888780}
-.calc-input:focus{outline:none;border-color:rgba(255,255,255,.3)}
-.calc-result{background:rgba(255,255,255,.07);border-radius:10px;padding:10px 13px}
-.calc-result-label{font-size:10px;color:#888780;margin-bottom:4px}
-.calc-result-val{font-size:20px;font-weight:500;color:#EF9F27}
-.calc-result-sub{font-size:11px;color:#888780;margin-top:3px}
 .sec-label{font-size:10px;font-weight:500;color:#B4B2A9;letter-spacing:.04em;margin-bottom:10px}
-.bucket-card{background:#FDFAF6;border:0.5px solid #D3D1C7;border-radius:12px;padding:14px 15px;margin-bottom:10px}
-.bucket-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-.b-left{display:flex;align-items:flex-start;gap:10px;flex:1}
-.b-emoji{font-size:20px;flex-shrink:0;margin-top:1px}
-.b-info{flex:1}
-.b-title{font-size:13px;font-weight:500;color:#2C2C2A;margin-bottom:3px;line-height:1.3}
-.b-when{font-size:10px;font-weight:500;padding:1px 7px;border-radius:8px;display:inline-block;margin-bottom:3px}
-.b-sub{font-size:10px;color:#B4B2A9;line-height:1.4;margin-top:2px}
-.b-cost{text-align:right;flex-shrink:0;margin-left:8px}
-.cost-label{font-size:9px;font-weight:500;color:#B4B2A9;margin-bottom:2px}
-.cost-val{font-size:15px;font-weight:500;color:#2C2C2A}
-.b-prog-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
-.b-prog-track{height:5px;background:#EDE8DE;border-radius:3px;overflow:hidden;margin-bottom:8px}
-.b-input-row{display:flex;align-items:center;gap:7px}
-.b-input{flex:1;height:32px;border:0.5px solid #D3D1C7;border-radius:8px;padding:0 10px;font-size:12px;background:#F5F0E8;color:#2C2C2A}
-.b-input:focus{outline:none;border-color:#888780}
-.add-btn{height:32px;padding:0 12px;border:0.5px solid #D3D1C7;border-radius:8px;background:#F5F0E8;color:#888780;font-size:12px;cursor:pointer}
-.add-btn:hover{border-color:#888780;color:#2C2C2A}
-.memo-inp{width:100%;height:28px;border:0.5px solid #D3D1C7;border-radius:8px;padding:0 10px;font-size:11px;background:#F5F0E8;color:#2C2C2A;margin-top:6px}
-.memo-inp:focus{outline:none;border-color:#888780}
 .dep-list{margin-top:8px;display:flex;flex-direction:column;gap:4px}
 .dep-item{display:flex;align-items:center;gap:6px;padding:5px 8px;background:#EDE8DE;border-radius:7px;font-size:11px}
 .dep-del{cursor:pointer;color:#B4B2A9;margin-left:auto}
 .dep-del:hover{color:#9B3020}
 
-/* ── 공통 헤더 ── */
-.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;padding:1.5rem 1.5rem 0}
-.site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
-.site-header-title:hover{color:#888780}
-.site-header-manifesto{font-size:11px;color:#888780;font-style:italic;margin-bottom:3px}
-.site-header-keywords{font-size:10px;color:#B4B2A9;letter-spacing:.04em}
-.site-header-nav{display:flex;gap:6px;padding:10px 0 12px;overflow-x:auto;scrollbar-width:none}
-.site-header-nav::-webkit-scrollbar{display:none}
-.site-nav-btn{font-size:11px;padding:4px 11px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#5F5E5A;text-decoration:none;white-space:nowrap;flex-shrink:0}
-.site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
 
 
-.page-wrap{max-width:700px;margin:0 auto;background:#F5F0E8;min-height:100vh;padding:0 1.5rem 1.5rem;position:relative}
+.page-wrap{max-width:700px;margin:0 auto;background:#F5F0E8;min-height:100vh;padding:1.5rem 1.5rem 1.5rem;position:relative}
+
+/* ── 전체 적립 카드 ── */
+.global-dep-card{background:#EDE5DA;border:0.5px solid #B89A80;border-radius:12px;padding:14px 15px;margin-bottom:1.5rem}
+.gdep-title{font-size:11px;font-weight:500;color:#5C3D1E;margin-bottom:10px}
+.gdep-row{display:flex;gap:8px;margin-bottom:7px}
+.gdep-amt{flex:1;height:36px;border:none;border-radius:8px;padding:0 12px;font-size:13px;background:#FAF6F1;color:#2C2C2A}
+.gdep-amt::placeholder{color:#B8A090}
+.gdep-amt:focus{outline:none;background:#fff}
+.gdep-memo{width:100%;height:30px;border:none;border-radius:8px;padding:0 12px;font-size:12px;background:#FAF6F1;color:#2C2C2A;margin-bottom:8px}
+.gdep-memo::placeholder{color:#B8A090}
+.gdep-memo:focus{outline:none;background:#fff}
+.gdep-btn{height:36px;padding:0 16px;border:none;border-radius:8px;background:#6B4423;color:#F5EFE6;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.gdep-btn:hover{background:#4E3018}
+.gdep-history{margin-top:10px;display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto}
+.gdep-item{display:flex;align-items:center;gap:6px;padding:5px 8px;background:#E0D5C8;border-radius:7px;font-size:11px}
+.gdep-del{cursor:pointer;color:#B8A090;margin-left:auto;flex-shrink:0}
+.gdep-del:hover{color:#9B3020}
+.gdep-empty{font-size:11px;color:#B8A090;text-align:center;padding:8px 0}
+
+/* ── 섹션 헤더 row ── */
+.sec-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.reset-btn{font-size:10px;padding:4px 10px;border:0.5px solid #D3D1C7;border-radius:8px;background:#F5F0E8;color:#888780;cursor:pointer}
+.reset-btn:hover{border-color:#888780;color:#2C2C2A}
+
+/* ── 버킷 카드 ── */
+.bucket-card{background:#FDFAF6;border:0.5px solid #D3D1C7;border-radius:12px;padding:14px 15px;margin-bottom:10px;transition:box-shadow .15s}
+.bucket-card.sortable-ghost{opacity:.35}
+.bucket-card.sortable-drag{box-shadow:0 6px 22px rgba(0,0,0,.13);opacity:.96}
+.bucket-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.b-left{display:flex;align-items:flex-start;gap:8px;flex:1}
+.b-drag{display:flex;flex-direction:column;gap:3px;padding:3px 4px;cursor:grab;flex-shrink:0;touch-action:none}
+.b-drag:active{cursor:grabbing}
+.b-drag span{display:block;width:14px;height:1.5px;background:#C8C6BE;border-radius:1px}
+.b-num{width:18px;height:18px;border-radius:50%;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:background .3s,color .3s}
+.b-emoji{font-size:30px;flex-shrink:0;line-height:1}
+.b-info{flex:1}
+.b-title{font-size:13px;font-weight:500;color:#2C2C2A;margin-bottom:3px;line-height:1.3}
+.b-when{font-size:10px;font-weight:500;padding:1px 7px;border-radius:8px;display:inline-block;margin-bottom:3px}
+.b-sub{font-size:10px;color:#B4B2A9;line-height:1.4;margin-top:2px}
+.b-status{font-size:10px;font-weight:500;padding:2px 7px;border-radius:7px;display:inline-block}
+.b-cost{text-align:right;flex-shrink:0;margin-left:8px}
+.cost-label{font-size:9px;font-weight:500;color:#B4B2A9;margin-bottom:2px}
+.cost-val{font-size:15px;font-weight:500;color:#2C2C2A}
+.b-prog-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.b-prog-track{height:5px;background:#EDE8DE;border-radius:3px;overflow:hidden}
+.item-btn{font-size:10px;color:#B4B2A9;cursor:pointer;padding:2px 6px;border:0.5px solid #D3D1C7;border-radius:6px;background:#F5F0E8}
+.item-btn:hover{color:#9B3020;border-color:#9B3020}
+.item-btn.edit-btn:hover{color:#534AB7;border-color:#534AB7}
+
+/* ── 편집 폼 ── */
+.edit-form{margin-top:10px;padding-top:10px;border-top:0.5px solid #EDE8DE;display:flex;flex-direction:column;gap:6px}
+.edit-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.edit-inp{width:100%;height:32px;border:0.5px solid #D3D1C7;border-radius:7px;padding:0 10px;font-size:12px;background:#F5F0E8;color:#2C2C2A}
+.edit-inp:focus{outline:none;border-color:#888780}
+.edit-btns{display:flex;gap:6px}
+.edit-save{flex:1;height:30px;border:none;border-radius:7px;background:#2C2C2A;color:#F5F0E8;font-size:12px;cursor:pointer}
+.edit-cancel{height:30px;padding:0 12px;border:0.5px solid #D3D1C7;border-radius:7px;background:#F5F0E8;color:#888780;font-size:12px;cursor:pointer}
 
 /* ── 항목 추가 폼 ── */
 .add-item-card{background:#FDFAF6;border:0.5px dashed #C4B49A;border-radius:12px;padding:14px 15px;margin-bottom:10px}
@@ -77,51 +94,48 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .add-inp:focus{outline:none;border-color:#888780}
 .add-submit{width:100%;height:36px;border:none;border-radius:8px;background:#2C2C2A;color:#F5F0E8;font-size:13px;font-weight:500;cursor:pointer;margin-top:4px}
 .add-submit:hover{background:#3C3C3A}
-.item-del-btn{font-size:10px;color:#B4B2A9;cursor:pointer;padding:2px 6px;border:0.5px solid #D3D1C7;border-radius:6px;background:#F5F0E8}
-.item-del-btn:hover{color:#9B3020;border-color:#9B3020}
-
-
-.edit-form{margin-top:10px;padding-top:10px;border-top:0.5px solid #EDE8DE;display:flex;flex-direction:column;gap:6px}
-.edit-inp{width:100%;height:32px;border:0.5px solid #D3D1C7;border-radius:7px;padding:0 10px;font-size:12px;background:#F5F0E8;color:#2C2C2A}
-.edit-inp:focus{outline:none;border-color:#888780}
-.edit-btns{display:flex;gap:6px}
-.edit-save{flex:1;height:30px;border:none;border-radius:7px;background:#2C2C2A;color:#F5F0E8;font-size:12px;cursor:pointer}
-.edit-cancel{height:30px;padding:0 12px;border:0.5px solid #D3D1C7;border-radius:7px;background:#F5F0E8;color:#888780;font-size:12px;cursor:pointer}
-
 </style>
 </head>
 <body>
 <div class="page-wrap">
-<!-- ── 공통 헤더 ── -->
-<div class="site-header">
-  <a class="site-header-title" href="index.html">나의 우주 🌙</a>
-  <div class="site-header-manifesto">"기꺼이 머뭇거리고, 용기 있게 취약한"</div>
-  <div class="site-header-keywords">취약성 · 머뭇거림 · 삶다움</div>
-  <div class="site-header-nav">
-    <a class="site-nav-btn" href="master_planner_2026.html#week">탑다운 플래너</a>
-    <a class="site-nav-btn" href="life_roadmap_beige.html">인생 로드맵</a>
-    <a class="site-nav-btn" href="bucket_list.html">버킷 가계부</a>
-  </div>
-</div>
+
 <div class="top-label">혼자 살게 되면 · 버킷리스트 가계부</div>
 <div class="top-title">하고 싶은 것들 💛</div>
-<div class="top-desc">수입의 10%씩 · 타임라인 순으로</div>
+<div class="top-desc">우선순위 순서대로 채워지는 구조 · 드래그로 순서 조정</div>
 
+<!-- 요약 -->
 <div class="summary-row">
   <div class="sum-card"><div class="sum-label">총 목표</div><div class="sum-val" id="tg">-</div></div>
   <div class="sum-card"><div class="sum-label">현재 적립</div><div class="sum-val" id="ts" style="color:#639922">-</div></div>
   <div class="sum-card"><div class="sum-label">남은 금액</div><div class="sum-val" id="tr" style="color:#9B3020">-</div></div>
 </div>
 
+<!-- 전체 진행 -->
 <div class="total-prog">
   <div class="prog-label"><span>전체 달성률</span><span id="tp">0%</span></div>
   <div class="prog-track"><div class="prog-bar" id="tb" style="width:0%"></div></div>
-  <div style="font-size:10px;color:#B4B2A9;text-align:right" id="td">적립을 시작해봐요</div>
+  <div style="font-size:10px;color:#B4B2A9;text-align:right;margin-top:3px" id="td">적립을 시작해봐요</div>
 </div>
 
-<div class="sec-label">버킷리스트 · 시기 순</div>
+<!-- 전체 적립 -->
+<div class="global-dep-card">
+  <div class="gdep-title">💳 전체 적립 — 1순위부터 차례로 채워집니다</div>
+  <div class="gdep-row">
+    <input class="gdep-amt" id="gdep-amt" type="number" placeholder="적립 금액 (원)">
+    <button class="gdep-btn" onclick="addGlobalDep()">+ 적립</button>
+  </div>
+  <input class="gdep-memo" id="gdep-memo" type="text" placeholder="메모 (예: 5월 원고료에서 10%)">
+  <div class="gdep-history" id="gdep-history"></div>
+</div>
+
+<!-- 버킷 리스트 -->
+<div class="sec-row">
+  <div class="sec-label" style="margin-bottom:0">버킷리스트 · 드래그로 우선순위 조정</div>
+  <button class="reset-btn" onclick="resetOrder()">시기 순 초기화</button>
+</div>
 <div id="bucket-list"></div>
 
+<!-- 새 항목 추가 -->
 <div class="add-item-card">
   <div class="add-item-title">+ 새 항목 추가</div>
   <div class="add-row">
@@ -138,6 +152,9 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
   <button class="add-submit" onclick="addItem()">추가하기</button>
 </div>
 
+</div><!-- /page-wrap -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 <script>
 var COLORS = [
   {wc:'#3B6D11', wb:'#EAF3DE', color:'#3B6D11'},
@@ -149,162 +166,297 @@ var COLORS = [
 ];
 
 var DEFAULT_ITEMS = [
-  {id:'cat', emoji:'🐱', title:'고양이 입양 + 동네 고양이 대모',
-   when:'2027년 봄', wc:'#3B6D11', wb:'#EAF3DE',
-   goal:1500000, color:'#3B6D11', sub:'입양비+초기 용품+병원비 · 이후 월 유지비 별도'},
-  {id:'surgery1', emoji:'✨', title:'가슴 줄기세포 지방이식 1차 (SC301)',
-   when:'2027년 겨울', wc:'#D85A30', wb:'#FAECE7',
-   goal:9000000, color:'#D85A30', sub:'1차 수술 · 겨울에 회복이 좋음'},
-  {id:'car', emoji:'🚗', title:'중고차 구입 + 운전 연수',
-   when:'2027년 겨울', wc:'#BA7517', wb:'#FAEEDA',
-   goal:10000000, color:'#BA7517', sub:'차량 500~800만원 + 연수비 100~200만원 예상'},
-  {id:'surgery2', emoji:'✨', title:'가슴 줄기세포 지방이식 2차 (SC301)',
-   when:'2028년 봄', wc:'#D85A30', wb:'#FAECE7',
-   goal:9000000, color:'#D85A30', sub:'2차 수술 · 총 1,800만원 완성'},
-  {id:'japan', emoji:'🇯🇵', title:'일본 어학연수',
-   when:'2028년 가을~겨울', wc:'#555553', wb:'#E8E8E6',
-   goal:5000000, color:'#1A6E9A', sub:'교토·가나자와 or 홋카이도 · 책방 영업 종료 + 수술 회복 후'}
+  {id:'cat',     emoji:'🐱', title:'고양이 입양 + 동네 고양이 대모',      when:'2027년 봄',       wc:'#3B6D11', wb:'#EAF3DE', goal:1500000,  color:'#3B6D11', sub:'입양비+초기 용품+병원비 · 이후 월 유지비 별도'},
+  {id:'surgery1',emoji:'✨', title:'가슴 줄기세포 지방이식 1차 (SC301)',  when:'2027년 겨울',     wc:'#D85A30', wb:'#FAECE7', goal:9000000,  color:'#D85A30', sub:'1차 수술 · 겨울에 회복이 좋음'},
+  {id:'car',     emoji:'🚗', title:'중고차 구입 + 운전 연수',             when:'2027년 겨울',     wc:'#BA7517', wb:'#FAEEDA', goal:10000000, color:'#BA7517', sub:'차량 500~800만원 + 연수비 100~200만원 예상'},
+  {id:'surgery2',emoji:'✨', title:'가슴 줄기세포 지방이식 2차 (SC301)', when:'2028년 봄',       wc:'#D85A30', wb:'#FAECE7', goal:9000000,  color:'#D85A30', sub:'2차 수술 · 총 1,800만원 완성'},
+  {id:'japan',   emoji:'🇯🇵', title:'일본 어학연수',                     when:'2028년 가을~겨울', wc:'#555553', wb:'#E8E8E6', goal:5000000,  color:'#1A6E9A', sub:'교토·가나자와 or 홋카이도 · 책방 영업 종료 + 수술 회복 후'}
 ];
 
-function loadItems(){
-  try {
-    var saved = JSON.parse(localStorage.getItem('bl-items')||'null');
-    return saved || DEFAULT_ITEMS;
-  } catch(e){ return DEFAULT_ITEMS; }
+/* ── 데이터 로드 ── */
+function loadItems() {
+  try { return JSON.parse(localStorage.getItem('bl-items') || 'null') || deepCopy(DEFAULT_ITEMS); }
+  catch(e) { return deepCopy(DEFAULT_ITEMS); }
 }
-function saveItems(){ localStorage.setItem('bl-items', JSON.stringify(ITEMS)); }
+function loadDeps() {
+  try { return JSON.parse(localStorage.getItem('bl-global-deps') || '[]'); }
+  catch(e) { return []; }
+}
+function deepCopy(x) { return JSON.parse(JSON.stringify(x)); }
 
-var ITEMS = loadItems();
+var ITEMS    = loadItems();
+var globalDeps = loadDeps();
 
-var deps = {};
-ITEMS.forEach(function(i){ deps[i.id] = JSON.parse(localStorage.getItem('bl-'+i.id)||'[]'); });
+function persist() {
+  localStorage.setItem('bl-items',       JSON.stringify(ITEMS));
+  localStorage.setItem('bl-global-deps', JSON.stringify(globalDeps));
+}
 
-function save(id){ localStorage.setItem('bl-'+id, JSON.stringify(deps[id])); }
+/* ── 기본 순서 (시기 순) 초기화 ── */
+function resetOrder() {
+  ITEMS = deepCopy(DEFAULT_ITEMS);
+  persist();
+  render();
+}
 
-function addItem(){
+/* ── 포맷 ── */
+function fmt(n) {
+  if (n >= 10000000) return (n / 10000000).toFixed(1).replace(/\.0$/, '') + '천만원';
+  if (n >= 10000)    return Math.round(n / 10000) + '만원';
+  return n.toLocaleString() + '원';
+}
+
+/* ── 우선순위 기반 배분 ── */
+function computeAllocations() {
+  var total     = globalDeps.reduce(function(s, d) { return s + d.amt; }, 0);
+  var remaining = total;
+  var allocs    = {};
+  ITEMS.forEach(function(item) {
+    var fill      = Math.min(remaining, item.goal);
+    allocs[item.id] = fill;
+    remaining       = Math.max(0, remaining - item.goal);
+  });
+  return allocs;
+}
+
+/* ── 전체 적립 추가 ── */
+function addGlobalDep() {
+  var amtEl  = document.getElementById('gdep-amt');
+  var memoEl = document.getElementById('gdep-memo');
+  var amt    = parseInt((amtEl.value || '').replace(/[^0-9]/g, ''));
+  if (!amt || amt <= 0) { amtEl.focus(); return; }
+  var d = new Date();
+  globalDeps.push({
+    amt:  amt,
+    memo: memoEl.value.trim() || '적립',
+    date: (d.getMonth() + 1) + '월 ' + d.getDate() + '일'
+  });
+  persist();
+  amtEl.value  = '';
+  memoEl.value = '';
+  render();
+  amtEl.focus();
+}
+
+/* ── 전체 적립 삭제 ── */
+function delGlobalDep(idx) {
+  globalDeps.splice(idx, 1);
+  persist();
+  render();
+}
+
+/* ── 새 버킷 추가 ── */
+function addItem() {
   var emoji = document.getElementById('new-emoji').value.trim() || '⭐';
   var title = document.getElementById('new-title').value.trim();
   var when  = document.getElementById('new-when').value.trim();
-  var goal  = parseInt((document.getElementById('new-goal').value||'').replace(/[^0-9]/g,''));
+  var goal  = parseInt((document.getElementById('new-goal').value || '').replace(/[^0-9]/g, ''));
   var sub   = document.getElementById('new-sub').value.trim();
-  if(!title || !goal) return;
+  if (!title || !goal) return;
   var clr = COLORS[ITEMS.length % COLORS.length];
-  var id = 'item_' + Date.now();
-  ITEMS.push({id:id, emoji:emoji, title:title, when:when||'미정',
-    wc:clr.wc, wb:clr.wb, goal:goal, color:clr.color, sub:sub});
-  deps[id] = [];
-  saveItems();
-  ['new-emoji','new-title','new-when','new-goal','new-sub'].forEach(function(k){
-    document.getElementById(k).value='';
+  ITEMS.push({
+    id: 'item_' + Date.now(),
+    emoji: emoji, title: title, when: when || '미정',
+    wc: clr.wc, wb: clr.wb, goal: goal, color: clr.color, sub: sub
+  });
+  persist();
+  ['new-emoji','new-title','new-when','new-goal','new-sub'].forEach(function(k) {
+    document.getElementById(k).value = '';
   });
   render();
 }
 
-
-function editItem(id){
-  var el = document.getElementById('edit-form-'+id);
-  if(el) { el.style.display = el.style.display==='none' ? 'block' : 'none'; return; }
-  render(); // re-render opens form
-}
-function saveEdit(id){
-  var item = ITEMS.find(function(i){ return i.id===id; });
-  if(!item) return;
-  var t = document.getElementById('edit-title-'+id).value.trim();
-  var w = document.getElementById('edit-when-'+id).value.trim();
-  var g = parseInt((document.getElementById('edit-goal-'+id).value||'').replace(/[^0-9]/g,''));
-  if(t) item.title = t;
-  if(w) item.when = w;
-  if(g>0) item.goal = g;
-  saveItems();
+/* ── 버킷 편집 저장 ── */
+function saveEdit(id) {
+  var item = ITEMS.find(function(i) { return i.id === id; });
+  if (!item) return;
+  var emoji = document.getElementById('edit-emoji-' + id).value.trim();
+  var title = document.getElementById('edit-title-' + id).value.trim();
+  var when  = document.getElementById('edit-when-'  + id).value.trim();
+  var goal  = parseInt((document.getElementById('edit-goal-' + id).value || '').replace(/[^0-9]/g, ''));
+  var sub   = document.getElementById('edit-sub-'   + id).value.trim();
+  if (emoji) item.emoji = emoji;
+  if (title) item.title = title;
+  if (when)  item.when  = when;
+  if (goal > 0) item.goal = goal;
+  item.sub = sub;
+  persist();
   render();
 }
 
-function delItem(id){
-  ITEMS = ITEMS.filter(function(i){ return i.id !== id; });
-  delete deps[id];
-  localStorage.removeItem('bl-'+id);
-  saveItems();
+/* ── 버킷 삭제 ── */
+function delItem(id) {
+  if (!confirm('이 버킷을 삭제할까요?')) return;
+  ITEMS = ITEMS.filter(function(i) { return i.id !== id; });
+  persist();
   render();
 }
 
-function addDep(id){
-  var inp=document.getElementById('i-'+id);
-  var memo=document.getElementById('m-'+id);
-  var amt=parseInt((inp.value||'').replace(/[^0-9]/g,''));
-  if(!amt||amt<=0) return;
-  var d=new Date();
-  var date=(d.getMonth()+1)+'월 '+d.getDate()+'일';
-  deps[id].push({amt:amt, memo:(memo&&memo.value.trim())||'적립', date:date});
-  save(id); inp.value=''; if(memo) memo.value='';
+/* ── 편집 폼 토글 ── */
+var _openEdit = null;
+function toggleEdit(id) {
+  _openEdit = _openEdit === id ? null : id;
   render();
 }
 
-function delDep(id,idx){ deps[id].splice(idx,1); save(id); render(); }
+/* ── 렌더 ── */
+var _sortable = null;
 
-function fmt(n){
-  if(n>=10000000) return (n/10000000).toFixed(1).replace(/\.0$/,'')+'천만원';
-  if(n>=10000) return Math.round(n/10000)+'만원';
-  return n.toLocaleString()+'원';
-}
+function render() {
+  var totalGoal  = ITEMS.reduce(function(s, i) { return s + i.goal; }, 0);
+  var totalSaved = globalDeps.reduce(function(s, d) { return s + d.amt; }, 0);
+  var totalLeft  = Math.max(0, totalGoal - totalSaved);
+  var totalPct   = totalGoal ? Math.round(totalSaved / totalGoal * 100) : 0;
 
+  document.getElementById('tg').textContent = fmt(totalGoal);
+  document.getElementById('ts').textContent = fmt(totalSaved);
+  document.getElementById('tr').textContent = fmt(totalLeft);
+  document.getElementById('tp').textContent = totalPct + '%';
+  document.getElementById('tb').style.width = Math.min(totalPct, 100) + '%';
+  document.getElementById('td').textContent = totalSaved > 0
+    ? fmt(totalSaved) + ' 적립 · ' + fmt(totalLeft) + ' 남음'
+    : '적립을 시작해봐요';
 
-function render(){
-  var tg=0, ts=0;
-  ITEMS.forEach(function(item){
-    tg+=item.goal;
-    ts+=deps[item.id].reduce(function(a,d){ return a+d.amt; },0);
+  /* 적립 내역 */
+  var histEl = document.getElementById('gdep-history');
+  if (!globalDeps.length) {
+    histEl.innerHTML = '<div class="gdep-empty">아직 적립 내역이 없어요</div>';
+  } else {
+    var hh = '';
+    for (var ri = globalDeps.length - 1; ri >= 0; ri--) {
+      var dep = globalDeps[ri];
+      hh += '<div class="gdep-item">'
+          + '<span style="color:#7A5230;flex-shrink:0">' + dep.date + '</span>'
+          + '<span style="flex:1;margin:0 8px;color:#888780;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">' + dep.memo + '</span>'
+          + '<span style="font-weight:500;color:#2C2C2A;flex-shrink:0">+' + fmt(dep.amt) + '</span>'
+          + '<span class="gdep-del" onclick="delGlobalDep(' + ri + ')">✕</span>'
+          + '</div>';
+    }
+    histEl.innerHTML = hh;
+  }
+
+  /* 버킷 카드 */
+  var allocs  = computeAllocations();
+  var listEl  = document.getElementById('bucket-list');
+  var cards   = '';
+
+  ITEMS.forEach(function(item, pi) {
+    var saved    = allocs[item.id] || 0;
+    var pct      = Math.min(100, item.goal ? Math.round(saved / item.goal * 100) : 0);
+    var done     = saved >= item.goal;
+    var active   = saved > 0 && !done;
+    var isOpen   = _openEdit === item.id;
+
+    var numBg, numColor, statusHtml, barColor;
+    if (done) {
+      numBg = '#EAF3DE'; numColor = '#3B6D11'; barColor = '#639922';
+      statusHtml = '<span class="b-status" style="background:#EAF3DE;color:#3B6D11">완료 ✓</span>';
+    } else if (active) {
+      numBg = item.wb; numColor = item.wc; barColor = item.color;
+      statusHtml = '<span class="b-status" style="background:' + item.wb + ';color:' + item.wc + '">적립 중</span>';
+    } else {
+      numBg = '#EDE8DE'; numColor = '#B4B2A9'; barColor = item.color;
+      statusHtml = '<span class="b-status" style="background:#EDE8DE;color:#B4B2A9">대기 중</span>';
+    }
+
+    /* 편집 폼 */
+    var editHtml = '';
+    if (isOpen) {
+      editHtml = '<div class="edit-form">'
+        + '<div class="edit-row">'
+        +   '<input class="edit-inp" id="edit-emoji-' + item.id + '" value="' + escHtml(item.emoji) + '" placeholder="이모지">'
+        +   '<input class="edit-inp" id="edit-title-' + item.id + '" value="' + escHtml(item.title) + '" placeholder="제목">'
+        + '</div>'
+        + '<div class="edit-row">'
+        +   '<input class="edit-inp" id="edit-when-' + item.id + '" value="' + escHtml(item.when) + '" placeholder="시기">'
+        +   '<input class="edit-inp" id="edit-goal-' + item.id + '" type="number" value="' + item.goal + '" placeholder="목표 금액">'
+        + '</div>'
+        + '<input class="edit-inp" id="edit-sub-' + item.id + '" value="' + escHtml(item.sub || '') + '" placeholder="메모 (선택)" style="width:100%">'
+        + '<div class="edit-btns">'
+        +   '<button class="edit-save"   onclick="saveEdit(\'' + item.id + '\')">저장</button>'
+        +   '<button class="edit-cancel" onclick="toggleEdit(\'' + item.id + '\')">취소</button>'
+        + '</div></div>';
+    }
+
+    cards +=
+      '<div class="bucket-card" data-id="' + item.id + '">'
+      + '<div class="bucket-head">'
+
+      /* 왼쪽: 이모지(고정 너비) + 정보 열 */
+      + '<div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0">'
+      +   '<div style="width:34px;flex-shrink:0;display:flex;justify-content:center"><div class="b-emoji">' + item.emoji + '</div></div>'
+      +   '<div class="b-info">'
+      +     '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
+      +       '<div class="b-num" style="background:' + numBg + ';color:' + numColor + ';flex-shrink:0">' + (pi + 1) + '</div>'
+      +       '<div class="b-title" style="margin:0">' + escHtml(item.title) + '</div>'
+      +     '</div>'
+      +     (item.sub ? '<div class="b-sub">' + escHtml(item.sub) + '</div>' : '')
+      +     '<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px">'
+      +       '<span class="b-when" style="background:' + item.wb + ';color:' + item.wc + ';margin:0">' + escHtml(item.when) + '</span>'
+      +       statusHtml
+      +     '</div>'
+      +   '</div>'
+      + '</div>'
+
+      /* 오른쪽: 드래그핸들 + 편집/삭제 + 목표금액 */
+      + '<div class="b-cost">'
+      +   '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-bottom:14px">'
+      +     '<span class="item-btn edit-btn" onclick="toggleEdit(\'' + item.id + '\')">편집</span>'
+      +     '<span class="item-btn" onclick="delItem(\'' + item.id + '\')">삭제</span>'
+      +     '<div class="b-drag" title="드래그해서 순서 변경"><span></span><span></span><span></span></div>'
+      +   '</div>'
+      +   '<div class="cost-label">목표</div>'
+      +   '<div class="cost-val">' + fmt(item.goal) + '</div>'
+      + '</div>'
+
+      + '</div>' /* bucket-head */
+
+      /* 진행 바 */
+      + '<div class="b-prog-row">'
+      +   '<span style="font-weight:500;color:' + barColor + '">' + pct + '%</span>'
+      +   '<span style="color:#888780">' + fmt(saved) + ' / ' + fmt(item.goal) + '</span>'
+      + '</div>'
+      + '<div class="b-prog-track">'
+      +   '<div style="height:100%;border-radius:3px;background:' + barColor + ';width:' + pct + '%;transition:width .4s"></div>'
+      + '</div>'
+
+      + editHtml
+      + '</div>';
   });
-  var tr=Math.max(0,tg-ts);
-  var tp=tg?Math.round(ts/tg*100):0;
-  document.getElementById('tg').textContent=fmt(tg);
-  document.getElementById('ts').textContent=fmt(ts);
-  document.getElementById('tr').textContent=fmt(tr);
-  document.getElementById('tp').textContent=tp+'%';
-  document.getElementById('tb').style.width=Math.min(tp,100)+'%';
-  document.getElementById('td').textContent=ts>0?fmt(ts)+' 적립 · '+fmt(tr)+' 남음':'적립을 시작해봐요';
 
-  var list=document.getElementById('bucket-list');
-  list.innerHTML='';
-  ITEMS.forEach(function(item){
-    var saved=deps[item.id].reduce(function(a,d){ return a+d.amt; },0);
-    var pct=Math.min(100, item.goal?Math.round(saved/item.goal*100):0);
-    var done=saved>=item.goal;
+  listEl.innerHTML = cards;
 
-    var depHtml='';
-    deps[item.id].forEach(function(d,i){
-      depHtml+='<div class="dep-item"><span style="color:#888780;flex-shrink:0">'+d.date+'</span><span style="flex:1;margin:0 8px;color:#5F5E5A">'+d.memo+'</span><span style="font-weight:500;color:#2C2C2A">+'+fmt(d.amt)+'</span><span class="dep-del" onclick="delDep(\''+item.id+'\','+i+')">✕</span></div>';
-    });
-
-    var h='<div class="bucket-card">';
-    h+='<div class="bucket-head"><div class="b-left"><div class="b-emoji">'+item.emoji+'</div><div class="b-info">';
-    h+='<div class="b-title">'+item.title+'</div>';
-    h+='<span class="b-when" style="background:'+item.wb+';color:'+item.wc+'">'+item.when+'</span>';
-    if(item.sub) h+='<div class="b-sub">'+item.sub+'</div>';
-    h+='</div></div>';
-    h+='<div class="b-cost"><div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:3px">'+'<span class="item-del-btn" style="color:#888780" onclick="editItem(\''+item.id+'\')" title="편집">편집</span>'+'<span class="item-del-btn" onclick="delItem(\''+item.id+'\')" title="삭제">삭제</span>'+'</div><div class="cost-label">목표</div><div class="cost-val">'+fmt(item.goal)+'</div>';
-    if(done) h+='<div style="font-size:10px;font-weight:500;color:#639922;margin-top:2px">완료 ✓</div>';
-    h+='</div></div>';
-
-    h+='<div class="b-prog-row"><span style="font-weight:500;color:'+item.color+'">'+pct+'%</span><span style="color:#888780">'+fmt(saved)+' / '+fmt(item.goal)+'</span></div>';
-    h+='<div class="b-prog-track"><div style="height:100%;border-radius:3px;background:'+item.color+';width:'+pct+'%;transition:width .4s"></div></div>';
-    h+='<div class="b-input-row"><input class="b-input" id="i-'+item.id+'" type="number" placeholder="적립 금액 (원)"><button class="add-btn" onclick="addDep(\''+item.id+'\')">+ 적립</button></div>';
-    h+='<input class="memo-inp" id="m-'+item.id+'" type="text" placeholder="메모 (예: 5월 원고료에서)">';
-    if(deps[item.id].length>0) h+='<div class="dep-list">'+depHtml+'</div>';
-    h+='<div id="edit-form-'+item.id+'" class="edit-form" style="display:none">';
-    h+='<input class="edit-inp" id="edit-title-'+item.id+'" value="'+item.title+'" placeholder="제목">';
-    h+='<input class="edit-inp" id="edit-when-'+item.id+'" value="'+item.when+'" placeholder="예상 시점">';
-    h+='<input class="edit-inp" id="edit-goal-'+item.id+'" value="'+item.goal+'" type="number" placeholder="목표 금액 (원)">';
-    h+='<div class="edit-btns">';
-    h+='<button class="edit-save" onclick="saveEdit(\''+item.id+'\')" >저장</button>';
-    h+='<button class="edit-cancel" onclick="document.getElementById(\'edit-form-'+item.id+'\').style.display=\'none\'">취소</button>';
-    h+='</div></div>';
-    h+='</div>';
-    list.innerHTML+=h;
+  /* Sortable 초기화 */
+  if (_sortable) { _sortable.destroy(); _sortable = null; }
+  _sortable = new Sortable(listEl, {
+    animation: 200,
+    ghostClass: 'sortable-ghost',
+    dragClass:  'sortable-drag',
+    handle:     '.b-drag',
+    onEnd: function() {
+      var newOrder = [];
+      listEl.querySelectorAll('.bucket-card').forEach(function(el) {
+        newOrder.push(el.dataset.id);
+      });
+      ITEMS.sort(function(a, b) {
+        return newOrder.indexOf(a.id) - newOrder.indexOf(b.id);
+      });
+      persist();
+      render();
+    }
   });
 }
+
+/* HTML 이스케이프 */
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* Enter 키 */
+document.getElementById('gdep-amt').addEventListener('keydown',  function(e){ if(e.key==='Enter') addGlobalDep(); });
+document.getElementById('gdep-memo').addEventListener('keydown', function(e){ if(e.key==='Enter') addGlobalDep(); });
 
 render();
 </script>
-</div>
 </body>
 </html>

@@ -78,6 +78,7 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .tn{font-size:12px;font-weight:500;color:#2C2C2A}
 .tt{font-size:9px;font-weight:500;padding:2px 7px;border-radius:8px}
 .task{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:0.5px solid #EDE8DE;cursor:pointer}
+.task:hover .task-text{text-decoration-style:dotted}
 .task:last-child{border-bottom:none}
 .chk{width:14px;height:14px;border-radius:3px;border:1.5px solid #D3D1C7;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;background:#FDFAF6}
 .chk.done{background:#639922;border-color:#639922}
@@ -95,17 +96,6 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .prog-row{display:flex;justify-content:space-between;font-size:11px;color:#888780;margin-bottom:4px}
 .prog-track{height:4px;background:#EDE8DE;border-radius:2px;overflow:hidden}
 .prog-bar{height:100%;border-radius:2px;transition:width .3s}
-
-/* ── 공통 헤더 ── */
-.site-header{position:sticky;top:0;z-index:100;background:#F5F0E8;border-bottom:0.5px solid #D3D1C7;padding:1.5rem 1.5rem 0}
-.site-header-title{font-size:20px;font-weight:500;color:#2C2C2A;text-decoration:none;letter-spacing:-.02em;display:block;margin-bottom:6px}
-.site-header-title:hover{color:#888780}
-.site-header-manifesto{font-size:11px;color:#888780;font-style:italic;margin-bottom:3px}
-.site-header-keywords{font-size:10px;color:#B4B2A9;letter-spacing:.04em}
-.site-header-nav{display:flex;gap:6px;padding:10px 0 12px;overflow-x:auto;scrollbar-width:none}
-.site-header-nav::-webkit-scrollbar{display:none}
-.site-nav-btn{font-size:11px;padding:4px 11px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#5F5E5A;text-decoration:none;white-space:nowrap;flex-shrink:0}
-.site-nav-btn:hover{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
 
 
 .page-wrap{max-width:700px;margin:0 auto;background:#F5F0E8;min-height:100vh;padding:0 1.5rem 1.5rem;position:relative}
@@ -129,13 +119,27 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .task.drag-target{border:1px dashed #BA7517;background:#FDFAF6}
 .drag-handle:active{cursor:grabbing}
 
+
+.edit-inline{flex:1;border:none;border-bottom:1.5px solid #BA7517;background:transparent;font-size:11px;color:#2C2C2A;outline:none;padding:0 2px;min-width:0}
+
+
 </style>
 </head>
 <body>
 <div class="page-wrap">
 <!-- ── 공통 헤더 ── -->
 <div class="site-header">
+  <div style="display:flex;align-items:center;justify-content:space-between">
   <a class="site-header-title" href="index.html">나의 우주 🌙</a>
+  <div class="backup-btn" id="backupBtn">
+    <div class="backup-icon" onclick="toggleBackup()" title="백업/복원">☰</div>
+    <div class="backup-panel" id="backupPanel">
+      <div class="backup-row" onclick="exportData()">↑ 내보내기 (백업)</div>
+      <div class="backup-divider"></div>
+      <div class="backup-row" onclick="importData()">↓ 가져오기 (복원)</div>
+    </div>
+  </div>
+</div>
   <div class="site-header-manifesto">"기꺼이 머뭇거리고, 용기 있게 취약한"</div>
   <div class="site-header-keywords">취약성 · 머뭇거림 · 삶다움</div>
   <div class="site-header-nav">
@@ -167,6 +171,7 @@ var STATE = {tasks:{}, goals:{}, custom:{}};
     STATE.custom    = s.custom    || {};
     STATE.deleted   = s.deleted   || {};
     STATE.allItems  = s.allItems  || {};
+    STATE.editId    = null;
 
   } catch(e) {}
 })();
@@ -177,20 +182,10 @@ function addCustomTask(key) {
   var inp = document.getElementById('add-inp-'+safeId);
   var val = (inp ? inp.value : '').trim();
   if(!val) return;
-  var parts = key.split('|');
-  if(parts[0]==='wk') {
-    if(!STATE.allItems) STATE.allItems = {};
-    if(!STATE.allItems[key]) STATE.allItems[key] = [];
-    STATE.allItems[key].push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), text:val});
-    saveState();
-    goWeek(parts[1]);
-  } else {
-    if(!STATE.custom[key]) STATE.custom[key] = [];
-    STATE.custom[key].push(val);
-    saveState();
-    if(parts[0]==='mo') goMonth(curMonth);
-    else if(parts[0]==='se') goSeason(curSeason);
-  }
+  if(!STATE.allItems) STATE.allItems = {};
+  if(!STATE.allItems[key]) STATE.allItems[key] = [];
+  STATE.allItems[key].push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), text:val});
+  saveState(); refreshView(key);
 }
 function delCustomTask(key, idx) {
   if(STATE.custom[key]) { STATE.custom[key].splice(idx,1); saveState(); }
@@ -203,24 +198,29 @@ function delCustomTask(key, idx) {
 
 
 // ── 통합 아이템 관리 ──────────────────────────────────
-function getAllItems(ck, wid, trIdx) {
+function getAllItems(ck, src, sub) {
   if(!STATE.allItems) STATE.allItems = {};
   if(STATE.allItems[ck]) return STATE.allItems[ck];
   var items = [];
-  if(trIdx !== 'etc') {
-    var ti = parseInt(trIdx);
-    var tr = WD[wid] && WD[wid].tracks && WD[wid].tracks[ti];
-    if(tr) tr.tasks.forEach(function(t, i) {
-      var old = 'wk:'+wid+':'+ti+':'+i;
-      if(!STATE.deleted[old]) items.push({id:old, text:t.t});
-    });
+  var prefix = ck.split('|')[0];
+  if(prefix==='wk' && sub!=='etc') {
+    var ti=parseInt(sub), tr=WD[src]&&WD[src].tracks&&WD[src].tracks[ti];
+    if(tr) tr.tasks.forEach(function(t,i){ var old='wk:'+src+':'+ti+':'+i; if(!STATE.deleted[old]) items.push({id:old,text:t.t}); });
+  } else if(prefix==='mo') {
+    var ti=parseInt(sub), tr=MD[src]&&MD[src].tracks&&MD[src].tracks[ti];
+    if(tr) tr.tasks.forEach(function(t,i){ var old='mo:'+src+':'+ti+':'+i; if(!STATE.deleted[old]) items.push({id:old,text:t.t}); });
+  } else if(prefix==='se') {
+    var gs=SG[src]&&SG[src].goals;
+    if(gs) gs.forEach(function(g,i){ var old='se:'+src+':'+i; if(!STATE.deleted[old]) items.push({id:old,text:g.t}); });
+  } else if(prefix==='yr') {
+    var gs=YG[parseInt(src)]&&YG[parseInt(src)].goals;
+    if(gs) gs.forEach(function(g,i){ var old='yr:'+src+':'+i; if(!STATE.deleted[old]) items.push({id:old,text:g.t}); });
   }
-  (STATE.custom[ck]||[]).forEach(function(ct) {
-    var txt = (typeof ct==='object') ? ct.t : ct;
-    items.push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), text:txt});
+  (STATE.custom[ck]||[]).forEach(function(ct){
+    var txt=(typeof ct==='object')?ct.t:ct;
+    items.push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),text:txt});
   });
-  STATE.allItems[ck] = items;
-  STATE.custom[ck] = [];
+  STATE.allItems[ck]=items; STATE.custom[ck]=[];
   return items;
 }
 
@@ -250,8 +250,7 @@ function onItemDrop(e, ck, idx) {
   var ti = (srcCk===ck && srcIdx<idx) ? idx-1 : idx;
   STATE.allItems[ck].splice(ti,0,item);
   _di = null;
-  saveState();
-  goWeek(curWeek);
+  saveState(); refreshView(ck);
 }
 function onTrackDropEnd(e, ck) {
   e.preventDefault(); e.stopPropagation();
@@ -262,17 +261,99 @@ function onTrackDropEnd(e, ck) {
   if(!STATE.allItems[ck]) STATE.allItems[ck] = [];
   STATE.allItems[ck].push(item);
   _di = null;
-  saveState();
-  goWeek(curWeek);
+  saveState(); refreshView(ck);
 }
+
+// ── 뷰 새로고침 ──────────────────────────────────────
+function refreshView(ck) {
+  var p = ck.split('|')[0];
+  if(p==='wk') goWeek(curWeek);
+  else if(p==='mo') goMonth(curMonth);
+  else if(p==='se') goSeason(curSeason);
+  else if(p==='yr') goYear(curYear);
+}
+
+// ── 인라인 편집 ──────────────────────────────────────
+function startEdit(id, ck) {
+  STATE.editId = id+'|'+ck;
+  refreshView(ck);
+  setTimeout(function(){
+    var el=document.getElementById('ei-'+id.replace(/[|:]/g,'_'));
+    if(el){el.focus();el.select();}
+  },50);
+}
+function saveItemEdit(id, ck) {
+  var el=document.getElementById('ei-'+id.replace(/[|:]/g,'_'));
+  if(!el) return;
+  var val=el.value.trim();
+  if(val && STATE.allItems && STATE.allItems[ck]) {
+    STATE.allItems[ck].forEach(function(item){ if(item.id===id) item.text=val; });
+  }
+  STATE.editId=null; saveState(); refreshView(ck);
+}
+function cancelEdit(ck) { STATE.editId=null; refreshView(ck); }
+
+// ── 통합 아이템 렌더러 ──────────────────────────────
+function renderItem(item, itemIdx, ck, isGoal) {
+  var done = isGoal ? STATE.goals[item.id] : STATE.tasks[item.id];
+  var isEditing = STATE.editId === item.id+'|'+ck;
+  var ckSafe = ck.replace(/[|:]/g,'_');
+  var idSafe = item.id.replace(/[|:]/g,'_');
+  var safeText = item.text.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  var itemElId = 'item-'+ckSafe+'-'+itemIdx;
+  var chkClass = isGoal ? 'sg-chk' : 'chk';
+  var h = '<div class="task" id="'+itemElId+'" draggable="true"';
+  h += ' ondragstart="onItemDragStart(event,\''+ck+'\','+itemIdx+')"';
+  h += ' ondragover="onItemDragOver(event,\''+ck+'\','+itemIdx+')"';
+  h += ' ondrop="onItemDrop(event,\''+ck+'\','+itemIdx+')"';
+  h += ' onclick="handleClick(this,\''+item.id+'\','+isGoal+')"';
+  h += ' ondblclick="handleDblClick(event,\''+item.id+'\',\''+ck+'\')">';
+  h += '<span class="drag-handle">⠿</span>';
+  h += '<div class="'+chkClass+(done?' done':'')+'">'+'</div>';
+  if(isEditing) {
+    h += '<input class="edit-inline" id="ei-'+idSafe+'" value="'+safeText+'" onclick="event.stopPropagation()"';
+    h += ' onkeydown="event.stopPropagation();if(event.key===\'Enter\')saveItemEdit(\''+item.id+'\',\''+ck+'\');if(event.key===\'Escape\')cancelEdit(\''+ck+'\')"/>';
+    h += '<span class="task-edit" onclick="event.stopPropagation();saveItemEdit(\''+item.id+'\',\''+ck+'\')" style="color:#BA7517">✓</span>';
+  } else {
+    h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+item.text+'</div>';
+  }
+  var isWk = ck.split('|')[0]==='wk';
+  var srcId = ck.split('|')[1];
+  if(isWk) h += '<span class="task-next" onclick="event.stopPropagation();moveItemToNextWeek(\''+ck+'\','+itemIdx+',\''+srcId+'\')" title="다음 주로">→</span>';
+  h += '<span class="task-del" onclick="event.stopPropagation();delItem(\''+ck+'\','+itemIdx+',null)" title="삭제">✕</span>';
+  h += '</div>';
+  return h;
+}
+
+
+var _clickTimer = null;
+function handleClick(el, id, isGoal) {
+  if(_clickTimer) { clearTimeout(_clickTimer); _clickTimer = null; return; }
+  _clickTimer = setTimeout(function() {
+    _clickTimer = null;
+    togUnified(el, id, isGoal);
+  }, 220);
+}
+function handleDblClick(e, id, ck) {
+  e.stopPropagation();
+  if(_clickTimer) { clearTimeout(_clickTimer); _clickTimer = null; }
+  startEdit(id, ck);
+}
+
+function togUnified(el, id, isGoal) {
+  var c=el.querySelector('.chk,.sg-chk'), t=el.querySelector('.task-text');
+  if(!c) return;
+  c.classList.toggle('done'); if(t) t.classList.toggle('done');
+  if(isGoal){ STATE.goals[id]=c.classList.contains('done'); }
+  else { STATE.tasks[id]=c.classList.contains('done'); }
+  saveState();
+}
+
 var WEEK_ORDER = ['setup','w1','w2','w3','w4'];
 
 function delItem(ck, idx, wid) {
-  if(STATE.allItems && STATE.allItems[ck]) {
-    STATE.allItems[ck].splice(idx,1);
-    saveState();
-  }
-  goWeek(wid);
+  if(STATE.allItems && STATE.allItems[ck]) STATE.allItems[ck].splice(idx,1);
+  saveState(); refreshView(ck);
 }
 function moveItemToNextWeek(ck, idx, wid) {
   var widIdx = WEEK_ORDER.indexOf(wid);
@@ -720,9 +801,14 @@ function goYear(yr) {
   h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+yr+'년 · '+y.keyword+'</div>';
   h += '<div style="font-size:11px;color:#888780;margin-bottom:1rem">'+y.phase+'</div>';
   h += '<div class="sec-label sec-label-first">연간 목표</div>';
-  y.goals.forEach(function(g, gi) {
-    var sgid='goal:year:'+yr+':'+gi; var sgdone=STATE.goals[sgid]; h += '<div class="sg-item'+(sgdone?' done':'')+'" onclick="togSg(this,\''+sgid+'\')" style="background:'+g.bg+'"><div class="sg-chk'+(sgdone?' done':'')+'"></div><div class="sg-text">'+g.t+'</div><span class="sg-badge" style="background:rgba(0,0,0,.06);color:#888780">'+g.sub.split('·')[0].trim()+'</span></div>';
-  });
+  var yrck = 'yr|'+yr;
+  var yrItems = getAllItems(yrck, yr, null);
+  h += '<div class="track" style="margin-bottom:1rem" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+yrck+'\')">';
+  yrItems.forEach(function(item, itemIdx) { h += renderItem(item, itemIdx, yrck, true); });
+  h += '<div class="add-task-row">';
+  h += '<input class="add-task-inp" id="add-inp-'+yrck.replace(/[|:]/g,'_')+'" type="text" placeholder="목표 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+yrck+'\')">';
+  h += '<button class="add-task-btn" onclick="addCustomTask(\''+yrck+'\')" title="추가">+</button></div>';
+  h += '</div>';
   if (yr === 2026) {
     h += '<div class="sec-label">계절별 목표</div><div class="sn-grid">';
     h += '<div class="sn" style="background:#F1EFE8;opacity:.45;cursor:default"><div style="font-size:20px;margin-bottom:5px">🌱</div><div style="font-size:14px;font-weight:500;color:#888780;margin-bottom:2px">봄</div><div style="font-size:11px;color:#888780;opacity:.75;margin-bottom:5px">3·4·5월</div><div style="font-size:11px;color:#B4B2A9">지나감</div></div>';
@@ -768,28 +854,15 @@ function goSeason(sid) {
   var h = '<button class="back-btn" onclick="goYear('+curYear+')">← '+curYear+'년</button>';
   h += '<div style="font-size:15px;font-weight:500;color:'+s.color+';margin-bottom:3px">'+s.emoji+' '+s.name+' · '+s.keyword+'</div>';
   h += '<div style="font-size:12px;font-style:italic;color:'+s.color+';padding:8px 12px;border-radius:8px;background:'+s.bg+';margin-bottom:1.25rem">'+s.mood+'</div>';
-  h += '<div class="sec-label sec-label-first">계절 목표</div>';
-  s.goals.forEach(function(g, gIdx) {
-    var gid = 'se:'+sid+':'+gIdx;
-    if(STATE.deleted[gid]) return;
-    var done = STATE.goals[gid];
-    h += '<div class="sg-item'+(done?' done':'')+'" onclick="togSg(this,\''+gid+'\')" style="background:'+g.bg+'">';
-    h += '<div class="sg-chk'+(done?' done':'')+'"></div>';
-    h += '<div class="sg-text" style="flex:1">'+g.t+'</div>';
-    h += '<span class="task-del" onclick="event.stopPropagation();delSeasonTask(\''+gid+'\',\''+sid+'\')" title="삭제">✕</span></div>';
-  });
   var sck = 'se|'+sid;
-  (STATE.custom[sck]||[]).forEach(function(ct, ctIdx) {
-    var gid = 'se:'+sid+':c'+ctIdx;
-    var done = STATE.goals[gid];
-    h += '<div class="sg-item'+(done?' done':'')+'" onclick="togSg(this,\''+gid+'\')" style="background:#EDE8DE">';
-    h += '<div class="sg-chk'+(done?' done':'')+'"></div>';
-    h += '<div class="sg-text" style="flex:1">'+(typeof ct==='object'?ct.t:ct)+'</div>';
-    h += '<span class="task-del" onclick="event.stopPropagation();delCustomTask(\''+sck+'\','+ctIdx+')">✕</span></div>';
-  });
-  h += '<div class="add-task-row" style="margin-bottom:1rem">';
+  var sItems = getAllItems(sck, sid, null);
+  h += '<div class="sec-label sec-label-first">계절 목표</div>';
+  h += '<div class="track" style="margin-bottom:1rem" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+sck+'\')">';
+  sItems.forEach(function(item, itemIdx) { h += renderItem(item, itemIdx, sck, true); });
+  h += '<div class="add-task-row">';
   h += '<input class="add-task-inp" id="add-inp-'+sck.replace(/[|:]/g,'_')+'" type="text" placeholder="목표 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+sck+'\')">';
   h += '<button class="add-task-btn" onclick="addCustomTask(\''+sck+'\')" title="추가">+</button></div>';
+  h += '</div>';
   if (sid === 'summer') {
     h += '<div class="sec-label">월별 목표</div><div class="mo-grid">';
     ['june','july','august'].forEach(function(m) {
@@ -816,27 +889,13 @@ function goMonth(mid) {
   h += '<div class="pace-row">'+m.paces.map(function(p){ return '<div class="pace"><div class="pace-label">'+p.l+'</div><div class="pace-val">'+p.v+'</div><div class="pace-sub">'+p.s+'</div></div>'; }).join('')+'</div>';
   m.tracks.forEach(function(tr, trIdx) {
     var mck = 'mo|'+mid+'|'+trIdx;
-    h += '<div class="track">';
+    var items = getAllItems(mck, mid, trIdx);
+    var mckSafe = mck.replace(/[|:]/g,'_');
+    h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+mck+'\')">'; 
     h += '<div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
-    tr.tasks.forEach(function(t, tIdx) {
-      var tid = 'mo:'+mid+':'+trIdx+':'+tIdx;
-      if(STATE.deleted[tid]) return;
-      var done = STATE.tasks[tid] || t.done;
-      h += '<div class="task" onclick="togT(this,\''+tid+'\')">';
-      h += '<div class="chk'+(done?' done':'')+'"></div>';
-      h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+t.t+'</div>';
-      h += '<span class="task-del" onclick="event.stopPropagation();delMonthTask(\''+tid+'\',\''+mid+'\')" title="삭제">✕</span></div>';
-    });
-    (STATE.custom[mck]||[]).forEach(function(ct, ctIdx) {
-      var tid = 'mo:'+mid+':'+trIdx+':c'+ctIdx;
-      var done = STATE.tasks[tid];
-      h += '<div class="task" onclick="togT(this,\''+tid+'\')">';
-      h += '<div class="chk'+(done?' done':'')+'"></div>';
-      h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+(typeof ct==='object'?ct.t:ct)+'</div>';
-      h += '<span class="task-del" onclick="event.stopPropagation();delCustomTask(\''+mck+'\','+ctIdx+')">✕</span></div>';
-    });
+    items.forEach(function(item, itemIdx) { h += renderItem(item, itemIdx, mck, false); });
     h += '<div class="add-task-row">';
-    h += '<input class="add-task-inp" id="add-inp-'+mck.replace(/[|:]/g,'_')+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+mck+'\')">';
+    h += '<input class="add-task-inp" id="add-inp-'+mckSafe+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+mck+'\')">';
     h += '<button class="add-task-btn" onclick="addCustomTask(\''+mck+'\')" title="추가">+</button></div>';
     h += '</div>';
   });
@@ -872,21 +931,7 @@ function goWeek(wid) {
     var ckSafe = ck.replace(/[|:]/g,'_');
     h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+ck+'\')">'
 ;    h += '<div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
-    items.forEach(function(item, itemIdx) {
-      var done = STATE.tasks[item.id];
-      var safeText = item.text.replace(/'/g,"\\'");
-      var itemId = 'item-'+ckSafe+'-'+itemIdx;
-      h += '<div class="task" id="'+itemId+'" draggable="true"';
-      h += ' ondragstart="onItemDragStart(event,\''+ck+'\','+itemIdx+')"';
-      h += ' ondragover="onItemDragOver(event,\''+ck+'\','+itemIdx+')"';
-      h += ' ondrop="onItemDrop(event,\''+ck+'\','+itemIdx+')"';
-      h += ' onclick="togT(this,\''+item.id+'\')">'; 
-      h += '<span class="drag-handle">⠿</span>';
-      h += '<div class="chk'+(done?' done':'')+'"></div>';
-      h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+item.text+'</div>';
-      h += '<span class="task-next" onclick="event.stopPropagation();moveItemToNextWeek(\''+ck+'\','+itemIdx+',\''+wid+'\')" title="다음 주로">→</span>';
-      h += '<span class="task-del" onclick="event.stopPropagation();delItem(\''+ck+'\','+itemIdx+',\''+wid+'\')" title="삭제">✕</span></div>';
-    });
+    items.forEach(function(item, itemIdx) { h += renderItem(item, itemIdx, ck, false); });
     h += '<div class="add-task-row">';
     h += '<input class="add-task-inp" id="add-inp-'+ckSafe+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+ck+'\')">';
     h += '<button class="add-task-btn" onclick="addCustomTask(\''+ck+'\')" title="추가">+</button></div>';
@@ -898,21 +943,7 @@ function goWeek(wid) {
   var eckSafe = eck.replace(/[|:]/g,'_');
   h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+eck+'\')">';
   h += '<div class="track-head"><div class="tl"><div class="td" style="background:#B4B2A9"></div><div class="tn">etc.</div></div><span class="tt" style="background:#EDE8DE;color:#888780">그때그때 할 일</span></div>';
-  etcItems.forEach(function(item, itemIdx) {
-    var done = STATE.tasks[item.id];
-    var safeText = item.text.replace(/'/g,"\\'");
-    var itemId = 'item-'+eckSafe+'-'+itemIdx;
-    h += '<div class="task" id="'+itemId+'" draggable="true"';
-    h += ' ondragstart="onItemDragStart(event,\''+eck+'\','+itemIdx+')"';
-    h += ' ondragover="onItemDragOver(event,\''+eck+'\','+itemIdx+')"';
-    h += ' ondrop="onItemDrop(event,\''+eck+'\','+itemIdx+')"';
-    h += ' onclick="togT(this,\''+item.id+'\')">'
-;    h += '<span class="drag-handle">⠿</span>';
-    h += '<div class="chk'+(done?' done':'')+'"></div>';
-    h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+item.text+'</div>';
-    h += '<span class="task-next" onclick="event.stopPropagation();moveItemToNextWeek(\''+eck+'\','+itemIdx+',\''+wid+'\')" title="다음 주로">→</span>';
-    h += '<span class="task-del" onclick="event.stopPropagation();delItem(\''+eck+'\','+itemIdx+',\''+wid+'\')" title="삭제">✕</span></div>';
-  });
+  etcItems.forEach(function(item, itemIdx) { h += renderItem(item, itemIdx, eck, false); });
   h += '<div class="add-task-row">';
   h += '<input class="add-task-inp" id="add-inp-'+eckSafe+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+eck+'\')">';
   h += '<button class="add-task-btn" onclick="addCustomTask(\''+eck+'\')" title="추가">+</button></div>';
@@ -940,6 +971,7 @@ if(location.hash==='#week'){
   goMonth('june');
   goWeek('setup');
 }
+
 </script>
 </div>
 </body>
