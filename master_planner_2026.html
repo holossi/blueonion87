@@ -127,8 +127,6 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 /* ── 카테고리/영역 태그 ── */
 .cat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-right:3px;margin-top:3px}
 .area-tag{font-size:9px;padding:1px 6px;border-radius:6px;flex-shrink:0;white-space:nowrap;margin-right:3px}
-.area-tag.work{background:#FAEEDA;color:#854F0B}
-.area-tag.personal{background:#DDF0FA;color:#0D4F73}
 .add-meta-row{display:flex;gap:4px;flex-wrap:wrap;padding:5px 0 2px;align-items:center}
 .cat-btn{font-size:10px;padding:2px 9px;border-radius:10px;border:0.5px solid #D3D1C7;background:#FDFAF6;color:#888780;cursor:pointer;transition:all .12s}
 .cat-btn.sel-work{background:#FAEEDA;border-color:#BA7517;color:#854F0B;font-weight:500}
@@ -352,10 +350,7 @@ function renderItem(item, itemIdx, ck, isGoal) {
   h += ' ondrop="onItemDrop(event,\''+ck+'\','+itemIdx+')"';
   h += ' onclick="handleClick(this,\''+item.id+'\','+isGoal+')"';
   h += ' ondblclick="handleDblClick(event,\''+item.id+'\',\''+ck+'\')">';
-  var catInfo = item.cat ? CATS[item.cat] : null;
-  var dotCol  = catInfo ? catInfo.color : '#E0DBD3';
   h += '<span class="drag-handle">⠿</span>';
-  h += '<span class="cat-dot" style="background:'+dotCol+'"></span>';
   h += '<div class="'+chkClass+(done?' done':'')+'">'+'</div>';
   if(isEditing) {
     if(!_editMeta[idSafe]) _editMeta[idSafe]={cat:item.cat,area:item.area};
@@ -364,18 +359,18 @@ function renderItem(item, itemIdx, ck, isGoal) {
     h += '<input class="edit-inline" id="ei-'+idSafe+'" value="'+safeText+'" onclick="event.stopPropagation()"';
     h += ' onkeydown="event.stopPropagation();if(event.key===\'Enter\')saveItemEdit(\''+item.id+'\',\''+ck+'\');if(event.key===\'Escape\')cancelEdit(\''+ck+'\')"/>';
     h += '<div class="add-meta-row" style="padding:0;margin-top:2px">';
-    h += '<button class="cat-btn'+(em.cat==="work"?' sel-work':'')+'" id="ecat-work-'+idSafe+'" onclick="event.stopPropagation();setEditMeta(\''+idSafe+'\',\'cat\',\'work\')">일</button>';
-    h += '<button class="cat-btn'+(em.cat==="personal"?' sel-personal':'')+'" id="ecat-personal-'+idSafe+'" onclick="event.stopPropagation();setEditMeta(\''+idSafe+'\',\'cat\',\'personal\')">개인</button>';
-    h += '<span class="meta-sep">|</span>';
     ALL_AREAS.forEach(function(a,i){
-      var inCat=!em.cat||(AREAS[em.cat]&&AREAS[em.cat].indexOf(a)>=0);
-      h+='<button class="area-btn'+(em.area===a?' selected':'')+'" id="earea-'+i+'-'+idSafe+'" style="'+(inCat?'':'display:none')+'" onclick="event.stopPropagation();setEditMeta(\''+idSafe+'\',\'area\',\''+a+'\')">'+(a)+'</button>';
+      var eac=AREA_COLORS[a]||{bg:'#EDE8DE',tc:'#888780'};
+      var sel=em.area===a;
+      h+='<button class="area-btn" id="earea-'+i+'-'+idSafe+'"';
+      h+=' style="background:'+(sel?eac.tc:eac.bg)+';color:'+(sel?'#fff':eac.tc)+';border-color:'+eac.bg+'"';
+      h+=' onclick="event.stopPropagation();setEditMeta(\''+idSafe+'\',\'area\',\''+a+'\')">'+(a)+'</button>';
     });
     h += '</div></div>';
     h += '<span class="task-edit" onclick="event.stopPropagation();saveItemEdit(\''+item.id+'\',\''+ck+'\')" style="color:#BA7517">✓</span>';
   } else {
     h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+item.text+'</div>';
-    if(item.area){ var ac=item.cat||''; h += '<span class="area-tag '+ac+'">'+item.area+'</span>'; }
+    if(item.area){ var ac2=AREA_COLORS[item.area]||{bg:'#EDE8DE',tc:'#888780'}; h += '<span class="area-tag" style="background:'+ac2.bg+';color:'+ac2.tc+'">'+item.area+'</span>'; }
   }
   var isWk = ck.split('|')[0]==='wk';
   var srcId = ck.split('|')[1];
@@ -416,7 +411,7 @@ var CATS = {
   personal: {label:'개인', color:'#1A6E9A', bg:'#DDF0FA', tc:'#0D4F73'}
 };
 var AREAS = {
-  work:     ['소설','뉴스레터/에세이','유튜브','레지던시'],
+  work:     ['소설','뉴스레터/에세이','유튜브','공간 운영'],
   personal: ['독립/거주','건강/뷰티','성장/배움','기쁨/쉼']
 };
 var ALL_AREAS = AREAS.work.concat(AREAS.personal);
@@ -436,27 +431,23 @@ function toggleArea(areaIdx, ckSafe) {
 function updateMetaUI(ckSafe) {
   var cat  = _catSel[ckSafe]  || null;
   var area = _areaSel[ckSafe] || null;
-  // 카테고리 버튼
-  ['work','personal'].forEach(function(c) {
-    var el = document.getElementById('catb-'+c+'-'+ckSafe);
-    if(el) el.className = 'cat-btn' + (cat===c?' sel-'+c:'');
-  });
-  // 영역 버튼 표시/숨김 + 선택 상태
+  // 영역 버튼 선택 상태만
   ALL_AREAS.forEach(function(a, i) {
     var el = document.getElementById('areab-'+i+'-'+ckSafe);
     if(!el) return;
-    var inCat = !cat || AREAS[cat].indexOf(a) >= 0;
-    el.style.display = inCat ? '' : 'none';
-    el.className = 'area-btn' + (area===a?' selected':'');
+    var ac = AREA_COLORS[a]||{bg:'#EDE8DE',tc:'#888780'};
+    el.style.background = area===a ? ac.tc : ac.bg;
+    el.style.color = area===a ? '#fff' : ac.tc;
+    el.style.borderColor = ac.bg;
   });
 }
 function renderMetaRow(ckSafe) {
   var h = '<div class="add-meta-row">';
-  h += '<button class="cat-btn" id="catb-work-'+ckSafe+'" onclick="toggleCat(\'work\',\''+ckSafe+'\')">일</button>';
-  h += '<button class="cat-btn" id="catb-personal-'+ckSafe+'" onclick="toggleCat(\'personal\',\''+ckSafe+'\')">개인</button>';
-  h += '<span class="meta-sep">|</span>';
   ALL_AREAS.forEach(function(a, i) {
-    h += '<button class="area-btn" id="areab-'+i+'-'+ckSafe+'" onclick="toggleArea('+i+',\''+ckSafe+'\')">'+a+'</button>';
+    var ac = AREA_COLORS[a]||{bg:'#EDE8DE',tc:'#888780'};
+    h += '<button class="area-btn" id="areab-'+i+'-'+ckSafe+'"';
+    h += ' style="background:'+ac.bg+';color:'+ac.tc+';border-color:'+ac.bg+'"';
+    h += ' onclick="toggleArea('+i+',\''+ckSafe+'\')">'+a+'</button>';
   });
   h += '</div>';
   return h;
@@ -478,14 +469,14 @@ var GOAL_META = {
   'yr:2029:2':{cat:'work',area:'뉴스레터/에세이'},'yr:2029:3':{cat:'personal',area:'독립/거주'},
   'yr:2029:4':{cat:'personal',area:'기쁨/쉼'},
   'yr:2030:0':{cat:'work',area:'유튜브'},'yr:2030:1':{cat:'personal',area:'독립/거주'},
-  'yr:2030:2':{cat:'work',area:'레지던시'},'yr:2030:3':{cat:'personal',area:'독립/거주'},
-  'yr:2031:0':{cat:'work',area:'유튜브'},'yr:2031:1':{cat:'work',area:'레지던시'},
+  'yr:2030:2':{cat:'work',area:'공간 운영'},'yr:2030:3':{cat:'personal',area:'독립/거주'},
+  'yr:2031:0':{cat:'work',area:'유튜브'},'yr:2031:1':{cat:'work',area:'공간 운영'},
   'yr:2031:2':{cat:'work',area:'뉴스레터/에세이'},'yr:2031:3':{cat:'personal',area:'기쁨/쉼'},
-  'yr:2032:0':{cat:'work',area:'레지던시'},'yr:2032:1':{cat:'personal',area:'기쁨/쉼'},
+  'yr:2032:0':{cat:'work',area:'공간 운영'},'yr:2032:1':{cat:'personal',area:'기쁨/쉼'},
   'yr:2032:2':{cat:'work',area:'소설'},'yr:2032:3':{cat:'personal',area:'독립/거주'},
-  'yr:2033:0':{cat:'work',area:'레지던시'},'yr:2033:1':{cat:'work',area:'소설'},
+  'yr:2033:0':{cat:'work',area:'공간 운영'},'yr:2033:1':{cat:'work',area:'소설'},
   'yr:2033:2':{cat:'work',area:'유튜브'},'yr:2033:3':{cat:'personal',area:'독립/거주'},
-  'yr:2034:0':{cat:'work',area:'레지던시'},'yr:2034:1':{cat:'work',area:'소설'},
+  'yr:2034:0':{cat:'work',area:'공간 운영'},'yr:2034:1':{cat:'work',area:'소설'},
   'yr:2034:2':{cat:'personal',area:'독립/거주'},'yr:2034:3':{cat:'personal',area:'기쁨/쉼'},
   'se:summer:0':{cat:'work',area:'소설'},'se:summer:1':{cat:'work',area:'뉴스레터/에세이'},
   'se:summer:2':{cat:'work',area:'뉴스레터/에세이'},'se:summer:3':{cat:'personal',area:'독립/거주'},
@@ -504,18 +495,41 @@ function setEditMeta(idSafe, field, val) {
   _editMeta[idSafe][field] = (_editMeta[idSafe][field]===val) ? null : val;
   if(field==='cat') _editMeta[idSafe].area = null;
   var meta = _editMeta[idSafe];
-  ['work','personal'].forEach(function(ct){
-    var el=document.getElementById('ecat-'+ct+'-'+idSafe);
-    if(el) el.className='cat-btn'+(meta.cat===ct?' sel-'+ct:'');
-  });
   ALL_AREAS.forEach(function(a,i){
     var el=document.getElementById('earea-'+i+'-'+idSafe);
     if(!el) return;
-    var inCat=!meta.cat||(AREAS[meta.cat]&&AREAS[meta.cat].indexOf(a)>=0);
-    el.style.display=inCat?'':'none';
-    el.className='area-btn'+(meta.area===a?' selected':'');
+    var eac=AREA_COLORS[a]||{bg:'#EDE8DE',tc:'#888780'};
+    var sel=meta.area===a;
+    el.style.background=sel?eac.tc:eac.bg;
+    el.style.color=sel?'#fff':eac.tc;
+    el.style.borderColor=eac.bg;
   });
 }
+
+
+var YG_SUMMARY = {
+  2026: '결혼생활을 마무리하고 독립의 기반을 세우는 해. 경장편 초고를 완성하고 뉴스레터를 런칭해 작가로서의 채널을 정비한다.',
+  2027: '이혼을 법적으로 완료하고 나만의 공간에 안착하는 해. 계약분 장편·에세이집을 출간하고 유튜브를 개설해 확장의 발판을 만든다.',
+  2028: '소설집·중편을 출간하며 이름값을 굳히는 해. 첫 유료 강의를 운영하고 수입 연 1억 방향을 잡는다.',
+  2029: '유튜브·뉴스레터가 안정화되고 강의·멤버십이 본격화되는 해. 파이프라인을 다각화해 수입 연 1.5억을 향한다.',
+  2030: 'IP를 자산화하고 소형 부동산 매수를 검토하는 해. 온라인 클래스를 출시하며 수입 연 2억 구조를 만든다.',
+  2031: '온라인 클래스가 전성기를 맞고 레지던시 프로토타입을 운영하는 해. 바닷가 거점을 확보하며 3단계를 준비한다.',
+  2032: '레지던시를 정식 오픈하고 바닷가에 완전히 안착하는 해. 장편 대작 집필을 시작하고 순자산 10억을 달성한다.',
+  2033: '레지던시 2회차를 운영하며 커뮤니티를 형성하는 해. 장편 대작을 완성·출간하고 수입 연 3억 방향을 잡는다.',
+  2034: '레지던시가 황금기를 맞고 바닷가·고양이·계절 이동 라이프가 완성되는 해. 순자산 20~30억을 향해 레거시 구조를 완성한다.'
+};
+
+
+var AREA_COLORS = {
+  '소설':           {bg:'#EDE9F7', tc:'#6B5FA0'},
+  '뉴스레터/에세이': {bg:'#DCF0FB', tc:'#3A7EA6'},
+  '유튜브':         {bg:'#FCE4EC', tc:'#B0507A'},
+  '공간 운영':       {bg:'#E2F2E8', tc:'#3A7A5A'},
+  '독립/거주':      {bg:'#FDEBD8', tc:'#A06040'},
+  '건강/뷰티':      {bg:'#F9E5F0', tc:'#B04878'},
+  '성장/배움':      {bg:'#E0F5F0', tc:'#307870'},
+  '기쁨/쉼':       {bg:'#FEF6DC', tc:'#907830'}
+};
 
 var WEEK_ORDER = ['setup','w1','w2','w3','w4'];
 
@@ -940,9 +954,7 @@ function goYears() {
     var s = '<div class="sec-label sec-label-first">'+title+'</div><div class="yr-list">';
     years.forEach(function(yr) {
       var y = YG[yr];
-      var goalsH = y.goals.map(function(g, gi) {
-        var gid='goal:yr:'+yr+':'+gi; var gdone=STATE.goals[gid]; return '<div class="goal-item'+(gdone?' done':'')+'" onclick="togGoal(this,\''+gid+'\')" style="background:'+g.bg+'"><div class="g-chk'+(gdone?' done':'')+'"></div><div><div class="g-text">'+g.t+'</div><div class="g-sub">'+g.sub+'</div></div></div>';
-      }).join('');
+      var goalsH = '<div style="font-size:12px;color:#5F5E5A;line-height:1.7;margin-top:6px">'+(YG_SUMMARY[yr]||y.keyword)+'</div>';
       var clickable = yr <= 2028;
       s += '<div class="yc'+(y.active?' cur':'')+'">';
       s += '<div class="yc-head" '+(clickable?'onclick="goYear('+yr+')" style="cursor:pointer"':'style="cursor:default"')+'>';
@@ -969,7 +981,8 @@ function goYear(yr) {
   var y = YG[yr];
   var h = '<button class="back-btn" onclick="goYears()">← 연도별 목표</button>';
   h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+yr+'년 · '+y.keyword+'</div>';
-  h += '<div style="font-size:11px;color:#888780;margin-bottom:1rem">'+y.phase+'</div>';
+  h += '<div style="font-size:11px;color:#888780;margin-bottom:.5rem">'+y.phase+'</div>';
+  if(YG_SUMMARY[yr]) h += '<div style="font-size:12px;color:#5F5E5A;line-height:1.7;margin-bottom:1rem">'+YG_SUMMARY[yr]+'</div>';
   h += '<div class="sec-label sec-label-first">연간 목표</div>';
   var yrck = 'yr|'+yr;
   var yrItems = getAllItems(yrck, yr, null);
@@ -995,7 +1008,7 @@ function goYear(yr) {
       h += '<div style="font-size:20px;margin-bottom:5px">'+s.emoji+'</div>';
       h += '<div style="font-size:14px;font-weight:500;color:'+s.color+';margin-bottom:2px">'+s.name+'</div>';
       h += '<div style="font-size:11px;color:'+s.color+';opacity:.75;margin-bottom:5px">'+s.dates+'</div>';
-      h += '<div style="font-size:11px;color:'+s.color+';font-style:italic">'+s.mood+'</div>';
+      h += '<div style="font-size:11px;color:#888780;font-style:italic">'+s.mood+'</div>';
       h += '<div style="font-size:10px;color:'+s.color+';font-weight:500;margin-top:5px">→ 들어가기</div></div>';
     });
     h += '</div>';
@@ -1009,7 +1022,7 @@ function goSeasonOf(yr, sid) {
   var s = YS[yr][sid];
   var h = '<button class="back-btn" onclick="goYear('+yr+')">← '+yr+'년</button>';
   h += '<div style="font-size:15px;font-weight:500;color:'+s.color+';margin-bottom:3px">'+s.emoji+' '+s.name+' '+yr+' · '+s.dates+'</div>';
-  h += '<div style="font-size:12px;font-style:italic;color:'+s.color+';padding:8px 12px;border-radius:8px;background:'+s.bg+';margin-bottom:1.25rem">'+s.mood+'</div>';
+  h += '<div style="font-size:12px;color:#888780;padding:0 0 1rem;margin-bottom:.25rem">'+s.mood+'</div>';
   h += '<div class="sec-label sec-label-first">계절 목표</div>';
   s.goals.forEach(function(g) {
     h += '<div class="sg-item" onclick="togSg(this)" style="background:'+g.bg+'"><div class="sg-chk"></div><div class="sg-text">'+g.t+'</div></div>';
@@ -1023,7 +1036,7 @@ function goSeason(sid) {
   var s = SG[sid];
   var h = '<button class="back-btn" onclick="goYear('+curYear+')">← '+curYear+'년</button>';
   h += '<div style="font-size:15px;font-weight:500;color:'+s.color+';margin-bottom:3px">'+s.emoji+' '+s.name+' · '+s.keyword+'</div>';
-  h += '<div style="font-size:12px;font-style:italic;color:'+s.color+';padding:8px 12px;border-radius:8px;background:'+s.bg+';margin-bottom:1.25rem">'+s.mood+'</div>';
+  h += '<div style="font-size:12px;color:#888780;padding:0 0 1rem;margin-bottom:.25rem">'+s.mood+'</div>';
   var sck = 'se|'+sid;
   var sItems = getAllItems(sck, sid, null);
   h += '<div class="sec-label sec-label-first">계절 목표</div>';
