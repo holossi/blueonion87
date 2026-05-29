@@ -123,6 +123,46 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .edit-inline{flex:1;border:none;border-bottom:1.5px solid #BA7517;background:transparent;font-size:11px;color:#2C2C2A;outline:none;padding:0 2px;min-width:0}
 
 
+
+/* ── 카테고리/영역 태그 ── */
+.cat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-right:3px;margin-top:3px}
+.area-tag{font-size:9px;padding:1px 6px;border-radius:6px;flex-shrink:0;white-space:nowrap;margin-right:3px}
+.area-tag.work{background:#FAEEDA;color:#854F0B}
+.area-tag.personal{background:#DDF0FA;color:#0D4F73}
+.add-meta-row{display:flex;gap:4px;flex-wrap:wrap;padding:5px 0 2px;align-items:center}
+.cat-btn{font-size:10px;padding:2px 9px;border-radius:10px;border:0.5px solid #D3D1C7;background:#FDFAF6;color:#888780;cursor:pointer;transition:all .12s}
+.cat-btn.sel-work{background:#FAEEDA;border-color:#BA7517;color:#854F0B;font-weight:500}
+.cat-btn.sel-personal{background:#DDF0FA;border-color:#1A6E9A;color:#0D4F73;font-weight:500}
+.area-btn{font-size:10px;padding:2px 8px;border-radius:8px;border:0.5px solid #D3D1C7;background:#FDFAF6;color:#888780;cursor:pointer;transition:all .12s}
+.area-btn.selected{border-color:#888780;color:#2C2C2A;background:#EDE8DE}
+.meta-sep{color:#D3D1C7;font-size:11px;align-self:center}
+
+
+/* ── 홈 화면 (index 스타일) ── */
+.vision-card{background:#FDFAF6;border-radius:14px;padding:16px;margin-bottom:1rem;border:1px solid #C4B49A}
+.vision-label{font-size:9px;font-weight:500;color:#B4A88A;letter-spacing:.06em;margin-bottom:6px}
+.vision-text{font-size:13px;color:#5F5E5A;line-height:1.7;font-style:italic;margin-bottom:14px}
+.vision-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.vs{background:#EDE8DE;border-radius:8px;padding:8px 10px;text-align:center}
+.vs-label{font-size:9px;color:#B4B2A9;margin-bottom:3px}
+.vs-val{font-size:13px;font-weight:500;color:#2C2C2A}
+.vs-goal{font-size:9px;color:#3B6D11;margin-top:3px}
+.phase-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem}
+.phase-card{border-radius:12px;padding:14px 16px;cursor:pointer;display:block;color:inherit;border:0.5px solid #D3D1C7;background:#EDE8DE;transition:border-color .15s,background .15s}
+.phase-card:hover{border-color:#BA7517;background:#E0D9CC}
+.phase-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.phase-years{font-size:10px;font-weight:500;color:#888780}
+.phase-badge{font-size:9px;font-weight:500;padding:2px 7px;border-radius:8px;background:#D3D1C7;color:#5F5E5A}
+.phase-title{font-size:14px;font-weight:500;color:#2C2C2A;margin-bottom:3px}
+.phase-desc{font-size:11px;color:#888780;font-style:italic}
+.now-dot2{font-size:9px;font-weight:500;padding:2px 7px;border-radius:8px;background:#FAEEDA;color:#854F0B;margin-left:6px}
+.home-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.home-chip{font-size:10px;padding:2px 8px;border-radius:8px;background:#D3D1C7;color:#5F5E5A}
+.quote-card2{background:#EDE8DE;border-radius:12px;padding:14px 16px;margin-bottom:1rem}
+.quote-label2{font-size:9px;font-weight:500;color:#B4B2A9;letter-spacing:.06em;margin-bottom:6px}
+.quote-text2{font-size:12px;color:#5F5E5A;line-height:1.7;font-style:italic}
+.quote-source2{font-size:10px;color:#B4B2A9;margin-top:5px}
+
 </style>
 </head>
 <body>
@@ -161,9 +201,12 @@ function addCustomTask(key) {
   var inp = document.getElementById('add-inp-'+safeId);
   var val = (inp ? inp.value : '').trim();
   if(!val) return;
+  var cat  = _catSel[safeId]  || null;
+  var area = _areaSel[safeId] || null;
   if(!STATE.allItems) STATE.allItems = {};
   if(!STATE.allItems[key]) STATE.allItems[key] = [];
-  STATE.allItems[key].push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), text:val});
+  STATE.allItems[key].push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), text:val, cat:cat, area:area});
+  _catSel[safeId]=null; _areaSel[safeId]=null;
   saveState(); refreshView(key);
 }
 function delCustomTask(key, idx) {
@@ -179,7 +222,15 @@ function delCustomTask(key, idx) {
 // ── 통합 아이템 관리 ──────────────────────────────────
 function getAllItems(ck, src, sub) {
   if(!STATE.allItems) STATE.allItems = {};
-  if(STATE.allItems[ck]) return STATE.allItems[ck];
+  if(STATE.allItems[ck]) {
+    // 캐시된 아이템에 GOAL_META 없으면 자동 적용
+    STATE.allItems[ck].forEach(function(item){
+      if(item.cat===undefined && GOAL_META[item.id]) {
+        item.cat=GOAL_META[item.id].cat; item.area=GOAL_META[item.id].area;
+      }
+    });
+    return STATE.allItems[ck];
+  }
   var items = [];
   var prefix = ck.split('|')[0];
   if(prefix==='wk' && sub!=='etc') {
@@ -190,10 +241,16 @@ function getAllItems(ck, src, sub) {
     if(tr) tr.tasks.forEach(function(t,i){ var old='mo:'+src+':'+ti+':'+i; if(!STATE.deleted[old]) items.push({id:old,text:t.t}); });
   } else if(prefix==='se') {
     var gs=SG[src]&&SG[src].goals;
-    if(gs) gs.forEach(function(g,i){ var old='se:'+src+':'+i; if(!STATE.deleted[old]) items.push({id:old,text:g.t}); });
+    if(gs) gs.forEach(function(g,i){
+      var old='se:'+src+':'+i; if(STATE.deleted[old]) return;
+      var m=GOAL_META[old]||{}; items.push({id:old,text:g.t,cat:m.cat||null,area:m.area||null});
+    });
   } else if(prefix==='yr') {
     var gs=YG[parseInt(src)]&&YG[parseInt(src)].goals;
-    if(gs) gs.forEach(function(g,i){ var old='yr:'+src+':'+i; if(!STATE.deleted[old]) items.push({id:old,text:g.t}); });
+    if(gs) gs.forEach(function(g,i){
+      var old='yr:'+src+':'+i; if(STATE.deleted[old]) return;
+      var m=GOAL_META[old]||{}; items.push({id:old,text:g.t,cat:m.cat||null,area:m.area||null});
+    });
   }
   (STATE.custom[ck]||[]).forEach(function(ct){
     var txt=(typeof ct==='object')?ct.t:ct;
@@ -262,12 +319,20 @@ function startEdit(id, ck) {
   },50);
 }
 function saveItemEdit(id, ck) {
-  var el=document.getElementById('ei-'+id.replace(/[|:]/g,'_'));
+  var idSafe=id.replace(/[|:]/g,'_');
+  var el=document.getElementById('ei-'+idSafe);
   if(!el) return;
   var val=el.value.trim();
-  if(val && STATE.allItems && STATE.allItems[ck]) {
-    STATE.allItems[ck].forEach(function(item){ if(item.id===id) item.text=val; });
+  var meta=_editMeta[idSafe]||{};
+  if(STATE.allItems && STATE.allItems[ck]) {
+    STATE.allItems[ck].forEach(function(item){
+      if(item.id!==id) return;
+      if(val) item.text=val;
+      if(meta.cat!==undefined) item.cat=meta.cat;
+      if(meta.area!==undefined) item.area=meta.area;
+    });
   }
+  delete _editMeta[idSafe];
   STATE.editId=null; saveState(); refreshView(ck);
 }
 function cancelEdit(ck) { STATE.editId=null; refreshView(ck); }
@@ -287,14 +352,30 @@ function renderItem(item, itemIdx, ck, isGoal) {
   h += ' ondrop="onItemDrop(event,\''+ck+'\','+itemIdx+')"';
   h += ' onclick="handleClick(this,\''+item.id+'\','+isGoal+')"';
   h += ' ondblclick="handleDblClick(event,\''+item.id+'\',\''+ck+'\')">';
+  var catInfo = item.cat ? CATS[item.cat] : null;
+  var dotCol  = catInfo ? catInfo.color : '#E0DBD3';
   h += '<span class="drag-handle">⠿</span>';
+  h += '<span class="cat-dot" style="background:'+dotCol+'"></span>';
   h += '<div class="'+chkClass+(done?' done':'')+'">'+'</div>';
   if(isEditing) {
+    if(!_editMeta[idSafe]) _editMeta[idSafe]={cat:item.cat,area:item.area};
+    var em=_editMeta[idSafe];
+    h += '<div style="flex:1;display:flex;flex-direction:column;gap:3px">';
     h += '<input class="edit-inline" id="ei-'+idSafe+'" value="'+safeText+'" onclick="event.stopPropagation()"';
     h += ' onkeydown="event.stopPropagation();if(event.key===\'Enter\')saveItemEdit(\''+item.id+'\',\''+ck+'\');if(event.key===\'Escape\')cancelEdit(\''+ck+'\')"/>';
+    h += '<div class="add-meta-row" style="padding:0;margin-top:2px">';
+    h += '<button class="cat-btn'+(em.cat==="work"?' sel-work':'')+'" id="ecat-work-'+idSafe+'" onclick="event.stopPropagation();setEditMeta(\''+idSafe+'\',\'cat\',\'work\')">일</button>';
+    h += '<button class="cat-btn'+(em.cat==="personal"?' sel-personal':'')+'" id="ecat-personal-'+idSafe+'" onclick="event.stopPropagation();setEditMeta(\''+idSafe+'\',\'cat\',\'personal\')">개인</button>';
+    h += '<span class="meta-sep">|</span>';
+    ALL_AREAS.forEach(function(a,i){
+      var inCat=!em.cat||(AREAS[em.cat]&&AREAS[em.cat].indexOf(a)>=0);
+      h+='<button class="area-btn'+(em.area===a?' selected':'')+'" id="earea-'+i+'-'+idSafe+'" style="'+(inCat?'':'display:none')+'" onclick="event.stopPropagation();setEditMeta(\''+idSafe+'\',\'area\',\''+a+'\')">'+(a)+'</button>';
+    });
+    h += '</div></div>';
     h += '<span class="task-edit" onclick="event.stopPropagation();saveItemEdit(\''+item.id+'\',\''+ck+'\')" style="color:#BA7517">✓</span>';
   } else {
     h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+item.text+'</div>';
+    if(item.area){ var ac=item.cat||''; h += '<span class="area-tag '+ac+'">'+item.area+'</span>'; }
   }
   var isWk = ck.split('|')[0]==='wk';
   var srcId = ck.split('|')[1];
@@ -326,6 +407,114 @@ function togUnified(el, id, isGoal) {
   if(isGoal){ STATE.goals[id]=c.classList.contains('done'); }
   else { STATE.tasks[id]=c.classList.contains('done'); }
   saveState();
+}
+
+
+// ── 카테고리/영역 설정 ──────────────────────────────
+var CATS = {
+  work:     {label:'일',  color:'#BA7517', bg:'#FAEEDA', tc:'#854F0B'},
+  personal: {label:'개인', color:'#1A6E9A', bg:'#DDF0FA', tc:'#0D4F73'}
+};
+var AREAS = {
+  work:     ['소설','뉴스레터/에세이','유튜브','레지던시'],
+  personal: ['독립/거주','건강/뷰티','성장/배움','기쁨/쉼']
+};
+var ALL_AREAS = AREAS.work.concat(AREAS.personal);
+var _catSel  = {}; // ckSafe → 'work'|'personal'|null
+var _areaSel = {}; // ckSafe → area|null
+
+function toggleCat(cat, ckSafe) {
+  _catSel[ckSafe]  = (_catSel[ckSafe] === cat) ? null : cat;
+  _areaSel[ckSafe] = null;
+  updateMetaUI(ckSafe);
+}
+function toggleArea(areaIdx, ckSafe) {
+  var area = ALL_AREAS[areaIdx];
+  _areaSel[ckSafe] = (_areaSel[ckSafe] === area) ? null : area;
+  updateMetaUI(ckSafe);
+}
+function updateMetaUI(ckSafe) {
+  var cat  = _catSel[ckSafe]  || null;
+  var area = _areaSel[ckSafe] || null;
+  // 카테고리 버튼
+  ['work','personal'].forEach(function(c) {
+    var el = document.getElementById('catb-'+c+'-'+ckSafe);
+    if(el) el.className = 'cat-btn' + (cat===c?' sel-'+c:'');
+  });
+  // 영역 버튼 표시/숨김 + 선택 상태
+  ALL_AREAS.forEach(function(a, i) {
+    var el = document.getElementById('areab-'+i+'-'+ckSafe);
+    if(!el) return;
+    var inCat = !cat || AREAS[cat].indexOf(a) >= 0;
+    el.style.display = inCat ? '' : 'none';
+    el.className = 'area-btn' + (area===a?' selected':'');
+  });
+}
+function renderMetaRow(ckSafe) {
+  var h = '<div class="add-meta-row">';
+  h += '<button class="cat-btn" id="catb-work-'+ckSafe+'" onclick="toggleCat(\'work\',\''+ckSafe+'\')">일</button>';
+  h += '<button class="cat-btn" id="catb-personal-'+ckSafe+'" onclick="toggleCat(\'personal\',\''+ckSafe+'\')">개인</button>';
+  h += '<span class="meta-sep">|</span>';
+  ALL_AREAS.forEach(function(a, i) {
+    h += '<button class="area-btn" id="areab-'+i+'-'+ckSafe+'" onclick="toggleArea('+i+',\''+ckSafe+'\')">'+a+'</button>';
+  });
+  h += '</div>';
+  return h;
+}
+
+
+var GOAL_META = {
+  'yr:2026:0':{cat:'personal',area:'독립/거주'},'yr:2026:1':{cat:'work',area:'소설'},
+  'yr:2026:2':{cat:'work',area:'뉴스레터/에세이'},'yr:2026:3':{cat:'personal',area:'독립/거주'},
+  'yr:2026:4':{cat:'work',area:'뉴스레터/에세이'},
+  'yr:2027:0':{cat:'personal',area:'독립/거주'},'yr:2027:1':{cat:'work',area:'소설'},
+  'yr:2027:2':{cat:'work',area:'뉴스레터/에세이'},'yr:2027:3':{cat:'work',area:'소설'},
+  'yr:2027:4':{cat:'work',area:'소설'},'yr:2027:5':{cat:'work',area:'뉴스레터/에세이'},
+  'yr:2027:6':{cat:'personal',area:'독립/거주'},
+  'yr:2028:0':{cat:'work',area:'소설'},'yr:2028:1':{cat:'work',area:'소설'},
+  'yr:2028:2':{cat:'work',area:'소설'},'yr:2028:3':{cat:'work',area:'유튜브'},
+  'yr:2028:4':{cat:'personal',area:'독립/거주'},'yr:2028:5':{cat:'personal',area:'기쁨/쉼'},
+  'yr:2029:0':{cat:'work',area:'유튜브'},'yr:2029:1':{cat:'work',area:'유튜브'},
+  'yr:2029:2':{cat:'work',area:'뉴스레터/에세이'},'yr:2029:3':{cat:'personal',area:'독립/거주'},
+  'yr:2029:4':{cat:'personal',area:'기쁨/쉼'},
+  'yr:2030:0':{cat:'work',area:'유튜브'},'yr:2030:1':{cat:'personal',area:'독립/거주'},
+  'yr:2030:2':{cat:'work',area:'레지던시'},'yr:2030:3':{cat:'personal',area:'독립/거주'},
+  'yr:2031:0':{cat:'work',area:'유튜브'},'yr:2031:1':{cat:'work',area:'레지던시'},
+  'yr:2031:2':{cat:'work',area:'뉴스레터/에세이'},'yr:2031:3':{cat:'personal',area:'기쁨/쉼'},
+  'yr:2032:0':{cat:'work',area:'레지던시'},'yr:2032:1':{cat:'personal',area:'기쁨/쉼'},
+  'yr:2032:2':{cat:'work',area:'소설'},'yr:2032:3':{cat:'personal',area:'독립/거주'},
+  'yr:2033:0':{cat:'work',area:'레지던시'},'yr:2033:1':{cat:'work',area:'소설'},
+  'yr:2033:2':{cat:'work',area:'유튜브'},'yr:2033:3':{cat:'personal',area:'독립/거주'},
+  'yr:2034:0':{cat:'work',area:'레지던시'},'yr:2034:1':{cat:'work',area:'소설'},
+  'yr:2034:2':{cat:'personal',area:'독립/거주'},'yr:2034:3':{cat:'personal',area:'기쁨/쉼'},
+  'se:summer:0':{cat:'work',area:'소설'},'se:summer:1':{cat:'work',area:'뉴스레터/에세이'},
+  'se:summer:2':{cat:'work',area:'뉴스레터/에세이'},'se:summer:3':{cat:'personal',area:'독립/거주'},
+  'se:summer:4':{cat:'work',area:'소설'},
+  'se:autumn:0':{cat:'personal',area:'독립/거주'},'se:autumn:1':{cat:'personal',area:'독립/거주'},
+  'se:autumn:2':{cat:'work',area:'소설'},'se:autumn:3':{cat:'work',area:'뉴스레터/에세이'},
+  'se:winter:0':{cat:'personal',area:'독립/거주'},'se:winter:1':{cat:'work',area:'소설'},
+  'se:winter:2':{cat:'work',area:'뉴스레터/에세이'},'se:winter:3':{cat:'work',area:'소설'},
+  'se:winter:4':{cat:'personal',area:'기쁨/쉼'},
+  'se:spring27:0':{cat:'work',area:'유튜브'},'se:spring27:1':{cat:'work',area:'뉴스레터/에세이'},
+  'se:spring27:2':{cat:'personal',area:'독립/거주'}
+};
+var _editMeta = {};
+function setEditMeta(idSafe, field, val) {
+  if(!_editMeta[idSafe]) _editMeta[idSafe] = {};
+  _editMeta[idSafe][field] = (_editMeta[idSafe][field]===val) ? null : val;
+  if(field==='cat') _editMeta[idSafe].area = null;
+  var meta = _editMeta[idSafe];
+  ['work','personal'].forEach(function(ct){
+    var el=document.getElementById('ecat-'+ct+'-'+idSafe);
+    if(el) el.className='cat-btn'+(meta.cat===ct?' sel-'+ct:'');
+  });
+  ALL_AREAS.forEach(function(a,i){
+    var el=document.getElementById('earea-'+i+'-'+idSafe);
+    if(!el) return;
+    var inCat=!meta.cat||(AREAS[meta.cat]&&AREAS[meta.cat].indexOf(a)>=0);
+    el.style.display=inCat?'':'none';
+    el.className='area-btn'+(meta.area===a?' selected':'');
+  });
 }
 
 var WEEK_ORDER = ['setup','w1','w2','w3','w4'];
@@ -698,49 +887,51 @@ if(location.hash==='#week'){
 } }
 
 function renderHome() {
+  var mantras = [
+    {t:'"기꺼이 머뭇거리고, 용기 있게 취약한."', s:'을축일주 · 삶의 매니페스토'},
+    {t:'"이야기로 세상과 연결되고, 글로 생계를 만들며, 공간으로 다음 세대를 키운다."', s:'통합 시나리오 · 비전'},
+    {t:'"당신의 운명은 기다리는 이야기가 아니라 써야만 존재하는 이야기다."', s:'인생 로드맵 · 운명 초월 시나리오'},
+    {t:'"끝낼 것은 끝내고, 남길 것에 몰아줄 것."', s:'신해대운 1단계 · 미션'},
+    {t:'"감각으로 잡고, 구조로 굳히는 삶을 위한 설계도."', s:'인생 로드맵 · 부제'}
+  ];
+  var m = mantras[new Date().getDate() % mantras.length];
   var h = '';
-  h += '<div class="sc-card">';
-  h += '<div style="font-size:10px;font-weight:500;color:#888780;letter-spacing:.06em;margin-bottom:6px">통합 시나리오 · 잠재력 각성 × 운명 초월</div>';
-  h += '<div class="sc-vision">"이야기로 세상과 연결되고, 글로 생계를 만들며, 공간으로 다음 세대를 키운다."</div>';
-  h += '<div class="sc-row">';
-  h += '<div class="sc-stat"><div class="sc-stat-label">연 수입 · 지금</div><div class="sc-stat-val">2,000만원</div><div class="sc-stat-goal">→ 목표 2~4억</div></div>';
-  h += '<div class="sc-stat"><div class="sc-stat-label">순자산 · 지금</div><div class="sc-stat-val">600만원</div><div class="sc-stat-goal">→ 목표 10~20억</div></div>';
-  h += '<div class="sc-stat"><div class="sc-stat-label">타이틀 · 지금</div><div class="sc-stat-val" style="font-size:11px">소설가</div><div class="sc-stat-goal">→ 작은 우주의 주인</div></div>';
+  h += '<div class="vision-card">';
+  h += '<div class="vision-label">신해대운 · 잠재력 각성 × 운명 초월</div>';
+  h += '<div class="vision-text">"이야기로 세상과 연결되고, 글로 생계를 만들며, 공간으로 다음 세대를 키운다."</div>';
+  h += '<div class="vision-stats">';
+  h += '<div class="vs"><div class="vs-label">연 수입 · 지금</div><div class="vs-val">2,000만</div><div class="vs-goal">→ 목표 2~4억</div></div>';
+  h += '<div class="vs"><div class="vs-label">순자산 · 지금</div><div class="vs-val">600만</div><div class="vs-goal">→ 목표 10~20억</div></div>';
+  h += '<div class="vs"><div class="vs-label">타이틀 · 지금</div><div class="vs-val" style="font-size:11px">소설가</div><div class="vs-goal">→ 작은 우주의 주인</div></div>';
   h += '</div></div>';
-
-  h += '<div class="sec-label sec-label-first">신해 대운 3단계 (2026~2034)</div>';
-  h += '<div class="dw-grid">';
-  h += '<div class="dw" style="background:#DDF0FA;cursor:pointer" onclick="goYears()">';
-  h += '<div class="dw-head"><div><span style="font-size:10px;font-weight:500;color:#1A6E9A">2026 — 2028</span><span class="now-badge">지금</span></div><span class="tag" style="background:#B8E0F0;color:#0D4F73">1단계</span></div>';
-  h += '<div class="dw-title">구조 전환기</div><div class="dw-desc">"끊을 것 끊고, 시작할 것 시작하기."</div>';
-  h += '<div style="display:flex;gap:5px;flex-wrap:wrap"><span class="chip" style="background:#B8E0F0;color:#0D4F73">결혼생활 마무리</span><span class="chip" style="background:#B8E0F0;color:#0D4F73">경장편·산문집</span><span class="chip" style="background:#B8E0F0;color:#0D4F73">뉴스레터 런칭</span></div>';
-  h += '<div style="font-size:10px;color:#1A6E9A;margin-top:8px;font-weight:500">→ 연도별 목표 보기</div></div>';
-
-  h += '<div class="dw" style="background:#EDE8DE;cursor:pointer" onclick="goYears()">';
-  h += '<div class="dw-head"><div><span style="font-size:10px;font-weight:500;color:#888780">2029 — 2031</span></div><span class="tag" style="background:#D3D1C7;color:#444441">2단계</span></div>';
-  h += '<div class="dw-title">확장기</div><div class="dw-desc">"이름값이 붙기 시작하는 시기."</div>';
-  h += '<div style="display:flex;gap:5px;flex-wrap:wrap"><span class="chip" style="background:#D3D1C7;color:#444441">유튜브 성장</span><span class="chip" style="background:#D3D1C7;color:#444441">강의·멤버십</span></div></div>';
-
-  h += '<div class="dw" style="background:#E8E8E6;cursor:pointer" onclick="goYears()">';
-  h += '<div class="dw-head"><div><span style="font-size:10px;font-weight:500;color:#888780">2032 — 2034</span></div><span class="tag" style="background:#D0D0CE;color:#444442">3단계</span></div>';
-  h += '<div class="dw-title">수확 준비기</div><div class="dw-desc">"레지던시 구축, 바닷가 거점 확보."</div>';
-  h += '<div style="display:flex;gap:5px;flex-wrap:wrap"><span class="chip" style="background:#D0D0CE;color:#444442">레지던시</span><span class="chip" style="background:#D0D0CE;color:#444442">고양이·바다</span></div></div>';
+  h += '<div class="sec-label">신해 대운 3단계 (2026~2034)</div>';
+  h += '<div class="phase-list">';
+  h += '<div class="phase-card" onclick="goYears()">';
+  h += '<div class="phase-head"><div><span class="phase-years">2026 — 2028</span><span class="now-dot2">지금 ★</span></div><span class="phase-badge">1단계</span></div>';
+  h += '<div class="phase-title">구조 전환기</div>';
+  h += '<div class="phase-desc">"끊을 것 끊고, 시작할 것 시작하기."</div>';
+  h += '<div class="home-chips"><span class="home-chip">결혼생활 마무리</span><span class="home-chip">경장편·산문집</span><span class="home-chip">뉴스레터 런칭</span></div>';
   h += '</div>';
-
-  h += '<div class="sec-label">핵심 리스크 & 우선순위</div>';
-  h += '<div class="risk-grid">';
-  h += '<div class="rc" style="background:#FAE8E5"><div class="rc-title" style="color:#9B3020">정리 지연 ⚠️ 최우선</div><span class="rc-level" style="background:#F5C4BB;color:#7A2215">매우 높음</span><div class="rc-desc" style="color:#712B13">2026년 최우선 해결.</div></div>';
-  h += '<div class="rc" style="background:#EEEDFE"><div class="rc-title" style="color:#534AB7">재정 구조 취약</div><span class="rc-level" style="background:#D4D2F5;color:#3A318A">중간</span><div class="rc-desc" style="color:#3A318A">파이프라인 2개 이상 확보 필수.</div></div>';
-  h += '<div class="rc" style="background:#EAF3DE"><div class="rc-title" style="color:#3B6D11">번아웃</div><span class="rc-level" style="background:#C0DD97;color:#27500A">높음</span><div class="rc-desc" style="color:#27500A">수(水) 부재. 회복 루틴 의무화.</div></div>';
-  h += '<div class="rc" style="background:#FAEEDA"><div class="rc-title" style="color:#BA7517">대인관계·동업</div><span class="rc-level" style="background:#FAC775;color:#633806">매우 높음</span><div class="rc-desc" style="color:#633806">계약 문서화 필수.</div></div>';
+  h += '<div class="phase-card" onclick="goYears()">';
+  h += '<div class="phase-head"><span class="phase-years">2029 — 2031</span><span class="phase-badge">2단계</span></div>';
+  h += '<div class="phase-title">확장기</div>';
+  h += '<div class="phase-desc">"이름값이 붙기 시작하는 시기."</div>';
+  h += '<div class="home-chips"><span class="home-chip">유튜브 성장</span><span class="home-chip">강의·멤버십</span></div>';
   h += '</div>';
-
-  h += '<div class="card" style="cursor:pointer" onclick="goYears()">';
-  h += '<div style="display:flex;align-items:center;justify-content:space-between"><div><div class="card-title">연도별 목표 보기 →</div><div class="card-body">2026~2034 대운 전체</div></div><span style="font-size:18px;color:#B4B2A9">›</span></div></div>';
-
+  h += '<div class="phase-card" onclick="goYears()">';
+  h += '<div class="phase-head"><span class="phase-years">2032 — 2034</span><span class="phase-badge">3단계</span></div>';
+  h += '<div class="phase-title">수확 준비기</div>';
+  h += '<div class="phase-desc">"레지던시 구축, 바닷가 거점 확보."</div>';
+  h += '<div class="home-chips"><span class="home-chip">레지던시</span><span class="home-chip">고양이·바다</span></div>';
+  h += '</div>';
+  h += '</div>';
+  h += '<div class="quote-card2"><div class="quote-label2">MANTRA</div>';
+  h += '<div class="quote-text2">'+m.t+'</div>';
+  h += '<div class="quote-source2">'+m.s+'</div></div>';
   document.getElementById('lv-home').innerHTML = h;
   showLv('home');
 }
+
 
 function goYears() {
   var h = '<button class="back-btn" onclick="goHome()">← 홈</button>';
@@ -911,6 +1102,7 @@ function goWeek(wid) {
     h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+ck+'\')">'
 ;    h += '<div class="track-head"><div class="tl"><div class="td" style="background:'+tr.c+'"></div><div class="tn">'+tr.n+'</div></div><span class="tt" style="background:'+tr.tBg+';color:'+tr.tC+'">'+tr.tag+'</span></div>';
     items.forEach(function(item, itemIdx) { h += renderItem(item, itemIdx, ck, false); });
+    h += renderMetaRow(ckSafe);
     h += '<div class="add-task-row">';
     h += '<input class="add-task-inp" id="add-inp-'+ckSafe+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+ck+'\')">';
     h += '<button class="add-task-btn" onclick="addCustomTask(\''+ck+'\')" title="추가">+</button></div>';
@@ -923,6 +1115,7 @@ function goWeek(wid) {
   h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+eck+'\')">';
   h += '<div class="track-head"><div class="tl"><div class="td" style="background:#B4B2A9"></div><div class="tn">etc.</div></div><span class="tt" style="background:#EDE8DE;color:#888780">그때그때 할 일</span></div>';
   etcItems.forEach(function(item, itemIdx) { h += renderItem(item, itemIdx, eck, false); });
+  h += renderMetaRow(eckSafe);
   h += '<div class="add-task-row">';
   h += '<input class="add-task-inp" id="add-inp-'+eckSafe+'" type="text" placeholder="할 일 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+eck+'\')">';
   h += '<button class="add-task-btn" onclick="addCustomTask(\''+eck+'\')" title="추가">+</button></div>';
