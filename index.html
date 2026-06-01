@@ -2286,8 +2286,54 @@ function goWeek(wid) {
   h += '<button class="add-task-btn" onclick="addCustomTask(\''+ck+'\')" title="추가">+</button></div>';
   h += '</div>';
 
+  // ── 요일별 분배 ──
+  h += '<div class="breakdown-wrap"><div class="breakdown-line"></div>';
+  h += '<button class="breakdown-btn" id="break-wk-'+wid+'" onclick="breakdownWeekToDays(\''+wid+'\')">⤵ 이번 주 할 일 → 요일별로 분배</button>';
+  h += '<div class="breakdown-arrow">▼</div></div>';
+  var DAY_DEFS=[{k:'mon',n:'월'},{k:'tue',n:'화'},{k:'wed',n:'수'},{k:'thu',n:'목'},{k:'fri',n:'금'},{k:'sat',n:'토'},{k:'sun',n:'일'}];
+  DAY_DEFS.forEach(function(d){
+    var dk='wk|'+wid+'|day-'+d.k;
+    var dItems=getAllItems(dk, wid, 'day-'+d.k);
+    var dkSafe=dk.replace(/[|:]/g,'_');
+    var isWeekend=(d.k==='sat'||d.k==='sun');
+    h += '<div style="margin-bottom:.8rem">';
+    h += '<div class="msg-head" style="font-size:11px'+(isWeekend?';color:#B07878':'')+'">'+d.n+'</div>';
+    h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+dk+'\')">';
+    dItems.forEach(function(item,idx){ h += renderItem(item, idx, dk, false); });
+    h += '<div class="add-task-row"><input class="add-task-inp" id="add-inp-'+dkSafe+'" type="text" placeholder="'+d.n+'요일 할 일..." oninput="onAddInput(this)" onblur="hideTagDropdown()" onkeydown="if(event.key===\'Enter\')addCustomTask(\''+dk+'\')"><button class="add-task-btn" onclick="addCustomTask(\''+dk+'\')" title="추가">+</button></div>';
+    h += '</div></div>';
+  });
+
   document.getElementById('lv-week').innerHTML = h;
   showLv('week');
+}
+
+function breakdownWeekToDays(wid){
+  checkApiKey(async function(){
+    var mck='wk|'+wid+'|main';
+    var tasks=STATE.allItems[mck]||[];
+    if(!tasks.length){ alert('이번 주 할 일을 먼저 입력해주세요.'); return; }
+    var taskText=tasks.map(function(i,n){return (n+1)+'. '+i.text+(i.area?' ['+i.area+']':'');}).join('\n');
+    var prompt='이번 주 할 일 목록:\n'+taskText+'\n\n'
+      +'이 할 일들을 월~일 7일에 현실적으로 분배해줘. 평일에 더 많이, 주말은 가볍게. 필요하면 큰 일은 여러 날에 잘게 나눠도 돼.\n'
+      +'영역 태그는 원래 것을 유지: '+AREAS_LIST_ALL.join(', ')+'\n'
+      +'JSON만 응답:\n{"월":[{"text":"할일","area":"태그"}],"화":[...],"수":[...],"목":[...],"금":[...],"토":[...],"일":[...]}';
+    var result=await callClaude(prompt,'break-wk-'+wid,'⤵ 이번 주 할 일 → 요일별로 분배');
+    if(!result) return;
+    try{
+      var data=JSON.parse(result.replace(/```json|```/g,'').trim());
+      var dayMap={'월':'mon','화':'tue','수':'wed','목':'thu','금':'fri','토':'sat','일':'sun'};
+      // 기존 요일 분배 초기화 (재실행 시 중복 방지)
+      Object.keys(dayMap).forEach(function(kn){ STATE.allItems['wk|'+wid+'|day-'+dayMap[kn]]=[]; });
+      Object.keys(dayMap).forEach(function(kn){
+        var dk='wk|'+wid+'|day-'+dayMap[kn];
+        (data[kn]||[]).forEach(function(item){
+          STATE.allItems[dk].push({id:'ai_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),text:item.text,cat:null,area:item.area||null});
+        });
+      });
+      saveState(); goWeek(wid); alert('✓ 요일별로 분배됐어요!');
+    } catch(e){ alert('파싱 오류. 다시 시도해주세요.'); }
+  });
 }
 
 function togT(el, id) {
