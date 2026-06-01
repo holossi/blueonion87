@@ -2066,7 +2066,7 @@ function goYears() {
     var s = '<div class="sec-label sec-label-first">'+title+'</div><div class="yr-list">';
     years.forEach(function(yr) {
       var y = YG[yr];
-      var goalsH = '<div style="font-size:12px;color:#5F5E5A;line-height:1.7;margin-top:6px">'+(YG_SUMMARY[yr]||y.keyword)+'</div>';
+      var goalsH = STATE.fresh ? '' : '<div style="font-size:12px;color:#5F5E5A;line-height:1.7;margin-top:6px">'+(YG_SUMMARY[yr]||y.keyword)+'</div>';
       var clickable = yr <= 2028;
       s += '<div class="yc'+(y.active?' cur':'')+'">';
       s += '<div class="yc-head" '+(clickable?'onclick="goYear('+yr+')" style="cursor:pointer"':'style="cursor:default"')+'>';
@@ -2094,7 +2094,7 @@ function goYear(yr) {
   var h = '';
   h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+yr+'년 · '+y.keyword+'</div>';
   h += '<div style="font-size:11px;color:#888780;margin-bottom:.5rem">'+y.phase+'</div>';
-  if(YG_SUMMARY[yr]) h += '<div style="font-size:12px;color:#5F5E5A;line-height:1.7;margin-bottom:1rem">'+YG_SUMMARY[yr]+'</div>';
+  if(YG_SUMMARY[yr] && !STATE.fresh) h += '<div style="font-size:12px;color:#5F5E5A;line-height:1.7;margin-bottom:1rem">'+YG_SUMMARY[yr]+'</div>';
   h += '<div class="sec-label sec-label-first">계절별 목표</div>';
   YEAR_SEASONS.forEach(function(s){
     var sk = seasonKey(yr, s.key);
