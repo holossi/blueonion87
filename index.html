@@ -1142,12 +1142,19 @@ function importData(){
     };rd.readAsText(file);
   };inp.click();
 }
+var _resetArmed=false;
 function resetPlanner(){
-  if(!confirm('연간·계절·월간·주간의 모든 목표와 할일을 삭제하고 빈 상태로 시작할까요?\n\n(되돌릴 수 없어요. 먼저 \'내보내기\'로 백업을 권장해요.)')) return;
+  var row=(typeof event!=='undefined'&&event)?event.target:null;
+  if(!_resetArmed){
+    _resetArmed=true;
+    if(row){ row.textContent='⚠ 한 번 더 누르면 전체 삭제'; row.style.background='#FAECE7'; }
+    setTimeout(function(){ _resetArmed=false; if(row){ row.textContent='⟲ 플래너 전체 초기화'; row.style.background=''; } },4000);
+    return;
+  }
+  _resetArmed=false;
   STATE={tasks:{},goals:{},custom:{},deleted:{},allItems:{},editId:null,fresh:true};
   saveState();
-  alert('초기화 완료! 빈 상태에서 새로 시작해요.');
-  location.reload();
+  try{ location.reload(); }catch(e){ showApp('home'); }
 }
 
 // ════════ 홈 만트라/날짜 ════════
@@ -1181,6 +1188,7 @@ var STATE = {tasks:{}, goals:{}, custom:{}};
     STATE.deleted   = s.deleted   || {};
     STATE.allItems  = s.allItems  || {};
     STATE.editId    = null;
+    STATE.fresh     = s.fresh     || false;
 
   } catch(e) {}
 })();
