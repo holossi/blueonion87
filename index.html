@@ -491,6 +491,8 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
           <div class="backup-divider"></div>
           <div class="backup-row" onclick="importData()">↓ 가져오기 (복원)</div>
           <div class="backup-divider"></div>
+          <div class="backup-row" onclick="openApiModal()">🔑 API 키 변경</div>
+          <div class="backup-divider"></div>
           <div class="backup-row" onclick="resetPlanner()" style="color:#9B3020">⟲ 플래너 전체 초기화</div>
         </div>
       </div>
@@ -2324,6 +2326,13 @@ function checkApiKey(cb){
   document.getElementById('apiModal').onclick=function(e){ if(e.target===this) this.classList.remove('open'); };
   window._apiKeyCallback=cb;
 }
+function openApiModal(){
+  var m=document.getElementById('apiModal');
+  var inp=document.getElementById('apiKeyInp'); if(inp) inp.value=getApiKey();
+  m.classList.add('open');
+  m.onclick=function(e){ if(e.target===this) this.classList.remove('open'); };
+  var p=document.getElementById('backupPanel'); if(p)p.classList.remove('open');
+}
 async function callClaude(prompt, btnId, btnLabel){
   var key=getApiKey(); if(!key) return null;
   if(btnId){ var b=document.getElementById(btnId); if(b){b.disabled=true;b.innerHTML='<span class="ai-loading"></span> 생성 중...';} }
@@ -2333,7 +2342,16 @@ async function callClaude(prompt, btnId, btnLabel){
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,messages:[{role:'user',content:prompt}]})
     });
-    if(!res.ok){ alert('API 오류: '+res.status); return null; }
+    if(!res.ok){
+      var errMsg='';
+      try{ var ed=await res.json(); errMsg=(ed.error&&ed.error.message)||''; }catch(e){}
+      if(res.status===401||res.status===400){
+        alert('API 오류 '+res.status+'\n'+errMsg+'\n\nAPI 키를 다시 입력해주세요.');
+        localStorage.removeItem('claude-api-key');
+        openApiModal();
+      } else { alert('API 오류 '+res.status+'\n'+errMsg); }
+      return null;
+    }
     var data=await res.json();
     return data.content[0].text;
   } catch(e){ alert('오류: '+e.message); return null; }
