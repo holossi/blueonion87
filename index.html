@@ -606,9 +606,9 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 
 <div class="api-modal" id="apiModal">
   <div class="api-box">
-    <h3>✦ Claude API 키 설정</h3>
-    <p>AI 쪼개기 기능을 사용하려면 Anthropic API 키가 필요해요.<br>이 기기 브라우저에만 저장돼요.</p>
-    <input class="api-inp" id="apiKeyInp" type="password" placeholder="sk-ant-...">
+    <h3>✦ Gemini API 키 설정</h3>
+    <p>AI 쪼개기 기능에 Google Gemini API 키가 필요해요.<br><a href="https://aistudio.google.com/apikey" target="_blank" style="color:#BA7517">aistudio.google.com/apikey</a> 에서 무료로 발급받을 수 있어요.<br>이 기기 브라우저에만 저장돼요.</p>
+    <input class="api-inp" id="apiKeyInp" type="password" placeholder="AIza...">
     <button class="api-save" onclick="saveApiKey()">저장하고 시작하기</button>
   </div>
 </div>
@@ -2312,11 +2312,11 @@ if(location.hash==='#week'){
 // ── API 키 관리 ────────────────────────────────────────
 var AREAS_LIST_ALL = ['소설','퍼스널브랜딩','공간 운영','기타','독립/거주','건강/뷰티','성장/배움','기쁨/쉼'];
 
-function getApiKey(){ return localStorage.getItem('claude-api-key')||''; }
+function getApiKey(){ return localStorage.getItem('gemini-api-key')||''; }
 function saveApiKey(){
   var k=document.getElementById('apiKeyInp').value.trim();
   if(!k) return;
-  localStorage.setItem('claude-api-key',k);
+  localStorage.setItem('gemini-api-key',k);
   document.getElementById('apiModal').classList.remove('open');
   if(window._apiKeyCallback){ window._apiKeyCallback(); window._apiKeyCallback=null; }
 }
@@ -2337,23 +2337,25 @@ async function callClaude(prompt, btnId, btnLabel){
   var key=getApiKey(); if(!key) return null;
   if(btnId){ var b=document.getElementById(btnId); if(b){b.disabled=true;b.innerHTML='<span class="ai-loading"></span> 생성 중...';} }
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{
+    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+encodeURIComponent(key),{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
     });
     if(!res.ok){
       var errMsg='';
       try{ var ed=await res.json(); errMsg=(ed.error&&ed.error.message)||''; }catch(e){}
-      if(res.status===401||res.status===400){
-        alert('API 오류 '+res.status+'\n'+errMsg+'\n\nAPI 키를 다시 입력해주세요.');
-        localStorage.removeItem('claude-api-key');
+      if(res.status===400||res.status===403){
+        alert('API 오류 '+res.status+'\n'+errMsg+'\n\nGemini API 키를 다시 입력해주세요.');
+        localStorage.removeItem('gemini-api-key');
         openApiModal();
       } else { alert('API 오류 '+res.status+'\n'+errMsg); }
       return null;
     }
     var data=await res.json();
-    return data.content[0].text;
+    var text = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+    if(!text){ alert('응답이 비었어요. 다시 시도해주세요.'); return null; }
+    return text;
   } catch(e){ alert('오류: '+e.message); return null; }
   finally{ if(btnId){ var b=document.getElementById(btnId); if(b){b.disabled=false;b.innerHTML=btnLabel;} } }
 }
