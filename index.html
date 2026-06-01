@@ -490,6 +490,8 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
           <div class="backup-row" onclick="exportData()">↑ 내보내기 (백업)</div>
           <div class="backup-divider"></div>
           <div class="backup-row" onclick="importData()">↓ 가져오기 (복원)</div>
+          <div class="backup-divider"></div>
+          <div class="backup-row" onclick="resetPlanner()" style="color:#9B3020">⟲ 플래너 전체 초기화</div>
         </div>
       </div>
     </div>
@@ -1140,6 +1142,13 @@ function importData(){
     };rd.readAsText(file);
   };inp.click();
 }
+function resetPlanner(){
+  if(!confirm('연간·계절·월간·주간의 모든 목표와 할일을 삭제하고 빈 상태로 시작할까요?\n\n(되돌릴 수 없어요. 먼저 \'내보내기\'로 백업을 권장해요.)')) return;
+  STATE={tasks:{},goals:{},custom:{},deleted:{},allItems:{},editId:null,fresh:true};
+  saveState();
+  alert('초기화 완료! 빈 상태에서 새로 시작해요.');
+  location.reload();
+}
 
 // ════════ 홈 만트라/날짜 ════════
 (function(){
@@ -1282,6 +1291,7 @@ function getAllItems(ck, src, sub) {
   }
   var items = [];
   var prefix = ck.split('|')[0];
+  if(!STATE.fresh){
   if(prefix==='wk' && sub!=='etc') {
     var ti=parseInt(sub), tr=WD[src]&&WD[src].tracks&&WD[src].tracks[ti];
     if(tr) tr.tasks.forEach(function(t,i){ var old='wk:'+src+':'+ti+':'+i; if(!STATE.deleted[old]) items.push({id:old,text:t.t}); });
@@ -1308,6 +1318,7 @@ function getAllItems(ck, src, sub) {
       var old='yr:'+src+':'+i; if(STATE.deleted[old]) return;
       var m=GOAL_META[old]||{}; items.push({id:old,text:g.t,cat:m.cat||null,area:m.area||null});
     });
+  }
   }
   (STATE.custom[ck]||[]).forEach(function(ct){
     var txt=(typeof ct==='object')?ct.t:ct;
