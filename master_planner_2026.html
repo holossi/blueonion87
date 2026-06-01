@@ -161,10 +161,68 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .quote-text2{font-size:12px;color:#5F5E5A;line-height:1.7;font-style:italic}
 .quote-source2{font-size:10px;color:#B4B2A9;margin-top:5px}
 
+
+/* ── AI 쪼개기 ── */
+.api-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9999;align-items:center;justify-content:center}
+.api-modal.open{display:flex}
+.api-box{background:#FDFAF6;border-radius:14px;padding:24px;width:300px;border:0.5px solid #D3D1C7;box-shadow:0 8px 24px rgba(0,0,0,.1)}
+.api-box h3{font-size:14px;font-weight:500;color:#2C2C2A;margin-bottom:8px}
+.api-box p{font-size:11px;color:#888780;margin-bottom:14px;line-height:1.6}
+.api-inp{width:100%;border:0.5px solid #D3D1C7;border-radius:8px;padding:8px 10px;font-size:12px;background:#F5F0E8;color:#2C2C2A;margin-bottom:10px}
+.api-inp:focus{outline:none;border-color:#888780}
+.api-save{width:100%;padding:9px;border:none;border-radius:8px;background:#2C2C2A;color:#F5F0E8;font-size:13px;cursor:pointer}
+.ai-loading{display:inline-block;width:11px;height:11px;border:2px solid #D3D1C7;border-top-color:#BA7517;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* 탑다운 쪼개기 버튼 */
+.breakdown-wrap{display:flex;flex-direction:column;align-items:center;margin:1rem 0;gap:0}
+.breakdown-line{width:1.5px;height:18px;background:#D3D1C7}
+.breakdown-btn{display:flex;align-items:center;gap:6px;padding:8px 18px;border:1px solid #C4B49A;border-radius:20px;background:#FDFAF6;color:#888780;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.breakdown-btn:hover{border-color:#BA7517;color:#BA7517;background:#FAEEDA}
+.breakdown-btn:disabled{opacity:.4;cursor:not-allowed}
+.breakdown-arrow{font-size:14px;color:#D3D1C7;line-height:1;margin-top:2px}
+/* 태그 그룹 구분 */
+.area-group-label{font-size:9px;font-weight:500;color:#B4B2A9;letter-spacing:.04em;padding:6px 0 2px;margin-top:4px}
+
+
+.season-pick{font-size:11px;cursor:pointer;padding:2px 7px;border-radius:8px;flex-shrink:0;border:0.5px solid #D3D1C7;background:#FDFAF6;color:#B4B2A9;transition:all .15s;white-space:nowrap}
+.season-pick:hover{border-color:#888780;color:#888780}
+.season-pick.assigned{background:#EDE8DE;border-color:#888780;color:#2C2C2A}
+
+
+.item-ai-btn{font-size:10px;cursor:pointer;color:#D3D1C7;flex-shrink:0;padding:2px 5px;border-radius:5px;transition:all .15s;border:0.5px solid transparent}
+.item-ai-btn:hover{color:#BA7517;border-color:#BA7517;background:#FAEEDA}
+
+
+/* ── 뷰 네비 바 ── */
+.view-nav{position:sticky;top:0;z-index:50;display:flex;gap:4px;padding:10px 0;background:#F5F0E8;border-bottom:0.5px solid #EDE8DE;margin-bottom:1rem;overflow-x:auto;scrollbar-width:none}
+.view-nav::-webkit-scrollbar{display:none}
+.vnav-btn{font-size:11px;padding:5px 12px;border:0.5px solid #D3D1C7;border-radius:14px;background:#FDFAF6;color:#888780;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .12s}
+.vnav-btn:hover{border-color:#888780;color:#2C2C2A}
+.vnav-btn.active{background:#2C2C2A;color:#F5F0E8;border-color:#2C2C2A}
+
 </style>
 </head>
 <body>
 <div class="page-wrap">
+
+
+<div class="view-nav" id="viewNav">
+  <button class="vnav-btn" id="vnav-home" onclick="goHome()">홈</button>
+  <button class="vnav-btn" id="vnav-years" onclick="goYears()">3년</button>
+  <button class="vnav-btn" id="vnav-year" onclick="goYear(curYear||2026)">연간</button>
+  <button class="vnav-btn" id="vnav-season" onclick="goSeason(curSeason||'summer')">계절</button>
+  <button class="vnav-btn" id="vnav-month" onclick="goMonth(curMonth||'june')">월간</button>
+  <button class="vnav-btn" id="vnav-week" onclick="goWeek(curWeek||'setup')">주간</button>
+</div>
+
+<div class="api-modal" id="apiModal">
+  <div class="api-box">
+    <h3>✦ Claude API 키 설정</h3>
+    <p>AI 쪼개기 기능을 사용하려면 Anthropic API 키가 필요해요.<br>이 기기 브라우저에만 저장돼요.</p>
+    <input class="api-inp" id="apiKeyInp" type="password" placeholder="sk-ant-...">
+    <button class="api-save" onclick="saveApiKey()">저장하고 시작하기</button>
+  </div>
+</div>
 
 
 <div class="bc" id="bc"></div>
@@ -370,11 +428,19 @@ function renderItem(item, itemIdx, ck, isGoal) {
     h += '<span class="task-edit" onclick="event.stopPropagation();saveItemEdit(\''+item.id+'\',\''+ck+'\')" style="color:#BA7517">✓</span>';
   } else {
     h += '<div class="task-text'+(done?' done':'')+'" style="flex:1">'+item.text+'</div>';
+    if(ck.split('|')[0]==='yr'){
+      var se=item.season||null;
+      var seE=se?SEASON_EMOJI[se]:'계절';
+      h+='<span class="season-pick'+(se?' assigned':'')+'" onclick="event.stopPropagation();cycleSeason(\''+item.id+'\',\''+ck+'\')">'+seE+'</span>';
+    }
     if(item.area){ var ac2=AREA_COLORS[item.area]||{bg:'#EDE8DE',tc:'#888780'}; h += '<span class="area-tag" style="background:'+ac2.bg+';color:'+ac2.tc+'">'+item.area+'</span>'; }
   }
   var isWk = ck.split('|')[0]==='wk';
   var srcId = ck.split('|')[1];
   if(isWk) h += '<span class="task-next" onclick="event.stopPropagation();moveItemToNextWeek(\''+ck+'\','+itemIdx+',\''+srcId+'\')" title="다음 주로">→</span>';
+  var safeTextAi = item.text.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  var areaAi = item.area||'';
+  h += '<span class="item-ai-btn" onclick="event.stopPropagation();breakdownItem(\''+safeTextAi+'\',\''+areaAi+'\')" title="주간 할일로 쪼개기">✦</span>';
   h += '<span class="task-del" onclick="event.stopPropagation();delItem(\''+ck+'\','+itemIdx+',null)" title="삭제">✕</span>';
   h += '</div>';
   return h;
@@ -530,6 +596,20 @@ var AREA_COLORS = {
   '성장/배움':      {bg:'#E0F5F0', tc:'#307870'},
   '기쁨/쉼':       {bg:'#FEF6DC', tc:'#907830'}
 };
+
+
+var SEASON_ORDER = [null,'summer','autumn','winter','spring27'];
+var SEASON_EMOJI = {summer:'🍉',autumn:'🍂',winter:'❄️',spring27:'🌱'};
+var SEASON_NAME  = {summer:'여름',autumn:'가을',winter:'겨울',spring27:'봄'};
+function cycleSeason(id, ck) {
+  if(!STATE.allItems||!STATE.allItems[ck]) return;
+  STATE.allItems[ck].forEach(function(item){
+    if(item.id!==id) return;
+    var cur = SEASON_ORDER.indexOf(item.season||null);
+    item.season = SEASON_ORDER[(cur+1)%SEASON_ORDER.length];
+  });
+  saveState(); refreshView(ck);
+}
 
 var WEEK_ORDER = ['setup','w1','w2','w3','w4'];
 
@@ -992,6 +1072,11 @@ function goYear(yr) {
   h += '<input class="add-task-inp" id="add-inp-'+yrck.replace(/[|:]/g,'_')+'" type="text" placeholder="목표 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+yrck+'\')">';
   h += '<button class="add-task-btn" onclick="addCustomTask(\''+yrck+'\')" title="추가">+</button></div>';
   h += '</div>';
+  h += '<div class="breakdown-wrap">';
+  h += '<div class="breakdown-line"></div>';
+  h += '<button class="breakdown-btn" id="break-yr-'+yr+'" onclick="breakdownYearToSeason('+yr+')">⤵ AI로 계절별 쪼개기</button>';
+  h += '<div class="breakdown-arrow">▼</div>';
+  h += '</div>';
   if (yr === 2026) {
     h += '<div class="sec-label">계절별 목표</div><div class="sn-grid">';
     h += '<div class="sn" style="background:#F1EFE8;opacity:.45;cursor:default"><div style="font-size:20px;margin-bottom:5px">🌱</div><div style="font-size:14px;font-weight:500;color:#888780;margin-bottom:2px">봄</div><div style="font-size:11px;color:#888780;opacity:.75;margin-bottom:5px">3·4·5월</div><div style="font-size:11px;color:#B4B2A9">지나감</div></div>';
@@ -1046,6 +1131,11 @@ function goSeason(sid) {
   h += '<input class="add-task-inp" id="add-inp-'+sck.replace(/[|:]/g,'_')+'" type="text" placeholder="목표 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+sck+'\')">';
   h += '<button class="add-task-btn" onclick="addCustomTask(\''+sck+'\')" title="추가">+</button></div>';
   h += '</div>';
+  h += '<div class="breakdown-wrap" style="margin:.5rem 0">';
+  h += '<div class="breakdown-line"></div>';
+  h += '<button class="breakdown-btn" id="break-se-'+sid+'" onclick="breakdownSeasonToMonth(\''+sid+'\')" >⤵ AI로 월별 쪼개기</button>';
+  h += '<div class="breakdown-arrow">▼</div>';
+  h += '</div>';
   if (sid === 'summer') {
     h += '<div class="sec-label">월별 목표</div><div class="mo-grid">';
     ['june','july','august'].forEach(function(m) {
@@ -1096,6 +1186,11 @@ function goMonth(mid) {
   } else {
     h += '<div class="card" style="margin-top:.5rem"><div class="card-body" style="color:#888780">주간 계획은 해당 달에 업데이트해요.</div></div>';
   }
+  h += '<div class="breakdown-wrap">';
+  h += '<div class="breakdown-line"></div>';
+  h += '<button class="breakdown-btn" id="break-mo-'+mid+'" onclick="breakdownMonthToWeek(\''+mid+'\')" >⤵ AI로 주간 쪼개기</button>';
+  h += '<div class="breakdown-arrow">▼</div>';
+  h += '</div>';
   document.getElementById('lv-month').innerHTML = h;
   showLv('month');
 }
@@ -1155,6 +1250,194 @@ if(location.hash==='#week'){
   goSeason('summer');
   goMonth('june');
   goWeek('setup');
+}
+
+
+// ── API 키 관리 ────────────────────────────────────────
+var AREAS_LIST_ALL = ['소설','뉴스레터/에세이','유튜브','공간 운영','독립/거주','건강/뷰티','성장/배움','기쁨/쉼'];
+
+function getApiKey(){ return localStorage.getItem('claude-api-key')||''; }
+function saveApiKey(){
+  var k=document.getElementById('apiKeyInp').value.trim();
+  if(!k) return;
+  localStorage.setItem('claude-api-key',k);
+  document.getElementById('apiModal').classList.remove('open');
+  if(window._apiKeyCallback){ window._apiKeyCallback(); window._apiKeyCallback=null; }
+}
+function checkApiKey(cb){
+  if(getApiKey()){ cb(); return; }
+  document.getElementById('apiModal').classList.add('open');
+  document.getElementById('apiModal').onclick=function(e){ if(e.target===this) this.classList.remove('open'); };
+  window._apiKeyCallback=cb;
+}
+async function callClaude(prompt, btnId, btnLabel){
+  var key=getApiKey(); if(!key) return null;
+  if(btnId){ var b=document.getElementById(btnId); if(b){b.disabled=true;b.innerHTML='<span class="ai-loading"></span> 생성 중...';} }
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+    });
+    if(!res.ok){ alert('API 오류: '+res.status); return null; }
+    var data=await res.json();
+    return data.content[0].text;
+  } catch(e){ alert('오류: '+e.message); return null; }
+  finally{ if(btnId){ var b=document.getElementById(btnId); if(b){b.disabled=false;b.innerHTML=btnLabel;} } }
+}
+
+// ── 태그별 정렬 ─────────────────────────────────────────
+function sortByArea(ck){
+  if(!STATE.allItems||!STATE.allItems[ck]) return;
+  var order=AREAS_LIST_ALL;
+  STATE.allItems[ck].sort(function(a,b){
+    var ai=a.area?order.indexOf(a.area):999;
+    var bi=b.area?order.indexOf(b.area):999;
+    return ai-bi;
+  });
+  saveState(); refreshView(ck);
+}
+
+// ── 연간 → 계절 쪼개기 ──────────────────────────────────
+function breakdownYearToSeason(yr){
+  checkApiKey(async function(){
+    var yrck='yr|'+yr;
+    var items=STATE.allItems[yrck]||[];
+    if(!items.length){ alert('연간 목표를 먼저 입력해주세요.'); return; }
+    var goalText=items.map(function(i,n){
+      var sn=i.season?(SEASON_NAME[i.season]+' 지정'):'계절 미지정(AI 판단)';
+      return (n+1)+'. '+i.text+(i.area?' ['+i.area+']':'')+' ('+sn+')';
+    }).join('\n');
+    var seAssigned = {};
+    var seUnassigned = [];
+    items.forEach(function(i){
+      if(i.season){
+        var sn=SEASON_NAME[i.season];
+        if(!seAssigned[sn]) seAssigned[sn]=[];
+        seAssigned[sn].push(i.text);
+      } else { seUnassigned.push(i.text); }
+    });
+    var assignedText = Object.keys(seAssigned).map(function(s){ return s+': '+seAssigned[s].join(', '); }).join('\n');
+    var unassignedText = seUnassigned.length ? seUnassigned.join('\n') : '없음';
+    var prompt='다음은 '+yr+'년 연간 목표야.\n\n'
+      +'[계절 지정된 목표] (반드시 해당 계절에 포함):\n'+assignedText+'\n\n'
+      +'[계절 미지정 목표] (AI가 적합한 계절 선택):\n'+unassignedText+'\n\n'
+      +'규칙:\n'
+      +'1. 지정 계절 목표는 반드시 해당 계절에 넣어줘 (문장 그대로 또는 약간 다듬기)\n'
+      +'2. 미지정 목표는 여름→가을→겨울 타임라인 흐름에 따라 자연스럽게 분산 배치\n'
+      +'   (한 계절에 몰아넣지 말고, 시간 순서대로 나누어 배치)\n'
+      +'3. 각 계절은 2~4개 목표. 계절 전체 단위 (월별 X, 주별 X)\n'
+      +'4. 영역 태그: '+AREAS_LIST_ALL.join(', ')+'\n\n'
+      +'JSON만 응답:\n'
+      +'{"여름":[{"text":"목표","area":"태그"}],"가을":[...],"겨울":[...],"봄":[...]}';
+    var result=await callClaude(prompt,'break-yr-'+yr,'⤵ AI로 계절별 쪼개기');
+    if(!result) return;
+    try{
+      var data=JSON.parse(result.replace(/```json|```/g,'').trim());
+      var seMap={'여름':'summer','가을':'autumn','겨울':'winter','봄':'spring27'};
+      Object.keys(data).forEach(function(s){
+        var sck='se|'+seMap[s]; if(!sck) return;
+        if(!STATE.allItems) STATE.allItems={};
+        if(!STATE.allItems[sck]) STATE.allItems[sck]=[];
+        data[s].forEach(function(item){
+          STATE.allItems[sck].push({id:'ai_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),text:item.text,cat:null,area:item.area||null});
+        });
+      });
+      saveState();
+      alert('✓ 계절별 목표가 생성됐어요!');
+    } catch(e){ alert('파싱 오류. 다시 시도해주세요.'); }
+  });
+}
+
+// ── 계절 → 월 쪼개기 ────────────────────────────────────
+function breakdownSeasonToMonth(sid){
+  checkApiKey(async function(){
+    var sck='se|'+sid;
+    var items=STATE.allItems[sck]||[];
+    if(!items.length){ alert('계절 목표를 먼저 입력해주세요.'); return; }
+    var goalText=items.map(function(i,n){ return (n+1)+'. '+i.text+(i.area?' ['+i.area+']':''); }).join('\n');
+    var seNames={summer:'여름(6~8월)',autumn:'가을(9~11월)',winter:'겨울(12~2월)',spring27:'봄(3~5월)'};
+    var mthMap={summer:['june','july','august'],autumn:['sept','oct','nov'],winter:['dec','jan','feb'],spring27:['mar','apr','may']};
+    var mthNames={june:'6월',july:'7월',august:'8월',sept:'9월',oct:'10월',nov:'11월',dec:'12월',jan:'1월',feb:'2월',mar:'3월',apr:'4월',may:'5월'};
+    var curMonths=mthMap[sid]||[];
+    var mNames=curMonths.map(function(m){ return mthNames[m]||m; });
+    var prompt=(seNames[sid]||sid)+' 계절 목표:\n'+goalText+'\n\n'
+      +mNames.join(', ')+'별로 각 3개 실행 목표로 쪼개줘.\n'
+      +'영역 태그: '+AREAS_LIST_ALL.join(', ')+'\n'
+      +'JSON만 응답:\n{"'+mNames[0]+'":[{"text":"목표","area":"태그"}],"'+mNames[1]+'":[...],"'+mNames[2]+'":[...]}';
+    var result=await callClaude(prompt,'break-se-'+sid,'⤵ AI로 월별 쪼개기');
+    if(!result) return;
+    try{
+      var data=JSON.parse(result.replace(/```json|```/g,'').trim());
+      curMonths.forEach(function(mid,i){
+        var mck='mo|'+mid+'|0';
+        if(!STATE.allItems) STATE.allItems={};
+        if(!STATE.allItems[mck]) STATE.allItems[mck]=[];
+        var mname=mthNames[mid]; var srcData=data[mname]||data[Object.keys(data)[i]]||[];
+        srcData.forEach(function(item){
+          STATE.allItems[mck].push({id:'ai_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),text:item.text,cat:null,area:item.area||null});
+        });
+      });
+      saveState(); alert('✓ 월별 목표가 생성됐어요!');
+    } catch(e){ alert('파싱 오류. 다시 시도해주세요.'); }
+  });
+}
+
+// ── 월 → 주 쪼개기 ──────────────────────────────────────
+function breakdownMonthToWeek(mid){
+  checkApiKey(async function(){
+    var mck='mo|'+mid+'|0';
+    var items=STATE.allItems[mck]||[];
+    if(!items.length){ alert('월간 목표를 먼저 입력해주세요.'); return; }
+    var goalText=items.map(function(i,n){ return (n+1)+'. '+i.text+(i.area?' ['+i.area+']':''); }).join('\n');
+    var prompt=mid+' 월간 목표:\n'+goalText+'\n\n'
+      +'4주에 걸쳐 주별 할일 3~4개씩 구체적 행동으로 쪼개줘.\n'
+      +'영역 태그: '+AREAS_LIST_ALL.join(', ')+'\n'
+      +'JSON만 응답:\n{"1주":[{"text":"할일","area":"태그"}],"2주":[...],"3주":[...],"4주":[...]}';
+    var result=await callClaude(prompt,'break-mo-'+mid,'⤵ AI로 주간 쪼개기');
+    if(!result) return;
+    try{
+      var data=JSON.parse(result.replace(/```json|```/g,'').trim());
+      var wkeys=['w1','w2','w3','w4'];
+      wkeys.forEach(function(wid,i){
+        var wck='wk|'+wid+'|etc';
+        if(!STATE.allItems) STATE.allItems={};
+        if(!STATE.allItems[wck]) STATE.allItems[wck]=[];
+        var srcData=data[Object.keys(data)[i]]||[];
+        srcData.forEach(function(item){
+          STATE.allItems[wck].push({id:'ai_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),text:item.text,cat:null,area:item.area||null});
+        });
+      });
+      saveState(); alert('✓ 주간 할일이 etc. 박스에 생성됐어요!');
+    } catch(e){ alert('파싱 오류. 다시 시도해주세요.'); }
+  });
+}
+
+
+async function breakdownItem(text, area) {
+  checkApiKey(async function(){
+    var prompt = '"'+text+'"\n\n'
+      +'이 목표를 지금 당장 실행할 수 있는 구체적인 주간 할일 3~5개로 쪼개줘.\n'
+      +'할일은 하루~사흘 안에 끝낼 수 있는 행동 단위로.\n'
+      +'영역 태그: '+AREAS_LIST_ALL.join(', ')+'\n'
+      +'JSON만 응답: [{"text":"할일","area":"태그"}]';
+    var result = await callClaude(prompt, null, null);
+    if(!result) return;
+    try {
+      var items = JSON.parse(result.replace(/```json|```/g,'').trim());
+      var eck = 'wk|'+(curWeek||'setup')+'|etc';
+      if(!STATE.allItems) STATE.allItems = {};
+      if(!STATE.allItems[eck]) STATE.allItems[eck] = [];
+      items.forEach(function(i){
+        STATE.allItems[eck].push({
+          id:'ai_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
+          text:i.text, cat:null, area:i.area||area||null
+        });
+      });
+      saveState();
+      alert('✓ 이번 주 etc. 박스에 추가됐어요!');
+    } catch(e){ alert('파싱 오류. 다시 시도해주세요.'); }
+  });
 }
 
 </script>
