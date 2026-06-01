@@ -301,6 +301,14 @@ function getAllItems(ck, src, sub) {
       var old='se:'+src+':'+i; if(STATE.deleted[old]) return;
       var m=GOAL_META[old]||{}; items.push({id:old,text:g.t,cat:m.cat||null,area:m.area||null});
     });
+  } else if(prefix==='ys') {
+    // yr|{year} 항목을 계절 태그 기준으로 분배 (최초 1회)
+    var yKey='yr|'+src;
+    var yrItems = getAllItems(yKey, parseInt(src), null);
+    yrItems.forEach(function(it){
+      var s = it.season==='spring27' ? 'spring' : (it.season||'spring');
+      if(s===sub) items.push({id:it.id, text:it.text, cat:it.cat||null, area:it.area||null, season:it.season||null});
+    });
   } else if(prefix==='yr') {
     var gs=YG[parseInt(src)]&&YG[parseInt(src)].goals;
     if(gs) gs.forEach(function(g,i){
@@ -610,6 +618,18 @@ function cycleSeason(id, ck) {
   });
   saveState(); refreshView(ck);
 }
+
+
+// 연도별 계절 키 (2026은 기존 se| 데이터 공유, 그 외는 ys|)
+function seasonKey(yr, season) {
+  return 'ys|'+yr+'|'+season;
+}
+var YEAR_SEASONS = [
+  {key:'spring', emoji:'🌱', name:'봄',   dates:'3·4·5월'},
+  {key:'summer', emoji:'🍉', name:'여름', dates:'6·7·8월'},
+  {key:'autumn', emoji:'🍂', name:'가을', dates:'9·10·11월'},
+  {key:'winter', emoji:'❄️', name:'겨울', dates:'12·1·2월'}
+];
 
 var WEEK_ORDER = ['setup','w1','w2','w3','w4'];
 
@@ -1063,43 +1083,35 @@ function goYear(yr) {
   h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+yr+'년 · '+y.keyword+'</div>';
   h += '<div style="font-size:11px;color:#888780;margin-bottom:.5rem">'+y.phase+'</div>';
   if(YG_SUMMARY[yr]) h += '<div style="font-size:12px;color:#5F5E5A;line-height:1.7;margin-bottom:1rem">'+YG_SUMMARY[yr]+'</div>';
-  h += '<div class="sec-label sec-label-first">연간 목표</div>';
-  var yrck = 'yr|'+yr;
-  var yrItems = getAllItems(yrck, yr, null);
-  h += '<div class="track" style="margin-bottom:1rem" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+yrck+'\')">';
-  yrItems.forEach(function(item, itemIdx) { h += renderItem(item, itemIdx, yrck, true); });
-  h += '<div class="add-task-row">';
-  h += '<input class="add-task-inp" id="add-inp-'+yrck.replace(/[|:]/g,'_')+'" type="text" placeholder="목표 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+yrck+'\')">';
-  h += '<button class="add-task-btn" onclick="addCustomTask(\''+yrck+'\')" title="추가">+</button></div>';
-  h += '</div>';
-  h += '<div class="breakdown-wrap">';
-  h += '<div class="breakdown-line"></div>';
-  h += '<button class="breakdown-btn" id="break-yr-'+yr+'" onclick="breakdownYearToSeason('+yr+')">⤵ AI로 계절별 쪼개기</button>';
-  h += '<div class="breakdown-arrow">▼</div>';
-  h += '</div>';
-  if (yr === 2026) {
-    h += '<div class="sec-label">계절별 목표</div><div class="sn-grid">';
-    h += '<div class="sn" style="background:#F1EFE8;opacity:.45;cursor:default"><div style="font-size:20px;margin-bottom:5px">🌱</div><div style="font-size:14px;font-weight:500;color:#888780;margin-bottom:2px">봄</div><div style="font-size:11px;color:#888780;opacity:.75;margin-bottom:5px">3·4·5월</div><div style="font-size:11px;color:#B4B2A9">지나감</div></div>';
-    h += '<div class="sn" style="background:#DDF0FA" onclick="goSeason(\'summer\')"><div style="font-size:20px;margin-bottom:5px">🍉</div><div style="font-size:14px;font-weight:500;color:#1A6E9A;margin-bottom:2px">여름</div><div style="font-size:11px;color:#1A6E9A;opacity:.75;margin-bottom:5px">6·7·8월</div><div style="font-size:11px;color:#1A6E9A;font-style:italic;margin-bottom:5px">'+SG.summer.mood+'</div><div style="font-size:10px;color:#1A6E9A;font-weight:500">지금 ★ → 들어가기</div></div>';
-    h += '<div class="sn" style="background:#FAE8E5" onclick="goSeason(\'autumn\')"><div style="font-size:20px;margin-bottom:5px">🍂</div><div style="font-size:14px;font-weight:500;color:#9B3020;margin-bottom:2px">가을</div><div style="font-size:11px;color:#9B3020;opacity:.75;margin-bottom:5px">9·10·11월</div><div style="font-size:11px;color:#9B3020;font-style:italic">'+SG.autumn.mood+'</div></div>';
-    h += '<div class="sn" style="background:#E8E8E6" onclick="goSeason(\'winter\')"><div style="font-size:20px;margin-bottom:5px">❄️</div><div style="font-size:14px;font-weight:500;color:#555553;margin-bottom:2px">겨울</div><div style="font-size:11px;color:#888780;opacity:.75;margin-bottom:5px">12·1·2월</div><div style="font-size:11px;color:#888780;font-style:italic">'+SG.winter.mood+'</div></div>';
-    h += '</div>';
-  } else if (YS[yr]) {
-    h += '<div class="sec-label">계절별 목표</div><div class="sn-grid">';
-    var seasonOrder = ['spring','summer','autumn','winter'];
-    seasonOrder.forEach(function(sid) {
-      var s = YS[yr][sid];
-      h += '<div class="sn" style="background:'+s.bg+'" onclick="goSeasonOf('+yr+',\''+sid+'\')">';
-      h += '<div style="font-size:20px;margin-bottom:5px">'+s.emoji+'</div>';
-      h += '<div style="font-size:14px;font-weight:500;color:'+s.color+';margin-bottom:2px">'+s.name+'</div>';
-      h += '<div style="font-size:11px;color:'+s.color+';opacity:.75;margin-bottom:5px">'+s.dates+'</div>';
-      h += '<div style="font-size:11px;color:#888780;font-style:italic">'+s.mood+'</div>';
-      h += '<div style="font-size:10px;color:'+s.color+';font-weight:500;margin-top:5px">→ 들어가기</div></div>';
-    });
-    h += '</div>';
-  }
-  document.getElementById('lv-year').innerHTML = h;
+  h += '<div class="sec-label sec-label-first">계절별 목표</div>';
+  YEAR_SEASONS.forEach(function(s){
+    var sk = seasonKey(yr, s.key);
+    var sItems = getAllItems(sk, sk.split('|')[1], sk.split('|')[2]||null);
+    var skSafe = sk.replace(/[|:]/g,'_');
+    var canDrill = (yr===2026) || (typeof YS!=='undefined' && YS[yr]);
+    h += '<div style="margin-bottom:1.25rem">';
+    h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;'+(canDrill?'cursor:pointer':'')+'"'+(canDrill?' onclick="goSeasonDrill('+yr+',\''+s.key+'\')"':'')+'>';
+    h += '<div style="font-size:13px;font-weight:500;color:#2C2C2A">'+s.emoji+' '+s.name+' <span style="font-size:10px;color:#B4B2A9;font-weight:400">'+s.dates+'</span></div>';
+    h += (canDrill?'<span style="font-size:14px;color:#B4B2A9">›</span>':'')+'</div>';
+    h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+sk+'\')">';
+    sItems.forEach(function(item, itemIdx){ h += renderItem(item, itemIdx, sk, true); });
+    h += '<div class="add-task-row">';
+    h += '<input class="add-task-inp" id="add-inp-'+skSafe+'" type="text" placeholder="'+s.name+' 목표 추가..." onkeydown="if(event.key===\'Enter\')addCustomTask(\''+sk+'\')">';
+    h += '<button class="add-task-btn" onclick="addCustomTask(\''+sk+'\')" title="추가">+</button></div>';
+    h += '</div></div>';
+  });
+    document.getElementById('lv-year').innerHTML = h;
   showLv('year');
+}
+
+
+function goSeasonDrill(yr, sKey) {
+  if(yr===2026){
+    var map={summer:'summer',autumn:'autumn',winter:'winter',spring:'spring27'};
+    goSeason(map[sKey]||sKey);
+  } else if(typeof YS!=='undefined' && YS[yr]){
+    goSeasonOf(yr, sKey);
+  }
 }
 
 function goSeasonOf(yr, sid) {
@@ -1334,9 +1346,10 @@ function breakdownYearToSeason(yr){
     if(!result) return;
     try{
       var data=JSON.parse(result.replace(/```json|```/g,'').trim());
-      var seMap={'여름':'summer','가을':'autumn','겨울':'winter','봄':'spring27'};
+      var seMap={'여름':'summer','가을':'autumn','겨울':'winter','봄':'spring'};
       Object.keys(data).forEach(function(s){
-        var sck='se|'+seMap[s]; if(!sck) return;
+        var season=seMap[s]; if(!season) return;
+        var sck='ys|'+yr+'|'+season;
         if(!STATE.allItems) STATE.allItems={};
         if(!STATE.allItems[sck]) STATE.allItems[sck]=[];
         data[s].forEach(function(item){
