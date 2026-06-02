@@ -2284,12 +2284,12 @@ function goWeek(wid) {
     var dItems=getAllItems(dk, wid, 'day-'+d.k);
     var dkSafe=dk.replace(/[|:]/g,'_');
     var isWeekend=(d.k==='sat'||d.k==='sun');
-    var th=getDayTheme(wid,d.k);
-    var thHtml;
-    if(typeof th==='number' && THEME_DEFS[th]){ var t=THEME_DEFS[th]; thHtml='<span class="day-theme" style="background:'+t.b+';color:'+t.tc+'" onclick="openThemeDropdown(event,\''+wid+'\',\''+d.k+'\')">'+t.n+'</span>'; }
-    else { thHtml='<span class="day-theme day-theme-empty" onclick="openThemeDropdown(event,\''+wid+'\',\''+d.k+'\')">+ 테마</span>'; }
+    var ths=getDayThemes(wid,d.k);
+    var thHtml=ths.map(function(ti){ var t=THEME_DEFS[ti]; return t?'<span class="day-theme" style="background:'+t.b+';color:'+t.tc+'" onclick="openThemeDropdown(event,\''+wid+'\',\''+d.k+'\')">'+t.n+'</span>':''; }).join('');
+    if(!ths.length) thHtml='<span class="day-theme day-theme-empty" onclick="openThemeDropdown(event,\''+wid+'\',\''+d.k+'\')">+ 테마</span>';
+    else if(ths.length<2) thHtml+='<span class="day-theme day-theme-empty" onclick="openThemeDropdown(event,\''+wid+'\',\''+d.k+'\')">+</span>';
     h += '<div style="margin-bottom:.8rem">';
-    h += '<div class="msg-head" style="font-size:11px'+(isWeekend?';color:#B07878':'')+'">'+d.n+' '+thHtml+'</div>';
+    h += '<div class="msg-head" style="font-size:11px;gap:5px'+(isWeekend?';color:#B07878':'')+'">'+d.n+' '+thHtml+'</div>';
     h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+dk+'\')">';
     dItems.forEach(function(item,idx){ h += renderItem(item, idx, dk, false); });
     h += '<div class="add-task-row"><input class="add-task-inp" id="add-inp-'+dkSafe+'" type="text" placeholder="'+d.n+'요일 할 일..." oninput="onAddInput(this)" onblur="hideTagDropdown()" onkeydown="if(event.key===\'Enter\')addCustomTask(\''+dk+'\')"><button class="add-task-btn" onclick="addCustomTask(\''+dk+'\')" title="추가">+</button></div>';
@@ -2303,31 +2303,50 @@ function goWeek(wid) {
 var THEME_DEFS=[
   {n:'책방 근무', c:'#9FCFB3', b:'#EAF6EF', tc:'#5B8A6F'},
   {n:'소설 집중', c:'#C4B8E8', b:'#F2EEFB', tc:'#7E72AE'},
-  {n:'방랑하는 목요일', c:'#A8D2EA', b:'#EAF5FB', tc:'#5A92B5'},
-  {n:'뉴스레터 집중', c:'#A6D9D2', b:'#E9F6F4', tc:'#4E9088'},
+  {n:'방랑하는 목요일', c:'#A9B6EB', b:'#EDEFFB', tc:'#6B79C0'},
+  {n:'뉴스레터 집중', c:'#8AD2C4', b:'#E6F6F2', tc:'#3E948A'},
   {n:'완전 휴식', c:'#F0D89A', b:'#FCF6E5', tc:'#A8893E'},
   {n:'어드민 데이', c:'#CFCDC4', b:'#F1EFE9', tc:'#8A8980'},
-  {n:'내 맘대로 안됨', c:'#EBB6CE', b:'#FBEDF4', tc:'#B5759A'}
+  {n:'가족과 함께', c:'#F0B0C8', b:'#FCECF2', tc:'#C06E92'},
+  {n:'외부 일정', c:'#E8B58A', b:'#FAEFE4', tc:'#B57C4E'}
 ];
-function getDayTheme(wid,dk){ return STATE.dayThemes ? STATE.dayThemes[wid+'|'+dk] : undefined; }
+function getDayThemes(wid,dk){
+  var v=STATE.dayThemes?STATE.dayThemes[wid+'|'+dk]:undefined;
+  if(v===undefined||v===null) return [];
+  if(typeof v==='number') return [v];
+  if(Array.isArray(v)) return v;
+  return [];
+}
+function renderThemeDropdownInner(wid,dk){
+  var dd=document.getElementById('themeDropdown');
+  var sel=getDayThemes(wid,dk);
+  var html='<div class="tag-hint">테마 (최대 2개) · 다시 누르면 해제</div>';
+  html+=THEME_DEFS.map(function(t,i){
+    var on=sel.indexOf(i)>=0;
+    return '<div class="tag-opt" onmousedown="event.preventDefault();toggleDayTheme(\''+wid+'\',\''+dk+'\','+i+')"><span class="tag-dot" style="background:'+t.c+'"></span><span style="flex:1">'+t.n+'</span>'+(on?'<span style="color:'+t.tc+';font-weight:600">✓</span>':'')+'</div>';
+  }).join('');
+  dd.innerHTML=html;
+}
 function openThemeDropdown(ev,wid,dk){
   ev.stopPropagation();
   var dd=document.getElementById('themeDropdown');
-  var html='<div class="tag-opt" onmousedown="event.preventDefault();setDayTheme(\''+wid+'\',\''+dk+'\',-1)"><span class="tag-dot" style="background:#D3D1C7"></span><span style="color:#B4B2A9">테마 없음</span></div>';
-  html+=THEME_DEFS.map(function(t,i){ return '<div class="tag-opt" onmousedown="event.preventDefault();setDayTheme(\''+wid+'\',\''+dk+'\','+i+')"><span class="tag-dot" style="background:'+t.c+'"></span>'+t.n+'</div>'; }).join('');
-  dd.innerHTML=html;
+  renderThemeDropdownInner(wid,dk);
   var r=ev.target.getBoundingClientRect();
   dd.style.left=(r.left+window.scrollX)+'px';
   dd.style.top=(r.bottom+window.scrollY+3)+'px';
   dd.style.display='block';
 }
-function setDayTheme(wid,dk,idx){
+function toggleDayTheme(wid,dk,idx){
   if(!STATE.dayThemes) STATE.dayThemes={};
-  if(idx<0) delete STATE.dayThemes[wid+'|'+dk];
-  else STATE.dayThemes[wid+'|'+dk]=idx;
+  var key=wid+'|'+dk;
+  var arr=getDayThemes(wid,dk).slice();
+  var pos=arr.indexOf(idx);
+  if(pos>=0) arr.splice(pos,1);
+  else { arr.push(idx); if(arr.length>2) arr.shift(); }
+  if(arr.length) STATE.dayThemes[key]=arr; else delete STATE.dayThemes[key];
   saveState();
-  document.getElementById('themeDropdown').style.display='none';
   goWeek(wid);
+  renderThemeDropdownInner(wid,dk);
 }
 document.addEventListener('click',function(e){
   var dd=document.getElementById('themeDropdown');
@@ -2341,7 +2360,7 @@ function breakdownWeekToDays(wid){
     if(!tasks.length){ alert('이번 주 할 일을 먼저 입력해주세요.'); return; }
     var taskText=tasks.map(function(i,n){return (n+1)+'. '+i.text+(i.area?' ['+i.area+']':'');}).join('\n');
     var dayKo={mon:'월',tue:'화',wed:'수',thu:'목',fri:'금',sat:'토',sun:'일'};
-    var themeLines=Object.keys(dayKo).map(function(dkey){ var th=getDayTheme(wid,dkey); var tn=(typeof th==='number'&&THEME_DEFS[th])?THEME_DEFS[th].n:'자유'; return dayKo[dkey]+'요일: '+tn; }).join(', ');
+    var themeLines=Object.keys(dayKo).map(function(dkey){ var ts=getDayThemes(wid,dkey).map(function(ti){return THEME_DEFS[ti]?THEME_DEFS[ti].n:'';}).filter(Boolean); return dayKo[dkey]+'요일: '+(ts.length?ts.join(' + '):'자유'); }).join(', ');
     var prompt='이번 주 할 일 목록:\n'+taskText+'\n\n'
       +'각 요일의 테마: '+themeLines+'\n\n'
       +'이 할 일들을 월~일 7일에 현실적으로 분배해줘. 각 요일의 테마에 맞는 일을 그 날에 배치해줘(예: 소설 집중일엔 소설 관련, 완전 휴식일엔 비우거나 가벼운 것만). 평일에 더 많이, 주말은 가볍게. 큰 일은 여러 날에 잘게 나눠도 돼.\n'
