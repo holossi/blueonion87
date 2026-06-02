@@ -1110,9 +1110,28 @@ function todayMonth(){
   var names=['jan','feb','mar','apr','may','june','july','august','sept','oct','nov','dec'];
   return names[new Date().getMonth()];
 }
+var MONTH_NUM={jan:0,feb:1,mar:2,apr:3,may:4,june:5,july:6,august:7,sept:8,oct:9,nov:10,dec:11};
+var MSEQ=['jan','feb','mar','apr','may','june','july','august','sept','oct','nov','dec'];
+function monthYearOf(mkey){ var m=MONTH_NUM[mkey]; if(m===undefined)m=5; var y=(m>=5)?2026:2027; return {y:y,m:m}; }
+function weeksOf(mkey){
+  var info=monthYearOf(mkey);
+  var dim=new Date(info.y, info.m+1, 0).getDate();
+  var out=[], start=1, n=1;
+  while(start<=dim){ var end=Math.min(start+6,dim); out.push({id:mkey+'-w'+n, n:n, label:n+'주', dates:(info.m+1)+'/'+start+'~'+end}); start+=7; n++; }
+  return out;
+}
+function parseWid(wid){
+  var m=(''+wid).match(/^(.+)-w(\d+)$/);
+  if(m) return {mkey:m[1], n:parseInt(m[2])};
+  var mm=(''+wid).match(/^w(\d+)$/);
+  if(mm) return {mkey:curMonth||'june', n:parseInt(mm[1])};
+  return {mkey:curMonth||'june', n:1};
+}
+function adjMonth(mkey,delta){ var i=MSEQ.indexOf(mkey); if(i<0)i=5; return MSEQ[(i+delta+12)%12]; }
 function todayWeek(){
-  var d=new Date().getDate();
-  if(d<=7) return 'w1'; if(d<=14) return 'w2'; if(d<=21) return 'w3'; return 'w4';
+  var mk=todayMonth(); var d=new Date().getDate();
+  var wks=weeksOf(mk); var n=Math.floor((d-1)/7)+1; if(n>wks.length)n=wks.length;
+  return mk+'-w'+n;
 }
 
 // ── 인생 타임라인 더블클릭 편집 ──
@@ -1534,7 +1553,7 @@ function renderItem(item, itemIdx, ck, isGoal) {
   }
   var isWk = ck.split('|')[0]==='wk';
   var srcId = ck.split('|')[1];
-  if(isWk) h += '<span class="task-next" onclick="event.stopPropagation();moveItemToNextWeek(\''+ck+'\','+itemIdx+',\''+srcId+'\')" title="다음 주로">→</span>';
+  if(isWk) h += '<span class="task-next" onclick="event.stopPropagation();moveItemToNextWeek(\''+ck+'\','+itemIdx+')" title="다음 주로">→</span>';
   var safeTextAi = item.text.replace(/'/g,"\\'").replace(/"/g,'&quot;');
   var areaAi = item.area||'';
   h += '<span class="task-del" onclick="event.stopPropagation();delItem(\''+ck+'\','+itemIdx+',null)" title="삭제">✕</span>';
@@ -1741,18 +1760,26 @@ function delItem(ck, idx, wid) {
   if(STATE.allItems && STATE.allItems[ck]) STATE.allItems[ck].splice(idx,1);
   saveState(); refreshView(ck);
 }
-function moveItemToNextWeek(ck, idx, wid) {
-  var widIdx = WEEK_ORDER.indexOf(wid);
-  if(widIdx<0||widIdx>=WEEK_ORDER.length-1){alert('다음 주가 없어요!');return;}
-  var nextWid = WEEK_ORDER[widIdx+1];
+function moveItemToNextWeek(ck, idx) {
+  var parts = ck.split('|'); var wid = parts[1];
+  var pw = parseWid(wid); var wks = weeksOf(pw.mkey);
+  var curIdx = -1; for(var i=0;i<wks.length;i++){ if(wks[i].id===wid) curIdx=i; }
   if(!STATE.allItems||!STATE.allItems[ck]) return;
-  var item = STATE.allItems[ck].splice(idx,1)[0];
-  var eck = 'wk|'+nextWid+'|etc';
-  if(!STATE.allItems) STATE.allItems = {};
-  if(!STATE.allItems[eck]) STATE.allItems[eck] = [];
-  STATE.allItems[eck].push(item);
-  saveState();
-  goWeek(wid);
+  var item = STATE.allItems[ck].splice(idx,1)[0]; if(!item) return;
+  if(curIdx>=0 && curIdx<wks.length-1){
+    var dck = 'wk|'+wks[curIdx+1].id+'|main';
+    if(!STATE.allItems[dck]) STATE.allItems[dck]=[];
+    STATE.allItems[dck].push(item);
+    saveState(); goWeek(wid);
+  } else {
+    var nm = adjMonth(pw.mkey,1);
+    var mck = 'mo|'+nm+'|main';
+    if(!STATE.allItems[mck]) STATE.allItems[mck]=[];
+    STATE.allItems[mck].push(item);
+    saveState(); goWeek(wid);
+    var nmName=(MONTH_META[nm]&&MONTH_META[nm].name)||nm;
+    alert('\u2713 '+nmName+' 월간 할 일로 옮겼어요!');
+  }
 }
 
 function moveToNextWeek(tid, text, wid) {
@@ -2087,7 +2114,7 @@ if(location.hash==='#week'){
   goYear(2026);
   goSeason('summer');
   goMonth('june');
-  goWeek('setup');
+  goWeek(todayWeek());
 } }
 
 function renderHome() {
@@ -2301,42 +2328,44 @@ function goMonth(mid) {
   h += '<button class="breakdown-btn" id="break-mo-'+mid+'" onclick="breakdownMonthToWeek(\''+mid+'\')">⤵ 이달 할 일 → 주간으로 쪼개기</button>';
   h += '<div class="breakdown-arrow">▼</div>';
   h += '</div>';
-  // 주간 선택 (WD 있는 달만)
-  if (mid === 'june') {
-    h += '<div class="sec-label">주간 선택</div><div class="wk-list">';
-    ['w1','w2','w3','w4'].forEach(function(wid) {
-      var w = WD[wid];
-      h += '<div class="wkc'+(w.cur?' cur':'')+'" onclick="goWeek(\''+wid+'\')"><div style="display:flex;align-items:center;justify-content:space-between"><div>';
-      h += '<div style="font-size:10px;font-weight:500;color:#B4B2A9;margin-bottom:2px">'+w.label+' · '+w.dates+(w.cur?'<span class=\'now-badge\'>지금</span>':'')+'</div>';
-      h += '<div style="font-size:13px;font-weight:500;color:#2C2C2A">'+w.title+'</div>';
-      h += '<div style="font-size:11px;color:#888780;font-style:italic;margin-top:2px">'+w.mood+'</div>';
-      h += '</div><span style="font-size:16px;color:#B4B2A9;margin-left:8px">›</span></div></div>';
-    });
-    h += '</div>';
-  }
+  // 주간 선택 (그 달의 주차 동적)
+  var monthWeeks = weeksOf(mid);
+  h += '<div class="sec-label">주간</div><div class="wk-list">';
+  monthWeeks.forEach(function(w) {
+    var isCurW = (w.id===todayWeek());
+    h += '<div class="wkc'+(isCurW?' cur':'')+'" onclick="goWeek(\''+w.id+'\')"><div style="display:flex;align-items:center;justify-content:space-between">';
+    h += '<div style="font-size:12px;font-weight:500;color:#2C2C2A">'+w.label+' <span style="font-size:10px;color:#B4B2A9;font-weight:400">'+w.dates+'</span>'+(isCurW?'<span class="now-badge">지금</span>':'')+'</div>';
+    h += '<span style="font-size:15px;color:#B4B2A9">›</span></div></div>';
+  });
+  h += '</div>';
   document.getElementById('lv-month').innerHTML = h;
   showLv('month');
 }
 
 function goWeek(wid) {
-  curWeek = wid;
-  var labels={w1:{l:'1주',d:'6/1~7'},w2:{l:'2주',d:'6/8~14'},w3:{l:'3주',d:'6/15~21'},w4:{l:'4주',d:'6/22~30'}};
-  var w = WD[wid] || {};
-  var lab = labels[wid] || {l:wid, d:''};
-  var label = w.label || lab.l;
-  var dates = w.dates || lab.d;
+  var pw = parseWid(wid);
+  var mkey = pw.mkey;
+  curMonth = mkey;
+  var wks = weeksOf(mkey);
+  var cur = null;
+  for(var i=0;i<wks.length;i++){ if(wks[i].id===wid) cur=wks[i]; }
+  if(!cur) cur = wks[Math.min(Math.max(pw.n-1,0), wks.length-1)] || wks[0];
+  wid = cur.id; curWeek = wid;
+  var idxInMonth = wks.indexOf(cur);
   var isCur = (wid===todayWeek());
+  var monthName = (MONTH_META[mkey]&&MONTH_META[mkey].name)||mkey;
   var h = '';
-  var wi = WEEK_ORDER.indexOf(wid);
-  var prevW = wi>0 ? WEEK_ORDER[wi-1] : null;
-  var nextW = (wi>=0 && wi<WEEK_ORDER.length-1) ? WEEK_ORDER[wi+1] : null;
+  var prevW, nextW;
+  if(idxInMonth>0) prevW = wks[idxInMonth-1].id;
+  else { var pm=adjMonth(mkey,-1); var pwks=weeksOf(pm); prevW=pwks[pwks.length-1].id; }
+  if(idxInMonth<wks.length-1) nextW = wks[idxInMonth+1].id;
+  else nextW = adjMonth(mkey,1)+'-w1';
   h += '<div class="week-nav">';
-  h += '<button class="week-nav-btn"'+(prevW?' onclick="goWeek(\''+prevW+'\')"':' disabled')+'>‹ 이전 주</button>';
-  h += '<button class="week-nav-btn"'+(nextW?' onclick="goWeek(\''+nextW+'\')"':' disabled')+'>다음 주 ›</button>';
+  h += '<button class="week-nav-btn" onclick="goWeek(\''+prevW+'\')">‹ 이전 주</button>';
+  h += '<button class="week-nav-btn" onclick="goWeek(\''+nextW+'\')">다음 주 ›</button>';
   h += '</div>';
   h += '<div style="border-bottom:0.5px solid #D3D1C7;margin-bottom:1rem;padding-bottom:10px">';
-  h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+label+(dates?' · '+dates:'')+(isCur?'<span class="now-badge">지금</span>':'')+'</div>';
-  if(w.mood) h += '<div style="font-size:12px;color:#888780;font-style:italic">'+w.mood+'</div>';
+  h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+monthName+' '+cur.label+' · '+cur.dates+(isCur?'<span class="now-badge">지금</span>':'')+'</div>';
   h += '</div>';
 
   var ck = 'wk|'+wid+'|main';
@@ -2475,7 +2504,7 @@ if(location.hash==='#week'){
   goYear(2026);
   goSeason('summer');
   goMonth('june');
-  goWeek('setup');
+  goWeek(todayWeek());
 }
 
 
@@ -2637,19 +2666,21 @@ function breakdownMonthToWeek(mid){
     var tasks=(STATE.allItems&&STATE.allItems['mo|'+mid+'|main'])||[];
     if(!tasks.length){ alert('이달 실행 태스크를 먼저 입력해주세요.'); return; }
     var goalText=tasks.map(function(i,n){ return (n+1)+'. '+i.text+(i.area?' ['+i.area+']':''); }).join('\n');
+    var monW=weeksOf(mid); var wLabels=monW.map(function(w){return w.label;});
     var prompt=MONTH_META[mid].name+' 실행 태스크:\n'+goalText+'\n\n'
+      +'이 달은 '+monW.length+'개 주('+wLabels.join(', ')+')로 나뉘어. '
       +'이 태스크들을 4주에 걸쳐 주별 할일 3~4개씩 구체적 행동으로 쪼개줘.\n'
       +'영역 태그: '+AREAS_LIST_ALL.join(', ')+'\n'
-      +'각 할 일 텍스트 끝에 마침표(.)를 붙이지 마. JSON만 응답:\n{"1주":[{"text":"할일","area":"태그"}],"2주":[...],"3주":[...],"4주":[...]}';
+      +'각 할 일 텍스트 끝에 마침표(.)를 붙이지 마. '+monW.length+'개 주 각각에 키로 분배. JSON만 응답 (예: {"1주":[{"text":"할일","area":"태그"}], ...'+wLabels.length+'개 주});';
     var result=await callClaude(prompt,'break-mo-'+mid,'⤵ 이달 목표 → 주간 할일로 쪼개기');
     if(!result) return;
     try{
       var data=JSON.parse(result.replace(/```json|```/g,'').trim());
-      var wkeys=['w1','w2','w3','w4'];
-      wkeys.forEach(function(wid,i){
-        var wck='wk|'+wid+'|main';
+      monW.forEach(function(w,i){
+        var wck='wk|'+w.id+'|main';
         if(!STATE.allItems[wck]) STATE.allItems[wck]=[];
-        var srcData=data[Object.keys(data)[i]]||[];
+        STATE.allItems[wck]=[];
+        var srcData=data[w.label]||data[Object.keys(data)[i]]||[];
         srcData.forEach(function(item){
           STATE.allItems[wck].push({id:'ai_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),text:(item.text||'').replace(/[.。\s]+$/,''),cat:null,area:item.area||null});
         });
