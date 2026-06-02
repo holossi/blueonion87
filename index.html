@@ -1202,15 +1202,20 @@ function activeEl(id){
   return document.getElementById(id);
 }
 // 현재 계절 목표에 연결 안 된 월간 태스크 키 정리
-function cleanMonthOrphans(mid, goals){
+function cleanMonthOrphans(mid, goals){ mergeMonthToSingle(mid); }
+// 그 달의 모든 옛 키(목표별 등)를 단일 mo|{mid}|main 으로 합치기
+function mergeMonthToSingle(mid){
   if(!STATE.allItems) return;
-  var valid={};
-  goals.forEach(function(g){ valid['mo|'+mid+'|sg-'+g.id.replace(/[|:]/g,'-')]=true; });
-  var removed=false;
+  var mck='mo|'+mid+'|main', changed=false;
   Object.keys(STATE.allItems).forEach(function(k){
-    if(k.indexOf('mo|'+mid+'|')===0 && !valid[k]){ delete STATE.allItems[k]; removed=true; }
+    if(k.indexOf('mo|'+mid+'|')===0 && k!==mck){
+      var arr=STATE.allItems[k]||[];
+      if(arr.length){ if(!STATE.allItems[mck]) STATE.allItems[mck]=[]; STATE.allItems[mck]=STATE.allItems[mck].concat(arr); }
+      delete STATE.allItems[k]; changed=true;
+    }
   });
-  if(removed) saveState();
+  if(STATE.custom){ Object.keys(STATE.custom).forEach(function(k){ if(k.indexOf('mo|'+mid+'|')===0 && k!==mck){ delete STATE.custom[k]; changed=true; } }); }
+  if(changed) saveState();
 }
 
 // 예전 영역 태그 → 새 태그 마이그레이션
@@ -2175,27 +2180,18 @@ function goSeason(sid) {
   var nseason = (sid==='spring27')?'spring':sid;
   var months = MONTH_BY_SEASON[nseason] || [];
   months.forEach(function(mid){
-    cleanMonthOrphans(mid, sItems);
+    mergeMonthToSingle(mid);
     var meta = MONTH_META[mid] || {name:mid};
     h += '<div class="sec-label" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="goMonth(\''+mid+'\')"><span>'+meta.name+'</span><span style="font-size:13px;color:#B4B2A9">›</span></div>';
-    if(!sItems.length){
-      h += '<div style="font-size:11px;color:#B4B2A9;padding:4px 0 10px">계절 목표를 먼저 입력하세요.</div>';
-      return;
-    }
-    sItems.forEach(function(g){
-      var gKey = 'mo|'+mid+'|sg-'+g.id.replace(/[|:]/g,'-');
-      var gItems = getAllItems(gKey, mid, gKey.split('|')[2]);
-      var gKeySafe = gKey.replace(/[|:]/g,'_');
-      var ac = g.area ? (AREA_COLORS[g.area]||{bg:'#EDE8DE',tc:'#888780'}) : null;
-      h += '<div style="margin-bottom:.9rem">';
-      h += '<div class="msg-head" style="font-size:11px">'+g.text+(ac?' <span class="area-tag" style="background:'+ac.bg+';color:'+ac.tc+'">'+g.area+'</span>':'')+'</div>';
-      h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+gKey+'\')">';
-      gItems.forEach(function(item, itemIdx){ h += renderItem(item, itemIdx, gKey, false); });
-      h += '<div class="add-task-row">';
-      h += '<input class="add-task-inp" id="add-inp-'+gKeySafe+'" type="text" placeholder="'+meta.name+' 실행 추가..." oninput="onAddInput(this)" onblur="hideTagDropdown()" onkeydown="if(event.key===\'Enter\')addCustomTask(\''+gKey+'\')">';
-      h += '<button class="add-task-btn" onclick="addCustomTask(\''+gKey+'\')" title="추가">+</button></div>';
-      h += '</div></div>';
-    });
+    var mck = 'mo|'+mid+'|main';
+    var mItems = getAllItems(mck, mid, 'main');
+    var mckSafe = mck.replace(/[|:]/g,'_');
+    h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+mck+'\')">';
+    mItems.forEach(function(item, itemIdx){ h += renderItem(item, itemIdx, mck, false); });
+    h += '<div class="add-task-row">';
+    h += '<input class="add-task-inp" id="add-inp-'+mckSafe+'" type="text" placeholder="'+meta.name+' 할 일...  (#태그)" oninput="onAddInput(this)" onblur="hideTagDropdown()" onkeydown="if(event.key===\'Enter\')addCustomTask(\''+mck+'\')">';
+    h += '<button class="add-task-btn" onclick="addCustomTask(\''+mck+'\')" title="추가">+</button></div>';
+    h += '</div>';
   });
   document.getElementById('lv-season').innerHTML = h;
   showLv('season');
@@ -2211,39 +2207,25 @@ function goMonth(mid) {
   if(md&&md.mood) h += '<div style="font-size:12px;color:#888780;font-style:italic;margin-bottom:1rem">'+md.mood+'</div>';
   else h += '<div style="font-size:12px;color:#888780;margin-bottom:1rem">'+(seInfo.emoji||'')+' '+(seInfo.name||'')+' · '+(seInfo.phase||'')+'</div>';
 
-  // 계절 목표를 각각 섹션으로
-  var sk = seasonKey(curYear||2026, meta.season);
-  var seasonGoals = getAllItems(sk, sk.split('|')[1], sk.split('|')[2]||null);
-  cleanMonthOrphans(mid, seasonGoals);
+  mergeMonthToSingle(mid);
+  var mck = 'mo|'+mid+'|main';
+  var items = getAllItems(mck, mid, 'main');
+  var mckSafe = mck.replace(/[|:]/g,'_');
 
-  h += '<div class="sec-label sec-label-first">'+(seInfo.emoji||'')+' '+(seInfo.name||'')+' 목표 · 이달 실행</div>';
-  if(!seasonGoals.length){
-    h += '<div class="card"><div class="card-body" style="color:#888780">먼저 계절 목표를 입력해주세요. (연간 또는 계절 화면에서)</div></div>';
-  } else {
-    seasonGoals.forEach(function(g){
-      var gKey = 'mo|'+mid+'|sg-'+g.id.replace(/[|:]/g,'-');
-      var gItems = getAllItems(gKey, mid, gKey.split('|')[2]);
-      var gKeySafe = gKey.replace(/[|:]/g,'_');
-      var ac = g.area ? (AREA_COLORS[g.area]||{bg:'#EDE8DE',tc:'#888780'}) : null;
-      h += '<div style="margin-bottom:1.1rem">';
-      h += '<div class="msg-head">'+g.text + (ac?' <span class="area-tag" style="background:'+ac.bg+';color:'+ac.tc+'">'+g.area+'</span>':'')+'</div>';
-      h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+gKey+'\')">';
-      gItems.forEach(function(item, itemIdx){ h += renderItem(item, itemIdx, gKey, false); });
-      h += '<div class="add-task-row">';
-      h += '<input class="add-task-inp" id="add-inp-'+gKeySafe+'" type="text" placeholder="이달 실행 추가..." oninput="onAddInput(this)" onblur="hideTagDropdown()" onkeydown="if(event.key===\'Enter\')addCustomTask(\''+gKey+'\')">';
-      h += '<button class="add-task-btn" onclick="addCustomTask(\''+gKey+'\')" title="추가">+</button></div>';
-      h += '</div></div>';
-    });
-  }
+  h += '<div class="sec-label sec-label-first">'+meta.name+' 실행 <span style="float:right;cursor:pointer;font-size:10px;color:#B4B2A9;font-weight:400" onclick="sortByArea(\''+mck+'\')">태그 정렬 ↕</span></div>';
+  h += '<div class="track" ondragover="event.preventDefault()" ondrop="onTrackDropEnd(event,\''+mck+'\')">';
+  items.forEach(function(item, itemIdx){ h += renderItem(item, itemIdx, mck, false); });
+  h += '<div class="add-task-row">';
+  h += '<input class="add-task-inp" id="add-inp-'+mckSafe+'" type="text" placeholder="이달 할 일 추가...  (#태그)" oninput="onAddInput(this)" onblur="hideTagDropdown()" onkeydown="if(event.key===\'Enter\')addCustomTask(\''+mck+'\')">';
+  h += '<button class="add-task-btn" onclick="addCustomTask(\''+mck+'\')" title="추가">+</button></div>';
+  h += '</div>';
 
-  // 월 → 주간 AI 쪼개기 (큰 버튼 하나)
-  if(seasonGoals.length){
-    h += '<div class="breakdown-wrap">';
-    h += '<div class="breakdown-line"></div>';
-    h += '<button class="breakdown-btn" id="break-mo-'+mid+'" onclick="breakdownMonthToWeek(\''+mid+'\')">⤵ 이달 목표 → 주간 할일로 쪼개기</button>';
-    h += '<div class="breakdown-arrow">▼</div>';
-    h += '</div>';
-  }
+  // 월 → 주간 AI 쪼개기
+  h += '<div class="breakdown-wrap">';
+  h += '<div class="breakdown-line"></div>';
+  h += '<button class="breakdown-btn" id="break-mo-'+mid+'" onclick="breakdownMonthToWeek(\''+mid+'\')">⤵ 이달 할 일 → 주간으로 쪼개기</button>';
+  h += '<div class="breakdown-arrow">▼</div>';
+  h += '</div>';
   // 주간 선택 (WD 있는 달만)
   if (mid === 'june') {
     h += '<div class="sec-label">주간 선택</div><div class="wk-list">';
@@ -2493,12 +2475,12 @@ function breakdownSeasonToMonth(sid){
       curMonths.forEach(function(mid,i){
         var mname=MONTH_META[mid].name;
         var srcData=data[mname]||data[Object.keys(data)[i]]||[];
+        var mck='mo|'+mid+'|main';
+        STATE.allItems[mck]=[]; // 재실행 시 교체
         srcData.forEach(function(item){
           var gi=(typeof item.goalIdx==='number')?item.goalIdx:0;
           var g=goals[gi]||goals[0];
-          var mck='mo|'+mid+'|sg-'+g.id.replace(/[|:]/g,'-');
-          if(!STATE.allItems[mck]) STATE.allItems[mck]=[];
-          STATE.allItems[mck].push({id:'ai_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),text:item.text,cat:null,area:g.area||null});
+          STATE.allItems[mck].push({id:'ai_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),text:item.text,cat:null,area:(g&&g.area)||null});
         });
       });
       saveState(); refreshView(sck); alert('✓ 월별 태스크가 생성됐어요!');
@@ -2510,12 +2492,7 @@ function breakdownSeasonToMonth(sid){
 function breakdownMonthToWeek(mid){
   checkApiKey(async function(){
     // 그 달의 모든 목표 섹션 태스크 수집
-    var tasks=[];
-    Object.keys(STATE.allItems||{}).forEach(function(k){
-      if(k.indexOf('mo|'+mid+'|')===0){
-        (STATE.allItems[k]||[]).forEach(function(it){ tasks.push(it); });
-      }
-    });
+    var tasks=(STATE.allItems&&STATE.allItems['mo|'+mid+'|main'])||[];
     if(!tasks.length){ alert('이달 실행 태스크를 먼저 입력해주세요.'); return; }
     var goalText=tasks.map(function(i,n){ return (n+1)+'. '+i.text+(i.area?' ['+i.area+']':''); }).join('\n');
     var prompt=MONTH_META[mid].name+' 실행 태스크:\n'+goalText+'\n\n'
