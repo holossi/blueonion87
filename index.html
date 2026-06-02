@@ -480,6 +480,8 @@ body{background:#DDD8CE;margin:0;padding:0;font-family:-apple-system,BlinkMacSys
 .day-theme{font-size:9px;padding:2px 9px;border-radius:10px;cursor:pointer;font-weight:500;white-space:nowrap}
 .day-theme-empty{background:#F5F0E8;color:#B4B2A9;border:0.5px dashed #D3D1C7}
 #themeDropdown{display:none;position:absolute;z-index:9999;background:#FDFAF6;border:0.5px solid #D3D1C7;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:260px;overflow-y:auto;min-width:150px}
+
+.tl-header .tl-chevron{flex-shrink:0}
 </style>
 </head>
 <body>
@@ -1108,6 +1110,53 @@ function todayWeek(){
   if(d<=7) return 'w1'; if(d<=14) return 'w2'; if(d<=21) return 'w3'; return 'w4';
 }
 
+// ── 인생 타임라인 더블클릭 편집 ──
+function initTimeline(){
+  var cards = document.querySelectorAll('#app-home .tl-card');
+  cards.forEach(function(card, idx){
+    card.setAttribute('data-tlidx', idx);
+    card.onclick = null; // 본문 클릭으로 토글 안 함
+    card.style.cursor = 'default';
+    var chev = card.querySelector('.tl-chevron');
+    if(chev && !chev._bound){ chev._bound=true; chev.style.cursor='pointer'; chev.style.padding='2px 4px'; chev.addEventListener('click', function(e){ e.stopPropagation(); togTl(card); }); }
+    card.querySelectorAll('.tl-mini-label').forEach(function(el,i){ bindTlField(el, idx+'|ml'+i); });
+    card.querySelectorAll('.tl-mini-val').forEach(function(el,i){ bindTlField(el, idx+'|mv'+i); });
+    card.querySelectorAll('.bullets li').forEach(function(el,i){ bindTlField(el, idx+'|b'+i, true); });
+  });
+}
+function bindTlField(el, key, isMulti){
+  if(STATE.tlFields && STATE.tlFields[key]!==undefined) el.textContent = STATE.tlFields[key];
+  el.style.cursor = 'text';
+  el.title = '더블클릭하여 수정';
+  el.addEventListener('dblclick', function(e){ e.stopPropagation(); editTlField(el, key, isMulti); });
+}
+function editTlField(el, key, isMulti){
+  if(el.querySelector('input,textarea')) return;
+  var cur = el.textContent;
+  var inp = document.createElement(isMulti ? 'textarea' : 'input');
+  inp.value = cur;
+  inp.onclick = function(e){ e.stopPropagation(); };
+  inp.ondblclick = function(e){ e.stopPropagation(); };
+  inp.style.cssText = 'width:100%;box-sizing:border-box;font-size:inherit;line-height:inherit;color:#2C2C2A;border:0.5px solid #BA7517;border-radius:6px;padding:3px 7px;background:#FDFAF6;font-family:inherit'+(isMulti?';min-height:46px;resize:vertical':'');
+  el.textContent = '';
+  el.appendChild(inp);
+  inp.focus(); inp.select();
+  var done = false;
+  function save(){
+    if(done) return; done = true;
+    var v = inp.value.trim();
+    if(!STATE.tlFields) STATE.tlFields = {};
+    if(v){ STATE.tlFields[key] = v; el.textContent = v; }
+    else { delete STATE.tlFields[key]; el.textContent = cur; }
+    saveState();
+  }
+  inp.addEventListener('keydown', function(e){
+    if(e.key==='Enter' && !isMulti){ e.preventDefault(); save(); }
+    else if(e.key==='Escape'){ done = true; el.textContent = cur; }
+  });
+  inp.addEventListener('blur', save);
+}
+
 // ════════ 앱 전환 ════════
 function showApp(app){
   ['home','planner','roadmap','budget'].forEach(function(a){
@@ -1197,6 +1246,9 @@ var STATE = {tasks:{}, goals:{}, custom:{}};
     STATE.editId    = null;
     STATE.fresh     = s.fresh     || false;
     STATE.dayThemes = s.dayThemes || {};
+    STATE.yearNotes = s.yearNotes || {};
+    STATE.tlEdits   = s.tlEdits   || {};
+    STATE.tlFields  = s.tlFields  || {};
 
   } catch(e) {}
 })();
@@ -2109,13 +2161,25 @@ function goYears() {
   showLv('years');
 }
 
+function editYearNote(yr){ STATE.editYearNote=yr; goYear(yr); setTimeout(function(){ var el=activeEl('yearNoteInp'); if(el){el.focus();el.select();} },50); }
+function saveYearNote(yr){
+  var el=activeEl('yearNoteInp'); 
+  if(el){ var v=el.value.trim(); if(!STATE.yearNotes)STATE.yearNotes={}; if(v)STATE.yearNotes[yr]=v; else delete STATE.yearNotes[yr]; }
+  STATE.editYearNote=null; saveState(); goYear(yr);
+}
 function goYear(yr) {
   curYear = yr;
   var y = YG[yr];
   var h = '';
   h += '<div style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:3px">'+yr+'년 · '+y.keyword+'</div>';
   h += '<div style="font-size:11px;color:#888780;margin-bottom:.5rem">'+y.phase+'</div>';
-  if(YG_SUMMARY[yr] && !STATE.fresh) h += '<div style="font-size:12px;color:#5F5E5A;line-height:1.7;margin-bottom:1rem">'+YG_SUMMARY[yr]+'</div>';
+  if(YG_SUMMARY[yr] && !STATE.fresh) h += '<div style="font-size:12px;color:#5F5E5A;line-height:1.7;margin-bottom:.5rem">'+YG_SUMMARY[yr]+'</div>';
+  var ynote=(STATE.yearNotes&&STATE.yearNotes[yr])||'';
+  if(STATE.editYearNote===yr){
+    h += '<input id="yearNoteInp" value="'+ynote.replace(/"/g,'&quot;')+'" placeholder="이 해를 한 줄로..." style="width:100%;box-sizing:border-box;font-size:12px;color:#2C2C2A;border:0.5px solid #BA7517;border-radius:7px;padding:7px 10px;margin-bottom:1rem;background:#FDFAF6" onkeydown="if(event.key===\'Enter\')saveYearNote('+yr+');if(event.key===\'Escape\'){STATE.editYearNote=null;goYear('+yr+');}" onblur="saveYearNote('+yr+')">';
+  } else {
+    h += '<div onclick="editYearNote('+yr+')" style="cursor:text;font-size:12px;line-height:1.6;margin-bottom:1rem;color:'+(ynote?'#5F5E5A':'#B4B2A9')+'">'+(ynote?ynote:'+ 한 줄 설명 추가')+'</div>';
+  }
   h += '<div class="sec-label sec-label-first">계절별 목표</div>';
   YEAR_SEASONS.forEach(function(s){
     var sk = seasonKey(yr, s.key);
@@ -2934,6 +2998,7 @@ bb_render();
 
 
 // ════════ 초기화 ════════
+initTimeline();
 showApp('home');
 </script>
 </body>
