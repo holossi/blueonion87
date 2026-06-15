@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>인물 노트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --mist:#e9ebe9; --mist-2:#dfe2e1; --paper:#fcfcfa;
+    --ink:#1f242c; --ink-soft:#5c6068; --faint:#9aa0a4;
+    --line:#d8dcdb; --accent:#3f5a73; --accent-soft:#e4ecf1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(120% 80% at 50% -10%, #f3f4f2 0%, var(--mist) 55%, var(--mist-2) 100%);
+    color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;line-height:1.6;
+    min-height:100%;display:flex;justify-content:center;padding:20px 16px 48px;
+  }
+  .app{width:100%;max-width:460px}
+
+  .top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;padding:0 2px}
+  .brand{font-family:'Noto Serif KR',serif;font-weight:600;font-size:17px}
+  .brand .sub{font-family:'Noto Sans KR';font-weight:400;color:var(--faint);font-size:12px;margin-left:8px}
+  .saved{font-size:11px;color:var(--faint);opacity:0;transition:opacity .4s}
+  .saved.show{opacity:1}
+
+  .people{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+  .people::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);
+    font-size:13px;font-weight:500;padding:7px 13px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:.18s}
+  .chip:hover{border-color:#c3c8c7}
+  .chip.active{background:var(--ink);color:#f6f6f4;border-color:var(--ink)}
+  .chip.add{color:var(--accent);border-style:dashed}
+
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:24px 22px 18px;
+    box-shadow:0 1px 0 rgba(255,255,255,.6) inset, 0 8px 26px -18px rgba(31,36,44,.45)}
+  .eyebrow{font-size:11px;letter-spacing:.06em;color:var(--accent);background:var(--accent-soft);
+    display:inline-block;padding:4px 9px;border-radius:6px;font-weight:700;margin-bottom:16px}
+  .question{font-family:'Noto Serif KR',serif;font-weight:500;font-size:21px;line-height:1.55;
+    letter-spacing:-.01em;color:var(--ink);min-height:1.55em}
+  textarea{width:100%;border:none;outline:none;resize:none;background:transparent;
+    font-family:'Noto Sans KR',sans-serif;font-size:15px;line-height:1.85;color:var(--ink);
+    margin-top:16px;min-height:150px;border-top:1px solid var(--line);padding-top:16px}
+  textarea::placeholder{color:var(--faint)}
+
+  .actions{display:flex;align-items:center;gap:10px;margin-top:14px}
+  .draw{margin-left:auto;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+    font-family:inherit;font-size:13px;font-weight:500;padding:9px 15px;border-radius:10px;cursor:pointer;transition:.15s}
+  .draw:hover{border-color:#bcc1c0;background:#fff}
+  .draw .arr{color:var(--accent);margin-left:5px}
+  .keep{font-size:12px;color:var(--faint)}
+
+  .coll{margin-top:26px}
+  .coll-head{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 12px}
+  .coll-title{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:600;color:var(--ink-soft)}
+  .coll-count{font-size:12px;color:var(--faint)}
+  .entry{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 15px;margin-bottom:9px;cursor:pointer;transition:.15s;position:relative}
+  .entry:hover{border-color:#c7ccca}
+  .entry .e-q{font-family:'Noto Serif KR',serif;font-size:13px;color:var(--ink-soft);line-height:1.5;margin-bottom:6px;padding-right:20px}
+  .entry .e-t{font-size:14px;color:var(--ink);line-height:1.7;white-space:pre-wrap;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .entry .e-del{position:absolute;top:10px;right:10px;border:none;background:none;color:var(--faint);
+    font-size:15px;cursor:pointer;line-height:1;padding:2px 4px}
+  .entry .e-del:hover{color:#c0413a}
+
+  .empty{text-align:center;padding:46px 18px}
+  .empty .e-title{font-family:'Noto Serif KR',serif;font-size:19px;font-weight:500;margin-bottom:10px}
+  .empty p{color:var(--ink-soft);font-size:14px;margin-bottom:22px;line-height:1.7}
+  .coll-empty{text-align:center;color:var(--faint);font-size:13px;padding:18px 0}
+
+  .row-actions{display:flex;justify-content:flex-end;margin-top:18px}
+  .footer-bar{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:24px;opacity:.85}
+  .footer-bar .dot{color:var(--faint)}
+  .link.io{color:var(--ink-soft)}
+  .link.io:hover{color:var(--accent)}
+  .io-area{width:100%;height:230px;border:1px solid var(--line);border-radius:9px;padding:12px;
+    font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;color:var(--ink);
+    resize:none;outline:none;margin-top:6px;white-space:pre;overflow:auto}
+  .io-area:focus{border-color:var(--accent)}
+  .modal.wide{max-width:420px}
+  .link{background:none;border:none;color:var(--faint);font-size:12px;cursor:pointer;font-family:inherit}
+  .link:hover{color:#c0413a}
+
+  .mask{position:fixed;inset:0;background:rgba(31,36,44,.32);display:none;align-items:center;justify-content:center;padding:24px;z-index:10}
+  .mask.show{display:flex}
+  .modal{background:var(--paper);border-radius:14px;padding:22px;width:100%;max-width:320px;box-shadow:0 20px 50px -20px rgba(0,0,0,.5)}
+  .modal h3{font-family:'Noto Serif KR',serif;font-size:16px;font-weight:600;margin-bottom:12px}
+  .modal input{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px 12px;font-size:15px;font-family:inherit;outline:none}
+  .modal input:focus{border-color:var(--accent)}
+  .modal .hint{font-size:12px;color:var(--faint);margin-top:8px;line-height:1.5}
+  .modal-btns{display:flex;gap:8px;margin-top:18px}
+  .btn{flex:1;border:none;border-radius:9px;padding:11px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+  .btn.ghost{background:var(--mist);color:var(--ink-soft)}
+  .btn.solid{background:var(--ink);color:#f6f6f4}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="mask" id="mask">
+  <div class="modal">
+    <h3>인물 떠올리기</h3>
+    <input id="name-input" placeholder="이름 또는 부르는 말" maxlength="24" autocomplete="off">
+    <p class="hint">아직 흐릿해도 괜찮아요. 질문에 답하다 보면 한 조각씩 또렷해집니다.</p>
+    <div class="modal-btns">
+      <button class="btn ghost" id="modal-cancel">취소</button>
+      <button class="btn solid" id="modal-ok">시작</button>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="io-mask">
+  <div class="modal wide">
+    <h3 id="io-title">내보내기</h3>
+    <p class="hint" id="io-hint"></p>
+    <textarea class="io-area" id="io-area" spellcheck="false"></textarea>
+    <div class="modal-btns">
+      <button class="btn ghost" id="io-close">닫기</button>
+      <button class="btn solid" id="io-action">전체 선택</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATS = { see:"보이는 것들", inner:"안 보이는 결", rel:"관계 속에서", deep:"모순과 내력" };
+const PROMPTS = [
+  {c:"see",q:"이 사람이 아침에 눈을 떠서 처음으로 하는 행동."},
+  {c:"see",q:"가방이나 주머니 속, 남들은 의아해할 물건 하나."},
+  {c:"see",q:"무심코 반복하는 버릇 — 본인은 모르고 남만 아는 것."},
+  {c:"see",q:"누가 이름을 부를 때 짓는 표정."},
+  {c:"see",q:"객관적으론 쓸모없는데 절대 안 버리는 물건."},
+  {c:"see",q:"직업을 말하지 않아도 새어 나오는 손짓이나 시선."},
+  {c:"see",q:"돈을 아끼는 곳과, 이상하리만치 아끼지 않는 곳."},
+  {c:"see",q:"음식을 먹는 순서나 방식에서 드러나는 버릇."},
+  {c:"see",q:"휴대폰 잠금화면에 둔 것, 그리고 그걸 고른 이유."},
+  {c:"see",q:"옷장에서 가장 손이 가는 한 벌, 그리고 절대 안 입는 한 벌."},
+  {c:"see",q:"걸음걸이나 앉은 자세에서 드러나는 무언가."},
+  {c:"see",q:"긴장하거나 골똘할 때 손이 가장 자주 닿는 곳."},
+  {c:"see",q:"글씨체, 혹은 메모를 남기는 방식."},
+  {c:"see",q:"집에서 가장 정돈된 공간과 가장 어질러진 공간."},
+  {c:"see",q:"남이 보면 결벽처럼 보이는 작은 규칙 하나."},
+  {c:"see",q:"자주 잃어버리는 물건, 그리고 그때마다 보이는 반응."},
+  {c:"see",q:"목소리나 말의 속도가 바뀌는 순간."},
+  {c:"see",q:"사소하지만 확고한, 소리나 음악에 대한 취향."},
+  {c:"see",q:"시간을 확인하는 방식, 혹은 시간을 대하는 태도."},
+  {c:"see",q:"커피든 술이든, 무언가를 마실 때의 버릇."},
+  {c:"see",q:"몸에 남은 흔적 하나 — 흉터, 굳은살, 버릇으로 생긴 자국."},
+  {c:"see",q:"누군가를 기다릴 때 하는 행동."},
+  {c:"see",q:"냄새나 촉감에 유독 예민하거나 둔한 부분."},
+  {c:"see",q:"방에 들어설 때 가장 먼저 하는 것."},
+  {c:"see",q:"자기도 모르게 흥얼거리거나 중얼거리는 말."},
+
+  {c:"inner",q:"절대 남에게 말하지 않는 사실 하나."},
+  {c:"inner",q:"가장 최근에 운 순간 — 왜 울었는지보다, 어디서 울었는지."},
+  {c:"inner",q:"거짓말을 할 때 자기도 모르게 새어 나오는 신호."},
+  {c:"inner",q:"혼자 있을 때만 하는 행동."},
+  {c:"inner",q:"말로는 싫다면서 사실은 좋아하는 것."},
+  {c:"inner",q:"남을 평가할 때 무의식적으로 보는 단 하나의 기준."},
+  {c:"inner",q:"화가 났을 때 — 더 조용해지나, 더 정중해지나, 더 사소해지나."},
+  {c:"inner",q:"부러워하면서도 인정하고 싶지 않은 대상."},
+  {c:"inner",q:"혼자 있을 때 머릿속으로 반복 재생하는 장면."},
+  {c:"inner",q:"무서워하면서도 자꾸 들여다보는 것."},
+  {c:"inner",q:"칭찬받았을 때 — 속마음과 겉으로 드러나는 반응의 차이."},
+  {c:"inner",q:"절대 양보 못 하는 사소한 것 하나."},
+  {c:"inner",q:"죄책감을 느끼면서도 멈추지 못하는 습관."},
+  {c:"inner",q:"남들은 대수롭지 않게 여기는데 이 사람만 못 견디는 것."},
+  {c:"inner",q:"자기 자신에게 반복해서 하는 거짓말."},
+  {c:"inner",q:"오래 품어온 부끄러움 하나 — 사소할수록 좋다."},
+  {c:"inner",q:"기분이 좋을 때 자기도 모르게 나오는 행동."},
+  {c:"inner",q:"외로움을 달래는 자기만의 방식."},
+  {c:"inner",q:"누구에게도 들키고 싶지 않은 욕망."},
+  {c:"inner",q:"후회하면서도, 다시 그 상황이 와도 똑같이 할 것 같은 선택."},
+  {c:"inner",q:"혼자 결정을 내릴 때 마음속으로 묻게 되는 사람."},
+  {c:"inner",q:"잠들기 직전 마지막으로 떠올리는 것."},
+  {c:"inner",q:"자기가 약하다고 느끼는 순간."},
+  {c:"inner",q:"아무에게도 보여주지 않는, 혼자만의 작은 의식(儀式)."},
+  {c:"inner",q:"머리로는 알면서도 마음이 끝내 따라주지 않는 것."},
+
+  {c:"rel",q:"이 사람을 가장 잘 안다고 믿는 사람이, 사실은 모르는 것."},
+  {c:"rel",q:"유독 어려워하는 단 한 사람과의 대화."},
+  {c:"rel",q:"누군가에게 들은 말 중, 아직도 마음에 박혀 있는 한 마디."},
+  {c:"rel",q:"이 사람이 사랑하는 방식 — 말이 아니라 행동으로."},
+  {c:"rel",q:"남들 앞에서의 모습과 혼자일 때가 다른 행동 하나."},
+  {c:"rel",q:"은근히 자부심을 느끼지만 아무도 알아주지 않는 능력."},
+  {c:"rel",q:"거짓 없이 가장 자기다워지는 순간 — 누구와 무엇을 할 때."},
+  {c:"rel",q:"처음 만난 사람을 대하는 첫 30초의 태도."},
+  {c:"rel",q:"친해질수록 오히려 감추게 되는 면."},
+  {c:"rel",q:"누군가에게 미안할 때, 사과 대신 하는 행동."},
+  {c:"rel",q:"곁에 있으면 자기도 모르게 말투가 바뀌는 사람."},
+  {c:"rel",q:"절대 부탁하지 못하는 것 — 그 장면 하나만."},
+  {c:"rel",q:"다른 사람의 어떤 행동을 유독 못 견뎌 하는가."},
+  {c:"rel",q:"자리를 뜰 때, 헤어질 때 나오는 버릇."},
+  {c:"rel",q:"가족 중 누구를 가장 닮았고, 그걸 어떻게 느끼는가."},
+  {c:"rel",q:"누군가를 좋아할 때 가장 먼저 나오는 신호."},
+  {c:"rel",q:"갈등이 생기면 먼저 다가가는 편인가, 사라지는 편인가."},
+  {c:"rel",q:"사람을 믿기 시작하는 결정적 순간."},
+  {c:"rel",q:"남이 자기를 어떻게 본다고 믿는가 — 실제와 얼마나 다른가."},
+  {c:"rel",q:"누구 앞에서 가장 긴장하고, 누구 앞에서 가장 풀어지는가."},
+  {c:"rel",q:"도움을 받았을 때의 반응."},
+  {c:"rel",q:"침묵이 흐를 때 먼저 깨는 편인가, 견디는 편인가."},
+  {c:"rel",q:"떠난 사람에 대해 말할 때의 어조."},
+  {c:"rel",q:"누군가를 챙기는 자기만의 사소한 방식."},
+  {c:"rel",q:"빈말, 약속, 시간 — 약속을 대하는 태도."},
+
+  {c:"deep",q:"자기도 모르게 닮아가는 사람 — 혹은 닮지 않으려다 닮아버린 사람."},
+  {c:"deep",q:"남들은 장점이라는데 본인은 약점이라 여기는 것, 혹은 그 반대."},
+  {c:"deep",q:"말투에서 출신이나 살아온 시간이 새어 나오는 한순간."},
+  {c:"deep",q:"남들은 다 지나치는데 이 사람만 유독 오래 바라보는 것."},
+  {c:"deep",q:"돈이 많았다면 / 없었다면 달라졌을 습관 하나."},
+  {c:"deep",q:"어릴 때 들었던 말 중 지금까지 따르고 있는 것."},
+  {c:"deep",q:"한때 간절했지만 시들해진 꿈, 그 자리에 남은 것."},
+  {c:"deep",q:"자기 인생을 한 단어로 요약한다면 — 그게 거짓말인 부분."},
+  {c:"deep",q:"남들 앞에선 인정 안 하지만 스스로는 아는 한계."},
+  {c:"deep",q:"가장 오래 지켜온 습관, 그게 시작된 계기."},
+  {c:"deep",q:"자라온 곳의 흔적이 몸이나 말에 남은 방식."},
+  {c:"deep",q:"가본 적 없지만 자꾸 끌리는 장소나 삶."},
+  {c:"deep",q:"자기를 바꿔놓았다고 믿는 사건 — 정작 남들은 기억 못 하는."},
+  {c:"deep",q:"절대 되고 싶지 않은 사람의 모습, 그리고 거기 닮은 자기 면."},
+  {c:"deep",q:"시간이 지나며 부드러워진 부분과 더 단단해진 부분."},
+  {c:"deep",q:"남몰래 자랑스러워하는 출신이나 내력."},
+  {c:"deep",q:"지금의 자리에 오기까지 버린 것."},
+  {c:"deep",q:"자기 나이를 의식하게 되는 순간."},
+  {c:"deep",q:"후회 없이 잘했다고 믿는 단 하나의 선택."},
+  {c:"deep",q:"자기 손으로 끊어낸 관계나 습관, 그리고 그 빈자리."},
+  {c:"deep",q:"돈·시간·애정 중 가장 인색한 것과 가장 후한 것."},
+  {c:"deep",q:"누가 봐도 모순인데 본인은 모순이라 느끼지 못하는 두 면."},
+  {c:"deep",q:"혼자 견뎌온 것 중, 사실은 누가 알아주길 바랐던 것."},
+  {c:"deep",q:"십 년 전의 자기가 지금을 보면 가장 놀랄 점."},
+  {c:"deep",q:"다 비우고 디테일 하나만 남긴다면, 무엇으로 이 사람을 기억하게 할까."},
+];
+const KEY = "rc:notebook:v2";
+
+let state = { chars: [], activeId: null };
+let saveTimer = null;
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const p=JSON.parse(raw); state.chars=p.chars||[]; state.activeId=p.activeId||null; }
+  }catch(e){}
+  if(state.activeId && !state.chars.find(c=>c.id===state.activeId)) state.activeId = state.chars[0]?.id||null;
+}
+let storageOK=null; // null=unknown, true=works, false=unavailable (e.g. private mode)
+function flush(){
+  try{
+    localStorage.setItem(KEY, JSON.stringify(state));
+    storageOK=true; setStatus("저장됨", false);
+  }catch(e){
+    storageOK=false; setStatus("자동 저장 안 됨 · 눌러서 백업", true);
+  }
+}
+function persist(){ flush(); }
+function setStatus(text, sticky){
+  const el=document.getElementById("saved"); if(!el) return;
+  el.textContent=text;
+  el.style.color = sticky ? "#c0413a" : "";
+  el.style.cursor = sticky ? "pointer" : "default";
+  el.classList.add("show");
+  clearTimeout(el._t);
+  if(!sticky) el._t=setTimeout(()=>el.classList.remove("show"),1400);
+}
+
+function activeChar(){ return state.chars.find(c=>c.id===state.activeId)||null; }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+function drawFor(c){
+  const answered = new Set((c.entries||[]).map(e=>e.qid));
+  let pool=[];
+  for(let i=0;i<PROMPTS.length;i++){ if(i!==c.cur.qid && !answered.has(i)) pool.push(i); }
+  if(pool.length===0){ for(let i=0;i<PROMPTS.length;i++){ if(i!==c.cur.qid) pool.push(i); } }
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function commitDraft(c){
+  const t=(c.cur.text||"").trim(), qid=c.cur.qid;
+  c.entries = c.entries||[];
+  const i = c.entries.findIndex(e=>e.qid===qid);
+  if(t){
+    if(i>=0){ c.entries[i].text=c.cur.text; c.entries[i].ts=Date.now(); }
+    else c.entries.push({id:uid(), qid, q:PROMPTS[qid].q, c:PROMPTS[qid].c, text:c.cur.text, ts:Date.now()});
+  }else if(i>=0){ c.entries.splice(i,1); }
+}
+
+function render(){
+  const app=document.getElementById("app");
+  const c=activeChar();
+  app.innerHTML=`
+    <div class="top">
+      <div class="brand">인물 노트<span class="sub">하나씩 길어 올리기</span></div>
+      <div class="saved" id="saved"></div>
+    </div>
+    <div class="people" id="people"></div>
+    <div id="body"></div>
+    <div class="footer-bar">
+      <button class="link io" id="io-export">내보내기</button>
+      <span class="dot">·</span>
+      <button class="link io" id="io-import">복원</button>
+    </div>`;
+  const people=document.getElementById("people");
+  state.chars.forEach(ch=>{
+    const b=document.createElement("button");
+    b.className="chip"+(ch.id===state.activeId?" active":"");
+    b.textContent=ch.name;
+    b.onclick=()=>{ state.activeId=ch.id; persist(); render(); };
+    people.appendChild(b);
+  });
+  const add=document.createElement("button");
+  add.className="chip add"; add.textContent="＋ 인물"; add.onclick=openAdd;
+  people.appendChild(add);
+
+  document.getElementById("io-export").onclick=openExport;
+  document.getElementById("io-import").onclick=openImport;
+  const sv=document.getElementById("saved");
+  sv.onclick=()=>{ if(storageOK===false) openExport(); };
+  if(storageOK===false) setStatus("자동 저장 안 됨 · 눌러서 백업", true);
+
+  const body=document.getElementById("body");
+  if(!c){ body.innerHTML=emptyHTML(); document.getElementById("empty-add").onclick=openAdd; return; }
+  if(!c.cur) c.cur={qid:Math.floor(Math.random()*PROMPTS.length),text:""};
+  body.innerHTML=cardHTML(c);
+  wireCard(c);
+}
+
+function emptyHTML(){
+  return `<div class="empty">
+    <div class="e-title">아직 비어 있어요</div>
+    <p>떠올리고 싶은 인물을 한 명 추가하면,<br>그 사람을 향한 질문이 하나씩 무작위로 열립니다.</p>
+    <button class="btn solid" id="empty-add" style="max-width:200px;margin:0 auto;display:block">첫 인물 떠올리기</button>
+  </div>`;
+}
+
+function cardHTML(c){
+  const p=PROMPTS[c.cur.qid];
+  const entries=[...(c.entries||[])].sort((a,b)=>b.ts-a.ts);
+  let coll;
+  if(entries.length===0){
+    coll=`<div class="coll-empty">아직 모은 디테일이 없어요. 떠오른 한 가지부터.</div>`;
+  }else{
+    coll=entries.map(e=>`
+      <div class="entry" data-qid="${e.qid}">
+        <button class="e-del" data-id="${e.id}">✕</button>
+        <div class="e-q">${CATS[e.c]} · ${escapeHtml(e.q)}</div>
+        <div class="e-t">${escapeHtml(e.text)}</div>
+      </div>`).join("");
+  }
+  return `
+  <div class="card">
+    <span class="eyebrow">${CATS[p.c]}</span>
+    <div class="question">${escapeHtml(p.q)}</div>
+    <textarea id="note" placeholder="떠오른 한 가지만, 가볍게. 안 떠오르면 다른 질문을 뽑아도 돼요.">${escapeHtml(c.cur.text||"")}</textarea>
+    <div class="actions">
+      <span class="keep">쓰는 즉시 이 인물에게 저장돼요</span>
+      <button class="draw" id="draw">다른 질문<span class="arr">↻</span></button>
+    </div>
+  </div>
+  <div class="coll">
+    <div class="coll-head">
+      <span class="coll-title">${escapeHtml(c.name)}의 디테일</span>
+      <span class="coll-count">${entries.length}개</span>
+    </div>
+    ${coll}
+    <div class="row-actions"><button class="link" id="remove">이 인물 지우기</button></div>
+  </div>`;
+}
+
+function wireCard(c){
+  const ta=document.getElementById("note");
+  ta.addEventListener("input",()=>{
+    c.cur.text=ta.value;
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>{ commitDraft(c); persist(true); },600);
+  });
+  document.getElementById("draw").onclick=()=>{
+    commitDraft(c);
+    c.cur={qid:drawFor(c),text:""};
+    persist(); render();
+  };
+  document.querySelectorAll(".entry").forEach(el=>{
+    el.onclick=(ev)=>{
+      if(ev.target.classList.contains("e-del")) return;
+      commitDraft(c);
+      const qid=+el.dataset.qid;
+      const e=(c.entries||[]).find(x=>x.qid===qid);
+      c.cur={qid, text:e?e.text:""};
+      persist(); render();
+      document.getElementById("note")?.focus();
+    };
+  });
+  document.querySelectorAll(".e-del").forEach(btn=>{
+    btn.onclick=(ev)=>{
+      ev.stopPropagation();
+      const id=btn.dataset.id;
+      c.entries=(c.entries||[]).filter(x=>x.id!==id);
+      persist(); render();
+    };
+  });
+  document.getElementById("remove").onclick=()=>{
+    if(confirm(`'${c.name}'에 대한 기록을 모두 지울까요? 되돌릴 수 없어요.`)){
+      state.chars=state.chars.filter(x=>x.id!==c.id);
+      state.activeId=state.chars[0]?.id||null;
+      persist(); render();
+    }
+  };
+}
+
+function escapeHtml(s){return (s||"").replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));}
+
+function openAdd(){
+  const mask=document.getElementById("mask"), input=document.getElementById("name-input");
+  mask.classList.add("show"); input.value=""; setTimeout(()=>input.focus(),50);
+}
+function closeAdd(){ document.getElementById("mask").classList.remove("show"); }
+function doAdd(){
+  const input=document.getElementById("name-input"), name=input.value.trim();
+  if(!name) return;
+  const ch={id:uid(),name,cur:{qid:Math.floor(Math.random()*PROMPTS.length),text:""},entries:[],createdAt:Date.now()};
+  state.chars.push(ch); state.activeId=ch.id;
+  closeAdd(); persist(); render();
+}
+
+/* ---------- export / import (manual backup) ---------- */
+const MARK="###BACKUP###";
+function buildExport(){
+  // commit any in-progress draft so it's included
+  const c=activeChar(); if(c&&c.cur) commitDraft(c);
+  const out=["인물 노트 — 백업  ("+new Date().toLocaleString("ko-KR")+")",""];
+  state.chars.forEach(ch=>{
+    out.push("【 "+ch.name+" 】");
+    const es=[...(ch.entries||[])].sort((a,b)=>a.ts-b.ts);
+    if(!es.length) out.push("  (아직 디테일 없음)");
+    es.forEach(e=>{ out.push("· "+e.q); out.push("  "+(e.text||"").replace(/\n/g,"\n  ")); out.push(""); });
+    out.push("");
+  });
+  out.push("———————————————————————");
+  out.push("아래 한 줄은 복원용 데이터예요. 지우지 말고 통째로 보관하세요.");
+  out.push(MARK+" "+JSON.stringify(state));
+  return out.join("\n");
+}
+function openExport(){
+  const area=document.getElementById("io-area");
+  document.getElementById("io-title").textContent="내보내기 · 백업";
+  document.getElementById("io-hint").textContent="이 글을 전부 복사해서 메모앱 등에 보관하세요. 나중에 '복원'에 붙여넣으면 그대로 돌아옵니다.";
+  area.value=buildExport(); area.readOnly=true;
+  const act=document.getElementById("io-action"); act.textContent="전체 선택";
+  act.onclick=()=>{ area.readOnly=false; area.focus(); area.select(); try{document.execCommand("copy");}catch(e){} area.readOnly=true; act.textContent="복사됨 ✓"; setTimeout(()=>act.textContent="전체 선택",1500); };
+  document.getElementById("io-mask").classList.add("show");
+}
+function openImport(){
+  const area=document.getElementById("io-area");
+  document.getElementById("io-title").textContent="복원";
+  document.getElementById("io-hint").textContent="이전에 내보낸 백업 글을 여기에 붙여넣고 '복원'을 누르세요. 현재 내용은 덮어쓰여요.";
+  area.value=""; area.readOnly=false;
+  const act=document.getElementById("io-action"); act.textContent="복원";
+  act.onclick=doImport;
+  document.getElementById("io-mask").classList.add("show");
+  setTimeout(()=>area.focus(),50);
+}
+function doImport(){
+  const raw=document.getElementById("io-area").value;
+  let json=raw;
+  const m=raw.indexOf(MARK);
+  if(m>=0) json=raw.slice(m+MARK.length);
+  json=json.trim();
+  // strip anything before first { just in case
+  const s=json.indexOf("{"); if(s>0) json=json.slice(s);
+  try{
+    const p=JSON.parse(json);
+    if(!p || !Array.isArray(p.chars)) throw new Error("형식이 올바르지 않아요");
+    state.chars=p.chars; state.activeId=p.activeId||p.chars[0]?.id||null;
+    closeIO(); persist(); render();
+  }catch(e){
+    document.getElementById("io-hint").textContent="복원 실패: 백업 데이터를 찾지 못했어요. "+MARK+" 줄까지 포함해 통째로 붙여넣었는지 확인해 주세요.";
+  }
+}
+function closeIO(){ document.getElementById("io-mask").classList.remove("show"); }
+
+(async function(){
+  await load(); render();
+  document.getElementById("modal-cancel").onclick=closeAdd;
+  document.getElementById("modal-ok").onclick=doAdd;
+  document.getElementById("mask").addEventListener("click",e=>{ if(e.target.id==="mask") closeAdd(); });
+  document.getElementById("name-input").addEventListener("keydown",e=>{ if(e.key==="Enter") doAdd(); });
+  document.getElementById("io-close").onclick=closeIO;
+  document.getElementById("io-mask").addEventListener("click",e=>{ if(e.target.id==="io-mask") closeIO(); });
+})();
+</script>
+</body>
+</html>
